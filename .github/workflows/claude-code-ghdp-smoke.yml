@@ -41,7 +41,6 @@ jobs:
             You are running inside a GitHub Actions CI environment.
 
             IMPORTANT:
-            - Use the repo skill: tiny-readme-update
             - You MUST delegate review to a subagent.
             - Make one tiny deterministic repository change.
             - Keep the diff extremely small.
