@@ -1,0 +1,23 @@
+{
+  "agent_id": "binary-validation",
+  "allowed_plugins": [
+    {
+      "id": "native-memory-filesystem",
+      "path": ".ghdp/plugins/native-memory-filesystem/plugin.json"
+    }
+  ],
+  "allowed_skills": [
+    {
+      "id": "isolated-binary-validation",
+      "path": ".ghdp/skills/isolated-binary-validation/SKILL.md"
+    }
+  ],
+  "package_root": "C:\\Users\\Hi\\Downloads\\git-repos\\dp-tools-local-setup\\platform-cli",
+  "schema_version": "1.0",
+  "smoke_commands": [
+    "pipx uninstall ghdp",
+    "pipx install C:\\Users\\Hi\\Downloads\\git-repos\\dp-tools-local-setup\\platform-cli",
+    "ghdp --version",
+    "ghdp --json orchestrate status --repo-root C:\\Users\\Hi\\Downloads\\git-repos\\dp-tools-local-setup"
+  ]
+}

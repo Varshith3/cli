@@ -1,0 +1,2330 @@
+# GHDP_CLI_REFERENCE.toml
+# Single-source, IDE/agent-friendly reference for GHDP CLI commands, flags, config keys, and expected errors.
+# Keep this file SMALL + factual. Prefer short strings; avoid long prose.
+# Update whenever you add/change a command/flag/error.
+
+[meta]
+schema_version = "1.0"
+cli_name = "ghdp"
+repo_path_hint = "dp-tools-local-setup/platform-cli"
+notes = "Used by humans + IDE agents (Copilot/Cursor). If you don't know which command to run, start here."
+
+[paths]
+config_file = "~/.ghdp/config.json"
+usage_log = "~/.ghdp/usage.log"
+error_log = "~/.ghdp/errors.log"
+state_file = "~/.ghdp/state/state.json"
+state_lock = "~/.ghdp/state/state.lock"
+release_policy_file = "~/.ghdp/policies/release-policy.managed.json"
+
+[global]
+welcome = "Running `ghdp` with no subcommand shows the welcome panel + exits 0."
+
+[global.flags.verbose]
+cli = "--verbose/-v"
+type = "bool"
+default = false
+help = "Verbose output (show underlying steps/commands where supported)."
+
+[global.flags.quiet]
+cli = "--quiet"
+type = "bool"
+default = false
+help = "Quiet mode (suppress non-essential output)."
+
+[global.flags.json]
+cli = "--json"
+type = "bool"
+default = false
+help = "JSON output when supported (doctor/commands etc.)."
+
+[global.flags.non_interactive]
+cli = "--non-interactive"
+type = "bool"
+default = false
+env = "GHDP_NON_INTERACTIVE"
+help = "Fail instead of prompting; useful in CI/GitHub Actions."
+
+[global.env.GHDP_TELEMETRY]
+type = "0|1|true|false"
+default = "1"
+help = "Overrides telemetry.enabled; env wins over config."
+
+[config_keys."telemetry.enabled"]
+type = "bool"
+default = true
+affects = "usage/error logging via tracked_command + telemetry module."
+
+[config_keys."git.strict_clean"]
+type = "bool"
+default = true
+affects = "requires_clean_git decorator; blocks commands when repo has uncommitted changes."
+
+[config_keys."precommit.mode"]
+type = "string"
+default = "off"
+allowed = ["off", "warn", "enforce"]
+affects = "precommit_check decorator."
+
+[config_keys."updates.enabled"]
+type = "bool"
+default = true
+affects = "startup update check hook (best-effort)."
+
+[config_keys."team.selected"]
+type = "string"
+default = ""
+affects = "default team context for team-aware commands when --team is omitted."
+
+[config_keys."claude.athena_workgroup"]
+type = "string"
+default = ""
+affects = "Claude Code bootstrap; stores only Athena workgroups entered interactively during install. Env-derived and AWS-identity-derived values are not persisted to this key."
+
+[config_keys."jenkins.okta_email"]
+type = "string"
+default = ""
+affects = "Jenkins release execution auth. Used for release-management prompts and local Jenkins credential resolution."
+
+[config_keys."jenkins.api_token"]
+type = "string"
+default = ""
+sensitive = true
+affects = "Jenkins release execution auth for feature-to-dev / make-release. Stored locally only when the user saves it."
+
+# Feature flags are just config bools; convention: features.<something>.enabled
+[feature_flags]
+convention = "features.<domain>.<name>.enabled"
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Commands
+# Each entry is designed to be easy for an IDE agent to pattern-match.
+# Use `cli` as the canonical invocation form.
+# ──────────────────────────────────────────────────────────────────────────────
+
+[[commands]]
+id = "hello"
+cli = "ghdp hello"
+category = "basic"
+tags = ["demo", "smoke"]
+summary = "Smoke-test / demo command (prints a greeting)."
+flags = [
+  { cli="--name/-n", type="string", required=false, default="world", help="Name to greet" },
+]
+examples = [
+  "ghdp hello -n Megha",
+]
+common_errors = []
+
+[[commands]]
+id = "codex"
+cli = "ghdp codex [<args>...]"
+category = "tools"
+tags = ["codex", "passthrough"]
+summary = "Pass through arguments directly to codex CLI."
+flags = []
+examples = [
+  "ghdp codex --version",
+  "ghdp codex login status",
+  "ghdp codex",
+]
+common_errors = [
+  { code="E_CMD_NOT_FOUND", when="codex executable is not available on PATH" },
+]
+
+[[commands]]
+id = "claude"
+cli = "ghdp claude [<args>...]"
+category = "tools"
+tags = ["claude", "passthrough"]
+summary = "Pass through arguments directly to Claude Code CLI."
+flags = []
+examples = [
+  "ghdp claude",
+  "ghdp claude --help",
+]
+common_errors = [
+  { code="E_CMD_NOT_FOUND", when="claude executable is not available on PATH" },
+]
+
+[[commands]]
+id = "claude-launch"
+cli = "ghdp claude-launch [--profile <name>] [--choose-profile] [-- <claude args>...]"
+category = "tools"
+tags = ["claude", "launch", "aws", "profile"]
+summary = "Launch Claude Code with GHDP AWS profile resolution for this session only."
+flags = [
+  { cli="--profile", type="string", required=false, default="(resolved)", help="AWS profile override for this Claude launch only" },
+  { cli="--choose-profile", type="bool", required=false, default=false, help="Prompt to choose a different AWS profile for this Claude launch" },
+]
+examples = [
+  "ghdp claude-launch",
+  "ghdp claude-launch --profile aws-mcp",
+  "ghdp claude-launch --choose-profile -- --help",
+]
+common_errors = [
+  { code="E_CMD_NOT_FOUND", when="claude executable is not available on PATH" },
+]
+
+[[commands]]
+id = "usage"
+cli = "ghdp usage"
+category = "observability"
+tags = ["logs", "telemetry"]
+summary = "Show recent local usage history from ~/.ghdp/usage.log."
+flags = [
+  { cli="--limit/-n", type="int", required=false, default=20, help="How many recent entries to show from local usage history" },
+]
+examples = [
+  "ghdp usage",
+  "ghdp usage -n 50",
+]
+common_errors = [
+  { code="E_USAGE_LOG_READ", when="usage.log cannot be read (permissions/corruption)" },
+]
+
+[[commands]]
+id = "commands"
+cli = "ghdp commands"
+category = "discoverability"
+tags = ["help", "metadata"]
+summary = "List commands with category, tags, description, and release-1 access annotations (supports filtering)."
+flags = [
+  { cli="--category/-c", type="string", required=false, default="", help="Filter by category (e.g., terraform, tools)" },
+  { cli="--tag/-t", type="string", required=false, default="", help="Filter by tag prefix (e.g., tf, tools, aws)" },
+  { cli="--format", type="string", required=false, default="table", allowed=["table","json"], help="Output format" },
+]
+examples = [
+  "ghdp commands",
+  "ghdp commands -c tools",
+  "ghdp commands -t tf",
+  "ghdp commands --format json",
+]
+common_errors = []
+
+[[commands]]
+id = "doctor"
+cli = "ghdp doctor"
+category = "diagnostics"
+tags = ["diagnostics", "env"]
+summary = "Run environment diagnostics (python/git/brew/winget/gh, etc.)."
+flags = [
+  { cli="--fix-winget", type="bool", required=false, default=false, help="(Windows) attempt minimal winget fix guidance/steps" },
+]
+examples = [
+  "ghdp doctor",
+  "ghdp doctor --fix-winget",
+]
+common_errors = [
+  { code="E_FEATURE_DISABLED", when="features.doctor.enabled is false (feature_flag blocks)" },
+]
+
+# ───────────────── Config commands ─────────────────
+
+[[commands]]
+id = "config:list"
+cli = "ghdp config list"
+category = "config"
+tags = ["config"]
+summary = "Show merged config (defaults + user overrides)."
+flags = []
+examples = ["ghdp config list"]
+common_errors = []
+
+[[commands]]
+id = "config:telemetry"
+cli = "ghdp config telemetry --on|--off"
+category = "config"
+tags = ["config", "telemetry"]
+summary = "Enable/disable local telemetry logging."
+flags = [
+  { cli="--on/--off", type="bool", required=true, default="(required)", help="Toggle telemetry.enabled" },
+]
+examples = [
+  "ghdp config telemetry --off",
+  "ghdp config telemetry --on",
+]
+common_errors = []
+
+[[commands]]
+id = "config:precommit"
+cli = "ghdp config precommit --mode <off|warn|enforce>"
+category = "config"
+tags = ["config", "precommit"]
+summary = "Set pre-commit behaviour used by precommit_check decorator. In phase 0, `off` requires `config.admin_write` directly or through a valid token."
+flags = [
+  { cli="--mode/-m", type="string", required=true, allowed=["off","warn","enforce"], help="precommit.mode" },
+]
+examples = [
+  "ghdp config precommit --mode warn",
+  "ghdp config precommit --mode enforce",
+]
+common_errors = [
+  { code="E_ACCESS_DENIED", when="setting `precommit.mode=off` without admin capability" },
+  { code="E_ACTOR_IDENTITY_REQUIRED", when="privileged config writes run without a resolved GitHub identity" },
+]
+
+[[commands]]
+id = "config:updates"
+cli = "ghdp config updates --on|--off"
+category = "config"
+tags = ["config", "updates", "version"]
+summary = "Enable/disable GHDP update checks on startup."
+flags = [
+  { cli="--on/--off", type="bool", required=true, default="(required)", help="Toggle updates.enabled" },
+]
+examples = [
+  "ghdp config updates --off",
+  "ghdp config updates --on",
+]
+common_errors = []
+
+[[commands]]
+id = "config:claude-athena-workgroup"
+cli = "ghdp config claude-athena-workgroup [--value <workgroup> | --clear]"
+category = "config"
+tags = ["config", "claude", "athena"]
+summary = "Show, set, or clear the saved Claude Athena workgroup used by Claude bootstrap."
+flags = [
+  { cli="--value", type="string", required=false, default="", help="Persist this Athena workgroup for Claude bootstrap" },
+  { cli="--clear", type="bool", required=false, default=false, help="Clear the saved Claude Athena workgroup from GHDP config" },
+]
+examples = [
+  "ghdp config claude-athena-workgroup",
+  "ghdp config claude-athena-workgroup --value team-athena-workgroup",
+  "ghdp config claude-athena-workgroup --clear",
+]
+common_errors = [
+  { code="E_CONFIG_CLAUDE_ATHENA_WORKGROUP_CONFLICT", when="both --value and --clear are provided" },
+  { code="E_CLAUDE_ATHENA_WORKGROUP_INVALID", when="the provided Athena workgroup is blank" },
+]
+
+[[commands]]
+id = "config:jenkins-okta-email"
+cli = "ghdp config jenkins-okta-email --email <user@guardanthealth.com>"
+category = "config"
+tags = ["config", "jenkins", "okta"]
+summary = "Store the Okta email GHDP should use for Jenkins MCP calls."
+flags = [
+  { cli="--email", type="string", required=true, help="Okta email address used for Jenkins MCP requests" },
+]
+examples = [
+  "ghdp config jenkins-okta-email --email user@guardanthealth.com",
+]
+common_errors = []
+
+[[commands]]
+id = "config:git-strict-clean"
+cli = "ghdp config git-strict-clean --enabled|--disabled"
+category = "config"
+tags = ["config", "git"]
+summary = "Enable/disable clean-git enforcement for commands that use requires_clean_git. This contributor/internal surface is admin-only and prerelease-only in release 1."
+flags = [
+  { cli="--enabled/--disabled", type="bool", required=true, help="git.strict_clean" },
+]
+examples = [
+  "ghdp config git-strict-clean --disabled",
+  "ghdp config git-strict-clean --enabled",
+]
+common_errors = [
+  { code="E_ACCESS_DENIED", when="running this contributor/internal config command without `platform.internal`" },
+  { code="E_RELEASE_CHANNEL_BLOCKED", when="running this contributor/internal config command from a stable build" },
+]
+
+[[commands]]
+id = "config:branch-jira-check"
+cli = "ghdp config branch-jira-check --mode <warn|enforce>"
+category = "config"
+tags = ["config", "branch", "jira"]
+summary = "Control Jira validation mode for branch creation. This contributor/internal surface is admin-only and prerelease-only in release 1."
+flags = [
+  { cli="--mode", type="string", required=true, allowed=["warn","enforce"], help="branch.create.jira_check_mode" },
+]
+examples = [
+  "ghdp config branch-jira-check --mode warn",
+  "ghdp config branch-jira-check --mode enforce",
+]
+common_errors = [
+  { code="E_ACCESS_DENIED", when="running this contributor/internal config command without `platform.internal`" },
+  { code="E_RELEASE_CHANNEL_BLOCKED", when="running this contributor/internal config command from a stable build" },
+]
+
+[[commands]]
+id = "config:branch-ai-provider"
+cli = "ghdp config branch-ai-provider --provider <auto|codex|claude|manual>"
+category = "config"
+tags = ["config", "branch", "ai"]
+summary = "Control which provider GHDP prefers for branch intent generation. This contributor/internal surface is admin-only and prerelease-only in release 1."
+flags = [
+  { cli="--provider", type="string", required=true, allowed=["auto","codex","claude","manual"], help="branch.ai.provider" },
+]
+examples = [
+  "ghdp config branch-ai-provider --provider auto",
+  "ghdp config branch-ai-provider --provider codex",
+]
+common_errors = [
+  { code="E_ACCESS_DENIED", when="running this contributor/internal config command without `platform.internal`" },
+  { code="E_RELEASE_CHANNEL_BLOCKED", when="running this contributor/internal config command from a stable build" },
+]
+
+[[commands]]
+id = "config:branch-intent"
+cli = "ghdp config branch-intent --enabled|--disabled"
+category = "config"
+tags = ["config", "branch", "intent"]
+summary = "Enable or disable branch intent generation. This contributor/internal surface is admin-only and prerelease-only in release 1."
+flags = [
+  { cli="--enabled/--disabled", type="bool", required=true, help="branch.intent.enabled" },
+]
+examples = [
+  "ghdp config branch-intent --enabled",
+  "ghdp config branch-intent --disabled",
+]
+common_errors = [
+  { code="E_ACCESS_DENIED", when="running this contributor/internal config command without `platform.internal`" },
+  { code="E_RELEASE_CHANNEL_BLOCKED", when="running this contributor/internal config command from a stable build" },
+]
+
+[[commands]]
+id = "config:branch-intent-prompt"
+cli = "ghdp config branch-intent-prompt --enabled|--disabled"
+category = "config"
+tags = ["config", "branch", "intent"]
+summary = "Enable or disable manual prompting when no AI provider is available. This contributor/internal surface is admin-only and prerelease-only in release 1."
+flags = [
+  { cli="--enabled/--disabled", type="bool", required=true, help="branch.intent.prompt_if_no_ai" },
+]
+examples = [
+  "ghdp config branch-intent-prompt --enabled",
+  "ghdp config branch-intent-prompt --disabled",
+]
+common_errors = [
+  { code="E_ACCESS_DENIED", when="running this contributor/internal config command without `platform.internal`" },
+  { code="E_RELEASE_CHANNEL_BLOCKED", when="running this contributor/internal config command from a stable build" },
+]
+
+[[commands]]
+id = "config:jenkins-okta-email"
+cli = "ghdp config jenkins-okta-email --email <email>"
+category = "config"
+tags = ["config", "jenkins", "okta"]
+summary = "Store the Okta email GHDP should use for Jenkins release execution."
+flags = [
+  { cli="--email", type="string", required=true, default="(required)", help="Okta email to store in local GHDP config" },
+]
+examples = [
+  "ghdp config jenkins-okta-email --email mshyam@guardanthealth.com",
+]
+common_errors = []
+
+[[commands]]
+id = "config:jenkins-api-token"
+cli = "ghdp config jenkins-api-token --token <token> | --clear"
+category = "config"
+tags = ["config", "jenkins", "token", "secret"]
+summary = "Store, clear, or prompt for the Jenkins API token used by Jenkins release flows."
+flags = [
+  { cli="--token", type="string", required=false, default="", help="Store token in local GHDP config; prompts if omitted in interactive mode" },
+  { cli="--clear", type="bool", required=false, default=false, help="Remove the stored Jenkins API token from local GHDP config" },
+]
+examples = [
+  "ghdp config jenkins-api-token --token <token>",
+  "ghdp config jenkins-api-token --clear",
+]
+common_errors = [
+  { code="E_CONFIG_TOKEN_CONFLICT", when="--token and --clear are both provided" },
+]
+
+# ───────────────── Version change command ─────────────────
+
+[[commands]]
+id = "version:change"
+cli = "ghdp version change"
+category = "self"
+tags = ["version", "upgrade", "downgrade"]
+summary = "Install a selected GHDP version or converge to the latest stable release."
+flags = [
+  { cli="--version", type="string", required=false, default="", help="Target version tag (e.g., v0.1.0 or 0.1.0)." },
+  { cli="--latest-stable", type="bool", required=false, default=false, help="Resolve the latest stable release and install it if the current version differs." },
+  { cli="--method", type="string", required=false, default="auto", allowed=["auto", "pipx", "installer"], help="Install method selection" },
+  { cli="--repo", type="string", required=false, default="", help="Override GitHub repo (owner/name)" },
+]
+examples = [
+  "ghdp version change",
+  "ghdp version change --latest-stable",
+  "ghdp --non-interactive version change --latest-stable --method auto",
+  "ghdp version change --version v0.1.0",
+  "ghdp version change --version 0.1.0 --method installer",
+]
+common_errors = [
+  { code="E_BAD_ARGS", when="non-interactive mode is used without --version or --latest-stable" },
+  { code="E_NO_STABLE_RELEASE", when="the latest stable release cannot be resolved from the configured repo" },
+  { code="E_PIPX_NOT_FOUND", when="--method pipx selected but pipx is unavailable" },
+]
+
+# ───────────────── AWS commands (local helper flows) ─────────────────
+
+[[commands]]
+id = "aws:sso"
+cli = "ghdp aws sso"
+category = "aws"
+tags = ["aws", "sso", "setup"]
+summary = "Configure AWS SSO session setup for a resolved or explicit profile."
+flags = [
+  { cli="--profile", type="string", required=false, default="(resolved)", help="AWS profile name (override)" },
+  { cli="--sso-session-name", type="string", required=false, default="", help="AWS SSO session name" },
+  { cli="--sso-start-url", type="string", required=false, default="", help="AWS SSO start URL" },
+  { cli="--sso-region", type="string", required=false, default="", help="AWS SSO region" },
+  { cli="--default-region", type="string", required=false, default="us-west-2", help="Default AWS region" },
+  { cli="--default-output", type="string", required=false, default="json", help="Default output format" },
+]
+examples = [
+  "ghdp aws sso",
+  "ghdp aws sso --profile platform-dev",
+  "ghdp aws sso --profile platform-dev --default-region us-west-2",
+]
+common_errors = [
+  { code="E_AWSCLI_NOT_DISCOVERABLE", when="aws cli is installed but not available in current shell session" },
+]
+
+[[commands]]
+id = "aws:login"
+cli = "ghdp aws login"
+category = "aws"
+tags = ["aws", "sso", "auth"]
+summary = "Log in to AWS SSO for a resolved or explicit profile."
+flags = [
+  { cli="--profile", type="string", required=false, default="(resolved)", help="AWS profile to use (override)" },
+]
+examples = [
+  "ghdp aws login",
+  "ghdp aws login --profile platform-dev",
+]
+common_errors = [
+  { code="E_AWS_LOGIN_FAILED", when="aws sso login fails" },
+]
+
+[[commands]]
+id = "aws:status"
+cli = "ghdp aws status"
+category = "aws"
+tags = ["aws", "status", "profile", "token"]
+summary = "Show resolved profile, SSO config status, and token state."
+flags = [
+  { cli="--profile", type="string", required=false, default="(resolved)", help="AWS profile to use (override)" },
+]
+examples = [
+  "ghdp aws status",
+  "ghdp aws status --profile platform-dev",
+]
+common_errors = [
+  { code="E_AWS_NOT_LOGGED_IN", when="SSO session expired or missing credentials" },
+]
+
+[[commands]]
+id = "aws:profile:list"
+cli = "ghdp aws profile list"
+category = "aws"
+tags = ["aws", "profile"]
+summary = "List configured profiles from ~/.aws/config and ~/.aws/credentials and mark active selections."
+flags = []
+examples = ["ghdp aws profile list"]
+common_errors = []
+
+[[commands]]
+id = "aws:profile:use"
+cli = "ghdp aws profile use --profile <name> [--scope global|repo]"
+category = "aws"
+tags = ["aws", "profile"]
+summary = "Set active AWS profile in global or repo scope."
+flags = [
+  { cli="--profile", type="string", required=true, help="Profile to activate" },
+  { cli="--scope", type="string", required=false, default="global", allowed=["global", "repo"], help="Profile scope" },
+]
+examples = [
+  "ghdp aws profile use --profile aws-mcp",
+  "ghdp aws profile use --profile aws-mcp --scope repo",
+]
+common_errors = []
+
+[[commands]]
+id = "aws:profile:current"
+cli = "ghdp aws profile current [--profile <name>]"
+category = "aws"
+tags = ["aws", "profile"]
+summary = "Show effective AWS profile and resolution source."
+flags = [
+  { cli="--profile", type="string", required=false, default="(none)", help="Optional one-off override to inspect" },
+]
+examples = ["ghdp aws profile current"]
+common_errors = []
+
+[[commands]]
+id = "aws:token:status"
+cli = "ghdp aws token status [--profile <name>]"
+category = "aws"
+tags = ["aws", "token"]
+summary = "Check AWS SSO token state (valid/invalid) for a profile."
+flags = [
+  { cli="--profile", type="string", required=false, default="(resolved)", help="Profile override" },
+]
+examples = [
+  "ghdp aws token status",
+  "ghdp aws token status --profile aws-mcp",
+]
+common_errors = []
+
+[[commands]]
+id = "aws:token:refresh"
+cli = "ghdp aws token refresh [--profile <name>] [--if-expired]"
+category = "aws"
+tags = ["aws", "token"]
+summary = "Refresh AWS SSO token for a profile."
+flags = [
+  { cli="--profile", type="string", required=false, default="(resolved)", help="Profile override" },
+  { cli="--if-expired", type="bool", required=false, default=false, help="Only refresh when token is invalid" },
+]
+examples = [
+  "ghdp aws token refresh",
+  "ghdp aws token refresh --if-expired",
+]
+common_errors = []
+
+# ───────────────── Tools commands (team tool bootstrap) ─────────────────
+
+[[commands]]
+id = "tools:validate"
+cli = "ghdp tools validate [--team <name>]"
+category = "tools"
+tags = ["tools", "manifests"]
+summary = "Validate the team-toolset + tool-registry manifests."
+flags = [
+  { cli="--team", type="string", required=false, default="(effective team when omitted)", help="Team name from the resolved toolset source" },
+]
+examples = [
+  "ghdp tools validate",
+  "ghdp tools validate --team data-engg",
+]
+common_errors = [
+  { code="E_MANIFEST_INVALID", when="schema/fields invalid or required tool missing from registry" },
+]
+
+[[commands]]
+id = "tools:list"
+cli = "ghdp tools list [--team <name>]"
+category = "tools"
+tags = ["tools", "list"]
+summary = "List tools available for a team from the resolved team-toolset source."
+flags = [
+  { cli="--team", type="string", required=false, default="(effective team when omitted)", help="Team name from the resolved toolset source" },
+]
+examples = [
+  "ghdp tools list",
+  "ghdp tools list --team platform-engg",
+]
+common_errors = []
+
+[[commands]]
+id = "tools:status"
+cli = "ghdp tools status [--team <name>] [--refresh]"
+category = "tools"
+tags = ["tools", "detect"]
+summary = "Detect tools and record versions/ownership in ~/.ghdp/state/state.json."
+flags = [
+  { cli="--team", type="string", required=false, default="(effective team when omitted)", help="Team name from the resolved toolset source" },
+  { cli="--refresh", type="bool", required=false, default=false, help="Re-run detection and overwrite state values" },
+]
+examples = [
+  "ghdp tools status",
+  "ghdp tools status --refresh",
+  "ghdp tools status --team data-scientist --refresh",
+]
+common_errors = []
+
+[[commands]]
+id = "tools:install"
+cli = "ghdp tools install [--team <name>] [--tool <tool>] [--all] [--upgrade] [--dry-run] [--adopt-existing]"
+category = "tools"
+tags = ["tools", "install", "upgrade"]
+summary = "Install/upgrade tools for a team using the registry + version policy; supports Claude Code and Codex bootstrap flows."
+flags = [
+  { cli="--team", type="string", required=false, default="(effective team when omitted)", help="Team name from the resolved toolset source" },
+  { cli="--tool", type="string", required=false, default="(none)", help="Install only one tool" },
+  { cli="--all", type="bool", required=false, default=false, help="Install all tools for this team (explicit; default when --tool is omitted)" },
+  { cli="--upgrade", type="bool", required=false, default=false, help="Use upgrade cmd when available" },
+  { cli="--dry-run", type="bool", required=false, default=false, help="No execution; only planned actions" },
+  { cli="--adopt-existing", type="bool", required=false, default=false, help="If already installed, mark as GHDP-managed" },
+]
+examples = [
+  "ghdp tools install",
+  "ghdp tools install --upgrade",
+  "ghdp tools install --tool awscli",
+  "ghdp tools install --tool awscli --upgrade",
+  "ghdp tools install --tool claude",
+  "ghdp tools install --tool codex",
+  "ghdp tools install --dry-run",
+  "ghdp tools install --team data-analyst --all",
+]
+common_errors = [
+  { code="E_VERSION_POLICY_UNMET", when="post-install/upgrade version doesn't satisfy toolset policy" },
+  { code="E_TOOL_INSTALL_FAILED", when="package manager command fails (brew/winget)" },
+  { code="E_CLAUDE_ATHENA_WORKGROUP_REQUIRED", when="Claude install is running non-interactively and Athena workgroup is not yet configured" },
+  { code="E_CLAUDE_ATHENA_WORKGROUP_MAP_INVALID", when="Claude install cannot load or validate the Athena workgroup mapping source" },
+]
+
+[[commands]]
+id = "tools:uninstall"
+cli = "ghdp tools uninstall [--team <name>] (--all | --tool <tool>) [--dry-run] [--force]"
+category = "tools"
+tags = ["tools", "uninstall"]
+summary = "Uninstall GHDP-managed tools (safe by default). In phase 0 this command requires admin capability."
+flags = [
+  { cli="--team", type="string", required=false, default="(effective team when omitted)", help="Team name from the resolved toolset source" },
+  { cli="--tool", type="string", required=false, default="(none)", help="Uninstall only one tool" },
+  { cli="--all", type="bool", required=false, default=false, help="Uninstall all tools for this team" },
+  { cli="--dry-run", type="bool", required=false, default=false, help="No execution; only planned actions" },
+  { cli="--force", type="bool", required=false, default=false, help="Allow uninstall even if tool is not GHDP-managed" },
+]
+examples = [
+  "ghdp tools uninstall --all",
+  "ghdp tools uninstall --team platform-engg --tool gh",
+  "ghdp tools uninstall --team platform-engg --all --dry-run",
+]
+common_errors = [
+  { code="E_ACCESS_DENIED", when="running uninstall without admin capability or token" },
+  { code="E_ACTOR_IDENTITY_REQUIRED", when="privileged uninstall runs without a resolved GitHub identity" },
+  { code="E_UNINSTALL_NOT_ALLOWED", when="attempting uninstall of user-managed tool without --force" },
+]
+
+[[commands]]
+id = "tools:setup-agent-config"
+cli = "ghdp tools setup-agent-config [--tool <claude|codex>] [--all]"
+category = "tools"
+tags = ["tools", "claude", "codex", "config"]
+summary = "Install or refresh user-global GHDP instructions for Claude/Codex."
+flags = [
+  { cli="--tool", type="string", required=false, default="(both when omitted)", allowed=["claude","codex"], help="Apply only one user-global agent config" },
+  { cli="--all", type="bool", required=false, default=false, help="Apply both Claude and Codex global config" },
+]
+examples = [
+  "ghdp tools setup-agent-config",
+  "ghdp tools setup-agent-config --tool claude",
+  "ghdp tools setup-agent-config --all",
+]
+common_errors = [
+  { code="E_BAD_ARGS", when="--tool is not one of claude or codex" },
+]
+
+[[commands]]
+id = "team:list"
+cli = "ghdp team list"
+category = "team"
+tags = ["team", "config"]
+summary = "List available teams from the resolved toolset source and mark selected or active-session team. Warns when GHDP is using a fallback team list or the saved team is stale."
+flags = []
+examples = [
+  "ghdp team list",
+]
+common_errors = []
+
+[[commands]]
+id = "team:current"
+cli = "ghdp team current"
+category = "team"
+tags = ["team", "config"]
+summary = "Show the current effective team. Warns when the saved configured team is no longer present in the current resolved team list."
+flags = []
+examples = [
+  "ghdp team current",
+]
+common_errors = []
+
+[[commands]]
+id = "team:use"
+cli = "ghdp team use --team <name>"
+category = "team"
+tags = ["team", "config"]
+summary = "Set selected team in user config. In phase 0, non-admins can bind their first team but need admin capability to switch later."
+flags = [
+  { cli="--team", type="string", required=true, help="Team name to set as selected" },
+]
+examples = [
+  "ghdp team use --team data-engg",
+  "ghdp team use --team platform-engg",
+]
+common_errors = [
+  { code="E_BAD_ARGS", when="team name is unknown" },
+  { code="E_ACCESS_DENIED", when="switching to a different team without admin capability or token" },
+  { code="E_ACTOR_IDENTITY_REQUIRED", when="team switching requires privileged identity but GitHub login is not resolved" },
+  { code="E_TEAM_INVALID_AFTER_SYNC", when="the saved team no longer exists in the current resolved team list" },
+]
+
+[[commands]]
+id = "access:status"
+cli = "ghdp access status"
+category = "access"
+tags = ["access", "identity", "token", "release"]
+summary = "Show current actor identity, actor source, active mode, team context, token scope/state, effective capabilities, and resolved release channel."
+flags = []
+examples = [
+  "ghdp access status",
+]
+common_errors = []
+
+[[commands]]
+id = "access:token"
+cli = "ghdp access token [--token <value>]"
+category = "access"
+tags = ["access", "token"]
+summary = "Prompt for and activate a temporary access token locally, then show its resolved scope, actor restriction, team restriction, expiry, and granted capabilities."
+flags = [
+  { cli="--token", type="string", required=false, default="(prompt)", help="Access token. If omitted, GHDP prompts interactively." },
+]
+examples = [
+  "ghdp access token",
+  "ghdp access token --token <token>",
+]
+common_errors = [
+  { code="E_ACTOR_IDENTITY_REQUIRED", when="GitHub identity cannot be resolved or entered" },
+  { code="E_ACCESS_TOKEN_REQUIRED", when="no token value is provided" },
+  { code="E_ACCESS_TOKEN_INVALID", when="the token is malformed, expired, for another actor, or fails signature checks" },
+]
+
+[[commands]]
+id = "access:clear"
+cli = "ghdp access clear"
+category = "access"
+tags = ["access", "token"]
+summary = "Clear the locally stored access token."
+flags = []
+examples = [
+  "ghdp access clear",
+]
+common_errors = []
+
+[[commands]]
+id = "access:inspect"
+cli = "ghdp access inspect"
+category = "access"
+tags = ["access", "session", "support", "release-preview"]
+summary = "Inspect local access-session state and resolved access context. In release 1 this support/debug surface requires `platform.internal` and a prerelease build."
+flags = []
+examples = [
+  "ghdp access inspect",
+]
+common_errors = [
+  { code="E_ACCESS_DENIED", when="running this support/debug command without `platform.internal`" },
+  { code="E_RELEASE_CHANNEL_BLOCKED", when="running this support/debug command from a stable build" },
+]
+
+[[commands]]
+id = "access:reset"
+cli = "ghdp access reset"
+category = "access"
+tags = ["access", "session", "support", "release-preview"]
+summary = "Clear remembered actor, active token, and assumed-team state locally. In release 1 this support/debug surface requires `platform.internal` and a prerelease build."
+flags = []
+examples = [
+  "ghdp access reset",
+]
+common_errors = [
+  { code="E_ACCESS_DENIED", when="running this support/debug command without `platform.internal`" },
+  { code="E_RELEASE_CHANNEL_BLOCKED", when="running this support/debug command from a stable build" },
+]
+
+[[commands]]
+id = "admin:token"
+cli = "ghdp admin token [--for-user <login>] [--team <team>] --capability <capability> [--capability <capability> ...] [--ttl-minutes <minutes>]"
+category = "admin"
+tags = ["admin", "access", "token"]
+summary = "Create a signed temporary admin token scoped to a user, a team, or both. Missing inputs trigger interactive prompts; team-only tokens are intentionally narrower and use stricter TTL policy."
+flags = [
+  { cli="--for-user", type="string", required=false, default="", help="Optional GitHub login that can use the token" },
+  { cli="--capability", type="string[]", required=true, help="Capability to grant; repeat for multiple values" },
+  { cli="--ttl-minutes", type="int", required=false, default="(scope policy default)", help="Token lifetime in minutes" },
+  { cli="--team", type="string", required=false, default="", help="Optional team restriction for the token" },
+]
+examples = [
+  "ghdp admin token --for-user octocat --capability sync.mutate",
+  "ghdp admin token --team inform --capability usage.read",
+  "ghdp admin token --for-user octocat --capability team.switch --capability sync.mutate --team default",
+  "ghdp admin token",
+]
+common_errors = [
+  { code="E_ACCESS_DENIED", when="a non-admin tries to mint a token" },
+  { code="E_ACTOR_IDENTITY_REQUIRED", when="token minting runs without a resolved GitHub identity" },
+  { code="E_ADMIN_TOKEN_SCOPE_REQUIRED", when="neither --for-user nor --team is supplied" },
+  { code="E_ADMIN_SIGNER_MISSING", when="admin-local signer material has not been provisioned yet" },
+  { code="E_ADMIN_TOKEN_CAPABILITY_INVALID", when="requested token capability is not allowlisted by policy" },
+  { code="E_ADMIN_TOKEN_TTL_INVALID", when="requested TTL exceeds policy limits" },
+]
+
+[[commands]]
+id = "admin:signer:status"
+cli = "ghdp admin signer status"
+category = "admin"
+tags = ["admin", "signer", "token"]
+summary = "Show whether local admin signer material is present and whether the current policy knows that signer key."
+flags = []
+examples = [
+  "ghdp admin signer status",
+]
+common_errors = []
+
+[[commands]]
+id = "admin:signer:setup"
+cli = "ghdp admin signer setup [--key-id <id>] [--overwrite] [--update-local-policy|--no-update-local-policy]"
+category = "admin"
+tags = ["admin", "signer", "token"]
+summary = "Create admin-local signer material under ~/.ghdp/admin/signer/ and refresh the local access-policy verifier entry."
+flags = [
+  { cli="--key-id", type="string", required=false, default="(interactive default)", help="Signer key id" },
+  { cli="--overwrite", type="bool", required=false, default=false, help="Replace existing signer material" },
+  { cli="--update-local-policy/--no-update-local-policy", type="bool", required=false, default=true, help="Refresh the local access-policy override with the generated verifier" },
+]
+examples = [
+  "ghdp admin signer setup --key-id local-admin-1",
+]
+common_errors = [
+  { code="E_ADMIN_SIGNER_EXISTS", when="signer material already exists and --overwrite is omitted" },
+]
+
+[[commands]]
+id = "admin:assume"
+cli = "ghdp admin assume --team <name>"
+category = "admin"
+tags = ["admin", "access", "team", "release-preview"]
+summary = "Temporarily operate as one team persona while suppressing admin-only privileges. In phase 1 this command remains blocked in stable builds unless the caller is already in normal admin mode."
+flags = [
+  { cli="--team", type="string", required=true, help="Team name to assume temporarily" },
+]
+examples = [
+  "ghdp admin assume --team inform",
+]
+common_errors = [
+  { code="E_RELEASE_CHANNEL_BLOCKED", when="running this preview-gated command from a stable build without normal admin mode" },
+  { code="E_ACCESS_DENIED", when="the caller is not an admin identity" },
+]
+
+[[commands]]
+id = "admin:return"
+cli = "ghdp admin return"
+category = "admin"
+tags = ["admin", "access", "team"]
+summary = "Exit assumed-team mode and restore full admin behavior."
+flags = []
+examples = [
+  "ghdp admin return",
+]
+common_errors = []
+
+# ───────────────── CI/CD helper (GitHub) ─────────────────
+
+[[commands]]
+id = "create-branch"
+cli = "ghdp create-branch [<ticket-type-slug>] [--type <TECHNICAL|ENHANCEMENT|BUGFIX>] [--ticket <KEY>] [--slug <slug>] [--base <branch>] [--repo <owner/name>] [--validate-jira|--no-validate-jira] [--comment-on-jira|--no-comment-on-jira] [--intent-mode <auto|generate|provided|skip>]"
+category = "git"
+tags = ["git", "github", "branch", "jira", "intent"]
+summary = "Create a remote feature branch on GitHub, validate Jira, and optionally persist or commit repo-local branch intent. In release 1 this command is admin-only through `branch.create`."
+flags = [
+  { cli="branch", type="arg", required=false, default="(optional shorthand)", help="Optional shorthand like feature/EPPE-6654-ENHANCEMENT-branch-orchestration or EPPE-6654-ENHANCEMENT-branch-orchestration" },
+  { cli="--type", type="string", required=false, allowed=["TECHNICAL","ENHANCEMENT","BUGFIX"], help="Branch type" },
+  { cli="--ticket", type="string", required=false, help="Jira key like EPPE-6654" },
+  { cli="--slug", type="string", required=false, help="User-owned branch slug" },
+  { cli="--base", type="string", required=false, default="(repo default branch)", help="Base branch" },
+  { cli="--repo", type="string", required=false, default="(resolved from local repo)", help="Optional owner/repo override" },
+  { cli="--validate-jira", type="bool", required=false, default="(config-driven when omitted)", help="Enforce Jira validation for this run" },
+  { cli="--no-validate-jira", type="bool", required=false, default="(config-driven when omitted)", help="Skip Jira validation for this run" },
+  { cli="--comment-on-jira", type="bool", required=false, default=false, help="Post a Jira comment after branch creation" },
+  { cli="--no-comment-on-jira", type="bool", required=false, default=false, help="Disable Jira commenting for this run" },
+  { cli="--intent-mode", type="string", required=false, default="auto", allowed=["auto","generate","provided","skip"], help="Intent handling mode" },
+  { cli="--intent-text", type="string", required=false, help="Inline intent text when intent-mode=provided" },
+  { cli="--intent-file", type="path", required=false, help="File containing intent text when intent-mode=provided" },
+  { cli="--provider", type="string", required=false, default="auto", allowed=["auto","manual","codex","claude"], help="Intent generation provider when GHDP generates intent" },
+  { cli="--request-id", type="string", required=false, help="Optional workflow/request correlation id" },
+  { cli="--local-checkout/--no-local-checkout", type="bool", required=false, default=true, help="Control post-create local checkout when safe" },
+  { cli="--persist-intent/--no-persist-intent", type="bool", required=false, default=true, help="Control repo-local intent persistence" },
+  { cli="--commit-intent/--no-commit-intent", type="bool", required=false, default=false, help="Commit and push .ghdp/frbr/intent.json after persistence" },
+  { cli="--dry-run", type="bool", required=false, default=false, help="Resolve branch plan and prompt without creating the branch" },
+  { cli="--github-output", type="path", required=false, help="Write workflow-safe outputs to a GitHub Actions output file" },
+  { cli="--intent-prompt-file", type="path", required=false, help="Write the rendered AI intent prompt to a file" },
+]
+examples = [
+  "ghdp create-branch EPPE-6654-ENHANCEMENT-branch-orchestration",
+  "ghdp create-branch --ticket EPPE-6654 --type ENHANCEMENT --slug branch-orchestration",
+  "ghdp create-branch --ticket EPPE-6654 --type TECHNICAL --slug sync-refactor --base develop",
+  "ghdp create-branch --ticket EPPE-7087 --type TECHNICAL --slug cli-release-management-integration --intent-mode skip --dry-run",
+  "ghdp create-branch --ticket EPPE-7087 --type TECHNICAL --slug cli-release-management-integration --intent-mode provided --intent-file intent.txt --commit-intent",
+]
+common_errors = [
+  { code="E_ACCESS_DENIED", when="running create-branch without `branch.create`" },
+  { code="E_BRANCH_FORMAT_INVALID", when="shorthand branch format is invalid" },
+  { code="E_BRANCH_TYPE_INVALID", when="branch type is not TECHNICAL, ENHANCEMENT, or BUGFIX" },
+  { code="E_GH_NOT_AUTHENTICATED", when="GitHub CLI is not authenticated" },
+  { code="E_BRANCH_INTENT_MODE_INVALID", when="intent mode is not one of auto, generate, provided, or skip" },
+  { code="E_BRANCH_INTENT_TEXT_MISSING", when="intent-mode provided is used without intent text" },
+]
+
+[[commands]]
+id = "crbr"
+cli = "ghdp crbr [same flags as create-branch]"
+category = "git"
+tags = ["git", "github", "branch", "alias"]
+summary = "Alias for ghdp create-branch. In release 1 this command is admin-only through `branch.create`."
+flags = []
+examples = [
+  "ghdp crbr EPPE-6654-ENHANCEMENT-branch-orchestration",
+]
+common_errors = [
+  { code="E_ACCESS_DENIED", when="running crbr without `branch.create`" },
+]
+
+[[commands]]
+id = "orchestrate:status"
+cli = "ghdp orchestrate status [--repo-root <path>]"
+category = "orchestrate"
+tags = ["orchestrate", "agents", "skills", "plugins", "memory"]
+summary = "Inspect the repo-level Phase 1 orchestrator contract and the active branch runtime skeleton."
+flags = [
+  { cli="--repo-root", type="path", required=false, default="(current git repo)", help="Optional repo root override for contract inspection" },
+]
+examples = [
+  "ghdp orchestrate status",
+  "ghdp --json orchestrate status",
+  "ghdp orchestrate status --repo-root C:/path/to/repo",
+]
+common_errors = [
+  { code="E_REPO_ROOT_NOT_FOUND", when="the command is run outside a git repository and no --repo-root is supplied" },
+]
+
+[[commands]]
+id = "orchestrate:start"
+cli = "ghdp orchestrate start [--repo-root <path>]"
+category = "orchestrate"
+tags = ["orchestrate", "runtime", "start"]
+summary = "Bootstrap or reuse the active branch-scoped orchestrator run for the current feature branch."
+flags = [
+  { cli="--repo-root", type="path", required=false, default="(current git repo)", help="Optional repo root override for runtime bootstrap" },
+]
+examples = [
+  "ghdp orchestrate start",
+  "ghdp --json orchestrate start",
+]
+common_errors = [
+  { code="E_ORCHESTRATE_BRANCH_INVALID", when="the current branch is not a feature branch" },
+  { code="E_ORCHESTRATE_CONTRACT_NOT_READY", when="the repo-level orchestrator contract is incomplete" },
+]
+
+[[commands]]
+id = "orchestrate:resume"
+cli = "ghdp orchestrate resume [--repo-root <path>]"
+category = "orchestrate"
+tags = ["orchestrate", "runtime", "resume"]
+summary = "Resume the active branch-scoped orchestrator run for the current feature branch."
+flags = [
+  { cli="--repo-root", type="path", required=false, default="(current git repo)", help="Optional repo root override for runtime resume" },
+]
+examples = [
+  "ghdp orchestrate resume",
+  "ghdp --json orchestrate resume",
+]
+common_errors = [
+  { code="E_ORCHESTRATE_RUN_MISSING", when="the branch runtime or active run key does not exist yet" },
+]
+
+[[commands]]
+id = "orchestrate:handoff"
+cli = "ghdp orchestrate handoff --summary <text> --next-action <text> [--repo-root <path>]"
+category = "orchestrate"
+tags = ["orchestrate", "runtime", "handoff"]
+summary = "Pause the active branch run and record handoff context for the next human or agent."
+flags = [
+  { cli="--summary", type="string", required=true, help="Short summary of the current state" },
+  { cli="--next-action", type="string", required=true, help="The exact next action the next owner should take" },
+  { cli="--repo-root", type="path", required=false, default="(current git repo)", help="Optional repo root override for runtime handoff" },
+]
+examples = [
+  "ghdp orchestrate handoff --summary \"Stage B runtime slice is done\" --next-action \"Start review-loop implementation\"",
+  "ghdp --json orchestrate handoff --summary \"Paused\" --next-action \"Resume tomorrow\"",
+]
+common_errors = [
+  { code="E_ORCHESTRATE_RUN_MISSING", when="the branch runtime or active run key does not exist yet" },
+]
+
+[[commands]]
+id = "orchestrate:front-door"
+cli = "ghdp orchestrate front-door [--repo-root <path>]"
+category = "orchestrate"
+tags = ["orchestrate", "front-door", "intake", "planning"]
+summary = "Run the Phase 1 front-door gates: intake sufficiency, work-type classification, autonomy assessment, context discovery, parallel-work awareness, and POA refresh."
+flags = [
+  { cli="--repo-root", type="path", required=false, default="(current git repo)", help="Optional repo root override" },
+]
+examples = [
+  "ghdp orchestrate front-door",
+  "ghdp --json orchestrate front-door",
+  "ghdp orchestrate front-door --repo-root C:/path/to/repo",
+]
+common_errors = [
+  { code="E_ORCHESTRATE_RUN_MISSING", when="the branch runtime or active run key does not exist yet" },
+  { code="E_ORCHESTRATE_INTENT_MISSING", when="the current branch does not have .ghdp/frbr/intent.json" },
+]
+
+[[commands]]
+id = "orchestrate:review"
+cli = "ghdp orchestrate review [--scope <all|architecture|uxdx>] [--repo-root <path>]"
+category = "orchestrate"
+tags = ["orchestrate", "review", "architecture", "uxdx"]
+summary = "Run the Stage D review layer for the current branch run and persist architecture plus UX/DX findings."
+flags = [
+  { cli="--scope", type="string", required=false, default="all", allowed=["all","architecture","uxdx"], help="Limit the review layer to one review scope" },
+  { cli="--repo-root", type="path", required=false, default="(current git repo)", help="Optional repo root override" },
+]
+examples = [
+  "ghdp orchestrate review",
+  "ghdp orchestrate review --scope architecture",
+  "ghdp --json orchestrate review --repo-root C:/path/to/repo",
+]
+common_errors = [
+  { code="E_ORCHESTRATE_REVIEW_SCOPE_INVALID", when="--scope is not all, architecture, or uxdx" },
+  { code="E_ORCHESTRATE_RUN_MISSING", when="the branch runtime or active run key does not exist yet" },
+]
+
+[[commands]]
+id = "orchestrate:execution-prep"
+cli = "ghdp orchestrate execution-prep [--repo-root <path>]"
+category = "orchestrate"
+tags = ["orchestrate", "execution", "testing", "skills", "plugins"]
+summary = "Generate the Stage E execution-layer artifacts and bind the repo-level skills/plugins required for implementation, regression, coverage, and developer test execution."
+flags = [
+  { cli="--repo-root", type="path", required=false, default="(current git repo)", help="Optional repo root override" },
+]
+examples = [
+  "ghdp orchestrate execution-prep",
+  "ghdp --json orchestrate execution-prep",
+  "ghdp orchestrate execution-prep --repo-root C:/path/to/repo",
+]
+common_errors = [
+  { code="E_ORCHESTRATE_RUN_MISSING", when="the branch runtime or active run key does not exist yet" },
+  { code="E_ORCHESTRATE_STAGE_ORDER", when="Stage D review has not completed yet" },
+  { code="E_ORCHESTRATE_SKILL_PAYLOAD_MISSING", when="repo-level Stage E skill payloads are missing under .ghdp/skills/<id>/SKILL.md" },
+  { code="E_ORCHESTRATE_PLUGIN_PAYLOAD_MISSING", when="repo-level Stage E plugin payloads are missing under .ghdp/plugins/<id>/plugin.json" },
+]
+
+[[commands]]
+id = "orchestrate:implement"
+cli = "ghdp orchestrate implement [--repo-root <path>]"
+category = "orchestrate"
+tags = ["orchestrate", "implementation", "stage11", "agents"]
+summary = "Activate Stage 11 implementation using the repo-level implementation agent contract and write the implementation packet."
+flags = [
+  { cli="--repo-root", type="path", required=false, default="(current git repo)", help="Optional repo root override" },
+]
+examples = [
+  "ghdp orchestrate implement",
+  "ghdp --json orchestrate implement",
+  "ghdp orchestrate implement --repo-root C:/path/to/repo",
+]
+common_errors = [
+  { code="E_ORCHESTRATE_RUN_MISSING", when="the branch runtime or active run key does not exist yet" },
+  { code="E_ORCHESTRATE_STAGE_ORDER", when="Stage E execution prep has not completed yet" },
+  { code="E_ORCHESTRATE_IMPLEMENTATION_PLAN_MISSING", when="implementation_plan.md from execution prep is missing" },
+  { code="E_ORCHESTRATE_SKILL_PAYLOAD_MISSING", when="the implementation agent declares a skill that has no .ghdp/skills/<id>/SKILL.md payload" },
+  { code="E_ORCHESTRATE_PLUGIN_PAYLOAD_MISSING", when="the implementation agent declares a plugin that has no .ghdp/plugins/<id>/plugin.json payload" },
+]
+
+[[commands]]
+id = "orchestrate:commit-push"
+cli = "ghdp orchestrate commit-push [--repo-root <path>]"
+category = "orchestrate"
+tags = ["orchestrate", "commit", "push", "stage12", "git"]
+summary = "Run Stage 12 commit/push using repo-backed implementation artifacts and push the active branch."
+flags = [
+  { cli="--repo-root", type="path", required=false, default="(current git repo)", help="Optional repo root override" },
+]
+examples = [
+  "ghdp orchestrate commit-push",
+  "ghdp --json orchestrate commit-push",
+  "ghdp orchestrate commit-push --repo-root C:/path/to/repo",
+]
+common_errors = [
+  { code="E_ORCHESTRATE_RUN_MISSING", when="the branch runtime or active run key does not exist yet" },
+  { code="E_ORCHESTRATE_STAGE_ORDER", when="Stage 11 implementation has not been activated yet" },
+  { code="E_ORCHESTRATE_IMPLEMENTATION_SUMMARY_MISSING", when="implementation_summary.md from Stage 11 is missing" },
+  { code="E_ORCHESTRATE_NOTHING_TO_COMMIT", when="there are no staged repository changes to commit" },
+  { code="E_ORCHESTRATE_REMOTE_MISSING", when="the repository does not have a configured git remote" },
+]
+
+[[commands]]
+id = "orchestrate:qa-scenarios"
+cli = "ghdp orchestrate qa-scenarios [--repo-root <path>]"
+category = "orchestrate"
+tags = ["orchestrate", "qa", "stage13", "agents", "testing"]
+summary = "Run Stage 13 QA scenario design using the repo-level QA agent contract and produce a repo-backed scenario packet."
+flags = [
+  { cli="--repo-root", type="path", required=false, default="(current git repo)", help="Optional repo root override" },
+]
+examples = [
+  "ghdp orchestrate qa-scenarios",
+  "ghdp --json orchestrate qa-scenarios",
+  "ghdp orchestrate qa-scenarios --repo-root C:/path/to/repo",
+]
+common_errors = [
+  { code="E_ORCHESTRATE_RUN_MISSING", when="the branch runtime or active run key does not exist yet" },
+  { code="E_ORCHESTRATE_STAGE_ORDER", when="Stage 12 commit/push has not completed yet" },
+  { code="E_ORCHESTRATE_IMPLEMENTATION_PLAN_MISSING", when="implementation_plan.md from execution prep is missing" },
+  { code="E_ORCHESTRATE_INTENT_MISSING", when="the repo intent file under .ghdp/frbr/intent.json is missing" },
+  { code="E_ORCHESTRATE_SKILL_PAYLOAD_MISSING", when="the QA agent declares a skill that has no .ghdp/skills/<id>/SKILL.md payload" },
+  { code="E_ORCHESTRATE_PLUGIN_PAYLOAD_MISSING", when="the QA agent declares a plugin that has no .ghdp/plugins/<id>/plugin.json payload" },
+]
+
+[[commands]]
+id = "orchestrate:regression"
+cli = "ghdp orchestrate regression [--repo-root <path>]"
+category = "orchestrate"
+tags = ["orchestrate", "regression", "stage14", "agents", "testing"]
+summary = "Run Stage 14 touched-scope regression validation using the repo-level regression agent contract and produce a repo-backed regression packet."
+flags = [
+  { cli="--repo-root", type="path", required=false, default="(current git repo)", help="Optional repo root override" },
+]
+examples = [
+  "ghdp orchestrate regression",
+  "ghdp --json orchestrate regression",
+  "ghdp orchestrate regression --repo-root C:/path/to/repo",
+]
+common_errors = [
+  { code="E_ORCHESTRATE_RUN_MISSING", when="the branch runtime or active run key does not exist yet" },
+  { code="E_ORCHESTRATE_STAGE_ORDER", when="Stage 13 QA scenario design has not completed yet" },
+  { code="E_ORCHESTRATE_REGRESSION_PLAN_MISSING", when="regression_plan.md from execution prep is missing" },
+  { code="E_ORCHESTRATE_QA_PLAN_MISSING", when="qa_scenario_plan.md from Stage 13 is missing" },
+  { code="E_ORCHESTRATE_SKILL_PAYLOAD_MISSING", when="the regression agent declares a skill that has no .ghdp/skills/<id>/SKILL.md payload" },
+  { code="E_ORCHESTRATE_PLUGIN_PAYLOAD_MISSING", when="the regression agent declares a plugin that has no .ghdp/plugins/<id>/plugin.json payload" },
+]
+
+[[commands]]
+id = "orchestrate:coverage"
+cli = "ghdp orchestrate coverage [--repo-root <path>]"
+category = "orchestrate"
+tags = ["orchestrate", "coverage", "stage15", "agents", "testing"]
+summary = "Run Stage 15 new test coverage authoring using the repo-level coverage agent contract and produce a repo-backed coverage backlog."
+flags = [
+  { cli="--repo-root", type="path", required=false, default="(current git repo)", help="Optional repo root override" },
+]
+examples = [
+  "ghdp orchestrate coverage",
+  "ghdp --json orchestrate coverage",
+  "ghdp orchestrate coverage --repo-root C:/path/to/repo",
+]
+common_errors = [
+  { code="E_ORCHESTRATE_RUN_MISSING", when="the branch runtime or active run key does not exist yet" },
+  { code="E_ORCHESTRATE_STAGE_ORDER", when="Stage 14 touched-scope regression validation has not completed yet" },
+  { code="E_ORCHESTRATE_COVERAGE_PLAN_MISSING", when="coverage_plan.md from execution prep is missing" },
+  { code="E_ORCHESTRATE_REGRESSION_SELECTION_MISSING", when="regression_selection.md from Stage 14 is missing" },
+  { code="E_ORCHESTRATE_QA_PLAN_MISSING", when="qa_scenario_plan.md from Stage 13 is missing" },
+  { code="E_ORCHESTRATE_SKILL_PAYLOAD_MISSING", when="the coverage agent declares a skill that has no .ghdp/skills/<id>/SKILL.md payload" },
+  { code="E_ORCHESTRATE_PLUGIN_PAYLOAD_MISSING", when="the coverage agent declares a plugin that has no .ghdp/plugins/<id>/plugin.json payload" },
+]
+
+[[commands]]
+id = "orchestrate:test-execution"
+cli = "ghdp orchestrate test-execution [--repo-root <path>]"
+category = "orchestrate"
+tags = ["orchestrate", "test-execution", "stage16", "agents", "testing"]
+summary = "Run Stage 16 developer test execution using the repo-level execution agent contract and execute the selected regression and coverage tests."
+flags = [
+  { cli="--repo-root", type="path", required=false, default="(current git repo)", help="Optional repo root override" },
+]
+examples = [
+  "ghdp orchestrate test-execution",
+  "ghdp --json orchestrate test-execution",
+  "ghdp orchestrate test-execution --repo-root C:/path/to/repo",
+]
+common_errors = [
+  { code="E_ORCHESTRATE_RUN_MISSING", when="the branch runtime or active run key does not exist yet" },
+  { code="E_ORCHESTRATE_STAGE_ORDER", when="Stage 15 new test coverage authoring has not completed yet" },
+  { code="E_ORCHESTRATE_QA_PLAN_MISSING", when="qa_scenario_plan.md from Stage 13 is missing" },
+  { code="E_ORCHESTRATE_REGRESSION_SELECTION_MISSING", when="regression_selection.md from Stage 14 is missing" },
+  { code="E_ORCHESTRATE_COVERAGE_BACKLOG_MISSING", when="coverage_backlog.md from Stage 15 is missing" },
+  { code="E_ORCHESTRATE_TEST_SELECTION_EMPTY", when="no executable validation targets could be resolved from the regression and coverage artifacts" },
+  { code="E_LOCK_TIMEOUT", when="another local test-execution stage already holds the execution lock" },
+]
+
+[[commands]]
+id = "orchestrate:binary-validate"
+cli = "ghdp orchestrate binary-validate [--repo-root <path>]"
+category = "orchestrate"
+tags = ["orchestrate", "binary-validation", "stage17", "agents", "testing"]
+summary = "Run Stage 17 packaged artifact validation by installing GHDP through pipx and smoke-validating the packaged CLI path."
+flags = [
+  { cli="--repo-root", type="path", required=false, default="(current git repo)", help="Optional repo root override" },
+]
+examples = [
+  "ghdp orchestrate binary-validate",
+  "ghdp --json orchestrate binary-validate",
+  "ghdp orchestrate binary-validate --repo-root C:/path/to/repo",
+]
+common_errors = [
+  { code="E_ORCHESTRATE_RUN_MISSING", when="the branch runtime or active run key does not exist yet" },
+  { code="E_ORCHESTRATE_STAGE_ORDER", when="Stage 16 developer test execution has not completed yet" },
+  { code="E_ORCHESTRATE_PACKAGE_ROOT_MISSING", when="a package root could not be resolved for pipx validation" },
+  { code="E_ORCHESTRATE_PACKAGE_ROOT_AMBIGUOUS", when="multiple possible package roots were found and GHDP could not safely choose one" },
+  { code="E_ORCHESTRATE_BINARY_INSTALL_FAILED", when="pipx could not install the packaged CLI from the resolved package root" },
+  { code="E_ORCHESTRATE_BINARY_SMOKE_FAILED", when="the installed packaged CLI could not execute the smoke command path" },
+  { code="E_LOCK_TIMEOUT", when="another local pipx-based validation already holds the install lock" },
+]
+
+[[commands]]
+id = "orchestrate:release-readiness"
+cli = "ghdp orchestrate release-readiness [--repo-root <path>]"
+category = "orchestrate"
+tags = ["orchestrate", "release-readiness", "stage18", "agents", "release"]
+summary = "Run Stage 18 release readiness review using the accumulated execution and artifact-validation evidence."
+flags = [
+  { cli="--repo-root", type="path", required=false, default="(current git repo)", help="Optional repo root override" },
+]
+examples = [
+  "ghdp orchestrate release-readiness",
+  "ghdp --json orchestrate release-readiness",
+  "ghdp orchestrate release-readiness --repo-root C:/path/to/repo",
+]
+common_errors = [
+  { code="E_ORCHESTRATE_RUN_MISSING", when="the branch runtime or active run key does not exist yet" },
+  { code="E_ORCHESTRATE_STAGE_ORDER", when="Stage 17 packaged artifact validation has not completed yet" },
+  { code="E_ORCHESTRATE_SKILL_PAYLOAD_MISSING", when="the release-readiness agent declares a skill that has no .ghdp/skills/<id>/SKILL.md payload" },
+  { code="E_ORCHESTRATE_PLUGIN_PAYLOAD_MISSING", when="the release-readiness agent declares a plugin that has no .ghdp/plugins/<id>/plugin.json payload" },
+]
+
+[[commands]]
+id = "orchestrate:prerelease"
+cli = "ghdp orchestrate prerelease [--repo-root <path>]"
+category = "orchestrate"
+tags = ["orchestrate", "prerelease", "stage19", "agents", "release"]
+summary = "Run Stage 19 prerelease creation using the real release engine and record either the created prerelease or the blocking reason."
+flags = [
+  { cli="--repo-root", type="path", required=false, default="(current git repo)", help="Optional repo root override" },
+]
+examples = [
+  "ghdp orchestrate prerelease",
+  "ghdp --json orchestrate prerelease",
+  "ghdp orchestrate prerelease --repo-root C:/path/to/repo",
+]
+common_errors = [
+  { code="E_ORCHESTRATE_RUN_MISSING", when="the branch runtime or active run key does not exist yet" },
+  { code="E_ORCHESTRATE_STAGE_ORDER", when="Stage 18 release readiness review has not completed yet" },
+  { code="E_RELEASE_NOTES_MISSING", when="the release summary file is missing from the repo" },
+  { code="E_RELEASE_NOTES_STALE", when="the existing release engine refuses prerelease creation until notes are refreshed on the branch" },
+  { code="E_GH_NOT_AUTHENTICATED", when="GitHub auth is unavailable for release creation" },
+]
+
+[[commands]]
+id = "orchestrate:published-prerelease-retest"
+cli = "ghdp orchestrate published-prerelease-retest [--repo-root <path>]"
+category = "orchestrate"
+tags = ["orchestrate", "prerelease", "stage19b", "release", "artifact"]
+summary = "Download the actual published prerelease asset for the current host, validate it directly, and record repo-backed evidence before PR progression."
+flags = [
+  { cli="--repo-root", type="path", required=false, default="(current git repo)", help="Repo root override" },
+]
+examples = [
+  "ghdp orchestrate published-prerelease-retest",
+  "ghdp --json orchestrate published-prerelease-retest",
+  "ghdp orchestrate published-prerelease-retest --repo-root C:/path/to/repo",
+]
+common_errors = [
+  { code="E_ORCHESTRATE_STAGE_ORDER", when="Stage 19 has not completed yet or prerelease_plan.json is missing required details" },
+  { code="E_ORCHESTRATE_PUBLISHED_ASSET_MISSING", when="the expected released asset could not be downloaded for the current host" },
+  { code="E_CMD_FAILED", when="the downloaded published artifact fails direct validation" },
+]
+
+[[commands]]
+id = "orchestrate:release-notes-refresh"
+cli = "ghdp orchestrate release-notes-refresh [--repo-root <path>]"
+category = "orchestrate"
+tags = ["orchestrate", "release-notes", "stage20", "release"]
+summary = "Run Stage 20 release-notes refresh using repo-backed run artifacts and create the freshness commit for prerelease gating."
+flags = [
+  { cli="--repo-root", type="path", required=false, default="(current git repo)", help="Repo root override" },
+]
+examples = [
+  "ghdp orchestrate release-notes-refresh",
+  "ghdp --json orchestrate release-notes-refresh",
+  "ghdp orchestrate release-notes-refresh --repo-root C:/path/to/repo",
+]
+common_errors = []
+
+[[commands]]
+id = "orchestrate:asset-lifecycle"
+cli = "ghdp orchestrate asset-lifecycle"
+category = "orchestrate"
+tags = ["orchestrate", "asset", "sync", "capability"]
+summary = "Run the lightweight asset lifecycle path for GHDP-managed capability assets across release-backed and marketplace-backed families (inventory, create, revise, version-update, remove)."
+flags = [
+  { cli="--operation", type="string", required=false, default="inventory", allowed=["inventory","create","revise","update_versioned_asset","remove"], help="Asset lifecycle operation" },
+  { cli="--asset-target", type="string", required=false, default="", help="Repo-defined asset target id from .ghdp/plugins/asset-lifecycle-sync/plugin.json" },
+  { cli="--new-version", type="string", required=false, default="", help="Semantic version for versioned asset revisions such as toolset minimum version changes" },
+  { cli="--payload-file", type="path", required=false, default="", help="Optional JSON payload file for generic create/revise/remove capability operations" },
+  { cli="--provider-family", type="string", required=false, default="", allowed=["github_release","marketplace_repo"], help="Optional provider family override" },
+  { cli="--repo-root", type="path", required=false, default="(current repo)", help="Optional repo root override" },
+]
+examples = [
+  "ghdp orchestrate asset-lifecycle --operation inventory",
+  "ghdp orchestrate asset-lifecycle --operation update_versioned_asset --asset-target toolset_codex_version --new-version 0.128.0",
+  "ghdp orchestrate asset-lifecycle --operation create --provider-family github_release --payload-file C:/path/to/release_payload.json",
+]
+common_errors = [
+  { code="E_ASSET_LIFECYCLE_OPERATION_UNSUPPORTED", when="operation is not one of the supported asset lifecycle operations" },
+  { code="E_ASSET_LIFECYCLE_TARGET_MISSING", when="asset target is not defined in the repo plugin contract" },
+  { code="E_ASSET_LIFECYCLE_TARGET_UNSUPPORTED", when="asset target exists in concept but does not yet have an executable implementation path" },
+]
+
+[[commands]]
+id = "orchestrate:pr-integrate"
+cli = "ghdp orchestrate pr-integrate [--repo-root <path>]"
+category = "orchestrate"
+tags = ["orchestrate", "pr", "jira", "stage21", "integration"]
+summary = "Run Stage 21 PR and external integration using portable GitHub CLI and ACLI-backed contracts."
+flags = [
+  { cli="--repo-root", type="path", required=false, default="(current git repo)", help="Repo root override" },
+]
+examples = [
+  "ghdp orchestrate pr-integrate",
+  "ghdp --json orchestrate pr-integrate",
+  "ghdp orchestrate pr-integrate --repo-root C:/path/to/repo",
+]
+common_errors = []
+
+[[commands]]
+id = "orchestrate:historian-closeout"
+cli = "ghdp orchestrate historian-closeout [--repo-root <path>]"
+category = "orchestrate"
+tags = ["orchestrate", "historian", "stage22", "traceability"]
+summary = "Run Stage 22 traceability capture and finalize the branch run packet."
+flags = [
+  { cli="--repo-root", type="path", required=false, default="(current git repo)", help="Repo root override" },
+]
+examples = [
+  "ghdp orchestrate historian-closeout",
+  "ghdp --json orchestrate historian-closeout",
+  "ghdp orchestrate historian-closeout --repo-root C:/path/to/repo",
+]
+common_errors = []
+
+[[commands]]
+id = "orchestrate:finalize"
+cli = "ghdp orchestrate finalize [--repo-root <path>]"
+category = "orchestrate"
+tags = ["orchestrate", "finalize", "merge-hygiene", "memory"]
+summary = "Archive runtime-only branch orchestrate artifacts, promote the durable closeout summary into shared memory, and prune the branch runtime folder before merge."
+flags = [
+  { cli="--repo-root", type="path", required=false, default="(current git repo)", help="Repo root override" },
+]
+examples = [
+  "ghdp orchestrate finalize",
+  "ghdp --json orchestrate finalize",
+  "ghdp orchestrate finalize --repo-root C:/path/to/repo",
+]
+common_errors = [
+  { code="E_ORCHESTRATE_STAGE_ORDER", when="Stage 22 traceability capture has not completed yet" },
+  { code="E_ORCHESTRATE_MERGE_HYGIENE_CONFIG_MISSING", when=".ghdp/orchestrate/merge-hygiene.json is missing" },
+  { code="E_ORCHESTRATE_MERGE_HYGIENE_CONFIG_INVALID", when="merge-hygiene retention or archive policy is invalid" },
+]
+
+[[commands]]
+id = "orchestrate:verify-merge-hygiene"
+cli = "ghdp orchestrate verify-merge-hygiene [--repo-root <path>]"
+category = "orchestrate"
+tags = ["orchestrate", "verify", "merge-hygiene", "ci"]
+summary = "Non-mutating merge gate that verifies runtime-only orchestrate files are pruned and the promoted closeout receipt is present."
+flags = [
+  { cli="--repo-root", type="path", required=false, default="(current git repo)", help="Repo root override" },
+]
+examples = [
+  "ghdp orchestrate verify-merge-hygiene",
+  "ghdp --json orchestrate verify-merge-hygiene",
+  "ghdp orchestrate verify-merge-hygiene --repo-root C:/path/to/repo",
+]
+common_errors = [
+  { code="E_ORCHESTRATE_BRANCH_UNRESOLVED", when="the current branch cannot be resolved for verification" },
+  { code="E_ORCHESTRATE_MERGE_HYGIENE_FAILED", when="runtime-only branch artifacts or the promoted closeout receipt are still missing or present in the wrong state" },
+]
+
+[[commands]]
+id = "orchestrate:subagent-scenario"
+cli = "ghdp orchestrate subagent-scenario [--scenario-id <id>] [--execute-provider] [--repo-root <path>]"
+category = "orchestrate"
+tags = ["orchestrate", "subagents", "scenario", "provider-adapters"]
+summary = "Run a repo-defined sub-agent scenario through the provider-adapter and topology contracts, optionally executing provider outputs."
+flags = [
+  { cli="--scenario-id", type="string", required=false, default="new_feature_subagent_smoke", help="Repo-defined scenario id" },
+  { cli="--execute-provider", type="bool", required=false, default=false, help="Execute provider outputs instead of planning only" },
+  { cli="--repo-root", type="path", required=false, default="(current git repo)", help="Repo root override" },
+]
+examples = [
+  "ghdp orchestrate subagent-scenario",
+  "ghdp orchestrate subagent-scenario --execute-provider",
+  "ghdp --json orchestrate subagent-scenario --scenario-id new_feature_subagent_smoke",
+]
+common_errors = []
+
+[[commands]]
+id = "schedule"
+cli = "ghdp schedule"
+category = "schedule"
+tags = ["schedule", "guided", "interactive"]
+summary = "Open the guided scheduler flow in interactive mode."
+notes = "Shows numbered scheduler actions and prompts for missing inputs in normal interactive mode. Explicit subcommands remain the primary path for automation and `--non-interactive` usage."
+flags = []
+examples = [
+  "ghdp schedule",
+]
+common_errors = [
+  { code="E_SCHEDULER_ASSET_SYNC_FAILED", when="the targeted scheduler capability pre-hook cannot hydrate missing or incomplete scheduler assets" },
+]
+
+[[commands]]
+id = "schedule:list"
+cli = "ghdp schedule list [--task-id <id>]"
+category = "schedule"
+tags = ["schedule", "list", "status", "sync"]
+summary = "List synced user-scoped scheduler tasks and current runtime status."
+notes = "Scheduler job definitions are consumed from synced external Git artifacts only. A targeted `background-scheduler` sync pre-hook runs before public scheduler actions. Runtime providers currently map to Windows Task Scheduler, macOS launchd, and Linux cron depending on the host."
+flags = [
+  { cli="--task-id/--job-id", type="string", required=false, help="Limit to one task id" },
+]
+examples = [
+  "ghdp schedule list",
+]
+common_errors = []
+
+[[commands]]
+id = "schedule:check"
+cli = "ghdp schedule check [--task-id <id>]"
+category = "schedule"
+tags = ["schedule", "check", "repair"]
+summary = "Check user-scoped scheduler tasks for missing tasks, drift, and unsupported phase-1 policy."
+flags = [
+  { cli="--task-id/--job-id", type="string", required=false, help="Limit to one task id" },
+]
+examples = [
+  "ghdp schedule check",
+  "ghdp schedule check --task-id sync-run-background",
+]
+common_errors = []
+
+[[commands]]
+id = "schedule:apply"
+cli = "ghdp schedule apply [--task-id <id>] [--auto-approve] [--dry-run]"
+category = "schedule"
+tags = ["schedule", "apply", "repair", "sync"]
+summary = "Create or update user-scoped scheduled tasks from synced capability artifacts."
+notes = "If the installed scheduler config is missing, empty, or structurally incomplete, GHDP syncs first and then reconciles the local scheduler through the host provider (Windows Task Scheduler, launchd, or cron)."
+flags = [
+  { cli="--task-id/--job-id", type="string", required=false, help="Limit to one task id" },
+  { cli="--auto-approve/--yes", type="bool", required=false, default=false, help="Apply without confirmation" },
+  { cli="--dry-run", type="bool", required=false, default=false, help="Preview apply actions without making changes" },
+]
+examples = [
+  "ghdp schedule apply --auto-approve",
+  "ghdp schedule apply --dry-run",
+]
+common_errors = [
+  { code="E_SCHEDULE_CONFIRM_REQUIRED", when="non-interactive mode requires --auto-approve for local scheduler changes" },
+  { code="E_SCHEDULER_ASSET_SYNC_FAILED", when="the targeted scheduler capability pre-hook cannot install or refresh scheduler assets" },
+  { code="E_SCHEDULE_PROVIDER_UNSUPPORTED", when="the host platform does not have a supported scheduler provider implementation" },
+  { code="E_SCHEDULE_POLICY_UNSUPPORTED", when="a task artifact declares phase-1 policy that the current provider does not yet support" },
+]
+
+[[commands]]
+id = "schedule:repair"
+cli = "ghdp schedule repair [--task-id <id>] [--auto-approve] [--dry-run]"
+category = "schedule"
+tags = ["schedule", "repair", "health"]
+summary = "Repair missing or drifted user-scoped scheduled tasks and wrapper files."
+flags = [
+  { cli="--task-id/--job-id", type="string", required=false, help="Limit to one task id" },
+  { cli="--auto-approve/--yes", type="bool", required=false, default=false, help="Repair without confirmation" },
+  { cli="--dry-run", type="bool", required=false, default=false, help="Preview repair actions without making changes" },
+]
+examples = [
+  "ghdp schedule repair --task-id sync-run-background --auto-approve",
+  "ghdp schedule repair --task-id sync-run-background --dry-run",
+]
+common_errors = [
+  { code="E_SCHEDULE_CONFIRM_REQUIRED", when="non-interactive mode requires --auto-approve for local scheduler changes" },
+  { code="E_SCHEDULER_ASSET_SYNC_FAILED", when="the targeted scheduler capability pre-hook cannot install or refresh scheduler assets" },
+  { code="E_SCHEDULE_POLICY_UNSUPPORTED", when="a task artifact declares phase-1 policy that the current provider does not yet support" },
+]
+
+[[commands]]
+id = "schedule:remove"
+cli = "ghdp schedule remove [--task-id <id>] [--auto-approve]"
+category = "schedule"
+tags = ["schedule", "remove", "cleanup"]
+summary = "Remove registered user-scoped scheduled tasks and wrapper files for selected synced task artifacts."
+flags = [
+  { cli="--task-id/--job-id", type="string", required=false, help="Limit to one task id" },
+  { cli="--auto-approve/--yes", type="bool", required=false, default=false, help="Remove without confirmation" },
+]
+examples = [
+  "ghdp schedule remove --task-id sync-run-background --auto-approve",
+]
+common_errors = [
+  { code="E_SCHEDULE_CONFIRM_REQUIRED", when="non-interactive mode requires --auto-approve for local scheduler changes" },
+]
+
+[[commands]]
+id = "schedule:run"
+cli = "ghdp schedule run --task-id <id>"
+category = "schedule"
+tags = ["schedule", "run", "runtime", "force"]
+summary = "Force-run one synced user-scoped scheduler task immediately."
+flags = [
+  { cli="--task-id/--job-id", type="string", required=true, help="Scheduler task id to execute now" },
+]
+examples = [
+  "ghdp schedule run --task-id sync-run-background",
+]
+common_errors = [
+  { code="E_SCHEDULER_ASSET_SYNC_FAILED", when="the targeted scheduler capability pre-hook cannot install or refresh scheduler assets" },
+  { code="E_SCHEDULE_JOB_NOT_FOUND", when="the selected scheduler task cannot be resolved from the synced capability assets" },
+]
+
+[[commands]]
+id = "release"
+cli = "ghdp release"
+category = "release"
+tags = ["release", "jenkins", "guided"]
+summary = "Open the guided Jenkins-backed release flow selector; bare `ghdp release` then runs the same flow as the explicit subcommands. In release 1 this command family is admin-only through `release.manage`."
+flags = []
+examples = [
+  "ghdp release",
+]
+common_errors = [
+  { code="E_ACCESS_DENIED", when="running release without `release.manage`" },
+  { code="E_RELEASE_ACTION_REQUIRED", when="used in non-interactive mode without an explicit release subcommand" },
+]
+
+[[commands]]
+id = "release:feature-to-dev"
+cli = "ghdp release feature-to-dev [--branch <feature/...>] [--repo <repo|owner/repo>] [--no-deploy-on-sqa] [--refresh-jenkins-contract] [--yes]"
+category = "release"
+tags = ["release", "jenkins", "pull-request"]
+summary = "Trigger the Jenkins feature-to-dev flow with smart defaults, a repo-local Jenkins contract derived from Jenkinsfile, direct Jenkins API execution by default, a live status presenter during long waits, and a GitHub CLI PR lookup when Jenkins returns only a build URL. This flow is admin-only through `release.manage`."
+flags = [
+  { cli="--branch", type="string", required=false, default="(current feature branch when available)", help="Feature branch to promote" },
+  { cli="--repo", type="string", required=false, default="(resolved from local repo)", help="Repo name or owner/repo override" },
+  { cli="--deploy-on-sqa/--no-deploy-on-sqa", type="bool", required=false, default=false, help="Local GHDP feature-to-dev always uses false; passing --deploy-on-sqa is rejected" },
+  { cli="--refresh-jenkins-contract", type="bool", required=false, default=false, help="Refresh the repo-local Jenkins contract from Jenkinsfile before running" },
+  { cli="--yes/--confirm", type="bool", required=false, default=false, help="Skip final confirmation prompt" },
+]
+examples = [
+  "ghdp release feature-to-dev",
+  "ghdp release feature-to-dev --branch feature/EPPE-7239-TECHNICAL-jenkins-release-management-direct-skill-api",
+]
+common_errors = [
+  { code="E_ACCESS_DENIED", when="running release feature-to-dev without `release.manage`" },
+  { code="E_RELEASE_BRANCH_INVALID", when="branch is not a feature branch" },
+  { code="E_RELEASE_DEPLOY_ON_SQA_UNSUPPORTED", when="local feature-to-dev is invoked with --deploy-on-sqa" },
+  { code="E_RELEASE_GITHUB_TOKEN_MISSING", when="GitHub token cannot be resolved for PR creation" },
+  { code="E_RELEASE_JENKINS_TOKEN_INVALID", when="stored Jenkins token is rejected and the user declines or cannot refresh it" },
+  { code="E_RELEASE_JENKINS_AUTH", when="Jenkins rejects the saved or provided credentials during direct feature-to-dev execution" },
+  { code="E_RELEASE_JENKINS_TLS", when="the direct Jenkins API connection fails TLS verification; set GHDP_JENKINS_CA_BUNDLE to a PEM bundle containing the Jenkins issuer if needed" },
+  { code="E_RELEASE_JENKINS_UNREACHABLE", when="GHDP cannot reach Jenkins over the direct HTTPS API" },
+]
+
+[[commands]]
+id = "release:make-release"
+cli = "ghdp release make-release [--repo <repo|owner/repo>] [--release-type <major|minor|bugfix>] [--parent <KEY>Summary>] [--param KEY=VALUE] [--refresh-jenkins-contract] [--yes]"
+category = "release"
+tags = ["release", "jenkins", "main"]
+summary = "Trigger the Jenkins make-release flow with a repo-local Jenkins contract, direct Jenkins API execution by default, and interactive prompts for repo-specific parameters. This flow is admin-only through `release.manage`."
+flags = [
+  { cli="--repo", type="string", required=false, default="(resolved from local repo)", help="Repo name or owner/repo override" },
+  { cli="--release-type", type="string", required=false, default="minor", allowed=["major","minor","bugfix"], help="Release type" },
+  { cli="--parent", type="string", required=false, default="(prompted or blank)", help="Parent release ticket in KEY>Summary format" },
+  { cli="--param", type="string[]", required=false, default=[], help="Extra Jenkins params as KEY=VALUE; may be repeated" },
+  { cli="--tested-ok-on-uat/--not-tested-ok-on-uat", type="bool", required=false, default=false, help="Forward TESTED_OK_ON_UAT to Jenkins params" },
+  { cli="--merge-pr/--no-merge-pr", type="bool", required=false, default=true, help="Forward MERGE_PR to Jenkins params" },
+  { cli="--tag-release/--no-tag-release", type="bool", required=false, default=true, help="Forward TAG_RELEASE to Jenkins params" },
+  { cli="--deploy/--no-deploy", type="bool", required=false, default=false, help="Forward DEPLOY to Jenkins params" },
+  { cli="--refresh-jenkins-contract", type="bool", required=false, default=false, help="Refresh the repo-local Jenkins contract from Jenkinsfile before running" },
+  { cli="--yes/--confirm", type="bool", required=false, default=false, help="Skip final confirmation prompt" },
+]
+examples = [
+  "ghdp release make-release",
+  "ghdp release make-release --release-type bugfix --param TARGET_WORKSPACE=dev",
+]
+common_errors = [
+  { code="E_RELEASE_TYPE_INVALID", when="release type is not major, minor, or bugfix" },
+  { code="E_RELEASE_PARAM_INVALID", when="an extra Jenkins parameter is not formatted as KEY=VALUE" },
+  { code="E_RELEASE_JENKINS_TOKEN_INVALID", when="stored Jenkins token is rejected and the user declines or cannot refresh it" },
+  { code="E_RELEASE_JENKINS_AUTH", when="Jenkins rejects the saved or provided credentials during direct make-release execution" },
+  { code="E_RELEASE_JENKINS_TLS", when="the direct Jenkins API connection fails TLS verification; set GHDP_JENKINS_CA_BUNDLE to a PEM bundle containing the Jenkins issuer if needed" },
+  { code="E_RELEASE_JENKINS_UNREACHABLE", when="GHDP cannot reach Jenkins over the direct HTTPS API" },
+]
+
+[[commands]]
+id = "repo"
+cli = "ghdp repo"
+category = "repo"
+tags = ["repo", "readiness", "guided"]
+summary = "Open the guided repo-readiness flow in interactive mode."
+flags = []
+examples = [
+  "ghdp repo",
+]
+common_errors = [
+  { code="E_REPO_ACTION_REQUIRED", when="used in non-interactive mode without an explicit repo subcommand" },
+]
+
+[[commands]]
+id = "repo:ready"
+cli = "ghdp repo ready [--report|--fix|--verify|--fix-jenkins-contract|--refresh-jenkins-contract] [--repo-root <path>]"
+category = "repo"
+tags = ["repo", "readiness", "governance"]
+summary = "Run GHDP repo readiness in report, fix, or verify mode, or maintain the repo-local Jenkins contract. In release 1 this contributor/internal surface is admin-only and prerelease-only."
+flags = [
+  { cli="--report", type="bool", required=false, default=false, help="Read-only readiness report" },
+  { cli="--fix", type="bool", required=false, default=false, help="Scaffold missing files and apply safe updates" },
+  { cli="--verify", type="bool", required=false, default=false, help="Exit non-zero if the repo is not compliant" },
+  { cli="--fix-jenkins-contract", type="bool", required=false, default=false, help="Create the repo-local Jenkins contract from Jenkinsfile when missing or invalid" },
+  { cli="--refresh-jenkins-contract", type="bool", required=false, default=false, help="Force-refresh the repo-local Jenkins contract from the current Jenkinsfile" },
+  { cli="--repo-root", type="path", required=false, default="(current git root)", help="Advanced repo root override" },
+]
+examples = [
+  "ghdp repo ready --report",
+  "ghdp repo ready --fix",
+  "ghdp repo ready --fix-jenkins-contract",
+  "ghdp repo ready --refresh-jenkins-contract --repo-root C:\\repo",
+  "ghdp repo ready --verify --repo-root C:\\repo",
+]
+common_errors = [
+  { code="E_ACCESS_DENIED", when="running repo ready without `platform.internal`" },
+  { code="E_RELEASE_CHANNEL_BLOCKED", when="running repo ready from a stable build" },
+  { code="E_REPO_READY_MODE_CONFLICT", when="more than one of --report, --fix, or --verify is provided" },
+  { code="E_REPO_JENKINS_CONTRACT_MODE_CONFLICT", when="Jenkins contract flags are combined with incompatible repo-ready mode flags" },
+  { code="E_REPO_NOT_READY", when="verify mode finds missing, invalid, or pending required files/adapters" },
+]
+
+# Note: the Jenkins contract at .ghdp/ci/jenkins_contract.json is repo-local metadata derived from Jenkinsfile.
+# It stays outside the GitHub-backed sync capability model.
+
+[[commands]]
+id = "repo:report"
+cli = "ghdp repo report [--repo-root <path>]"
+category = "repo"
+tags = ["repo", "readiness", "governance"]
+summary = "Report GHDP repo readiness without writing files. In release 1 this contributor/internal surface is admin-only and prerelease-only."
+flags = [
+  { cli="--repo-root", type="path", required=false, default="(current git root)", help="Advanced repo root override" },
+]
+examples = [
+  "ghdp repo report",
+]
+common_errors = [
+  { code="E_ACCESS_DENIED", when="running repo report without `platform.internal`" },
+  { code="E_RELEASE_CHANNEL_BLOCKED", when="running repo report from a stable build" },
+]
+
+[[commands]]
+id = "repo:fix"
+cli = "ghdp repo fix [--repo-root <path>]"
+category = "repo"
+tags = ["repo", "readiness", "fix"]
+summary = "Scaffold missing GHDP readiness files, optionally generate drafts, sync repo-local adapters, and refresh the repo-local Jenkins contract when Jenkinsfile exists."
+flags = [
+  { cli="--repo-root", type="path", required=false, default="(current git root)", help="Advanced repo root override" },
+]
+examples = [
+  "ghdp repo fix",
+]
+common_errors = [
+  { code="E_ACCESS_DENIED", when="running repo fix without admin capability or token" },
+  { code="E_ACTOR_IDENTITY_REQUIRED", when="repo fix needs privileged identity but GitHub login is not resolved" },
+]
+
+[[commands]]
+id = "repo:accept"
+cli = "ghdp repo accept [--repo-root <path>]"
+category = "repo"
+tags = ["repo", "readiness", "review"]
+summary = "Mark reviewed GHDP repo readiness drafts as confirmed. In phase 0 this command requires admin capability."
+flags = [
+  { cli="--repo-root", type="path", required=false, default="(current git root)", help="Advanced repo root override" },
+]
+examples = [
+  "ghdp repo accept",
+]
+common_errors = [
+  { code="E_ACCESS_DENIED", when="running repo accept without admin capability or token" },
+  { code="E_ACTOR_IDENTITY_REQUIRED", when="repo accept needs privileged identity but GitHub login is not resolved" },
+]
+
+[[commands]]
+id = "repo:verify"
+cli = "ghdp repo verify [--repo-root <path>]"
+category = "repo"
+tags = ["repo", "readiness", "verify"]
+summary = "Verify GHDP repo readiness for CI and non-interactive flows. In release 1 this contributor/internal surface is admin-only and prerelease-only."
+flags = [
+  { cli="--repo-root", type="path", required=false, default="(current git root)", help="Advanced repo root override" },
+]
+examples = [
+  "ghdp repo verify",
+]
+common_errors = [
+  { code="E_ACCESS_DENIED", when="running repo verify without `platform.internal`" },
+  { code="E_RELEASE_CHANNEL_BLOCKED", when="running repo verify from a stable build" },
+  { code="E_REPO_NOT_READY", when="missing, invalid, or pending required repo files/adapters remain" },
+]
+
+# ───────────────── Terraform PoC commands (kept for now) ─────────────────
+
+[[commands]]
+id = "tf-init"
+cli = "ghdp tf-init -e <env>"
+category = "terraform"
+tags = ["terraform", "init"]
+summary = "Prepare Terraform working directory (PoC)."
+flags = [
+  { cli="--env/-e", type="string", required=true, help="Environment" },
+]
+examples = [
+  "ghdp tf-init -e dev",
+]
+common_errors = [
+  { code="E_ACCESS_DENIED", when="running tf-init without `local.lifecycle` in the current team context" },
+  { code="E_GIT_DIRTY", when="requires_clean_git blocks (if enabled)" },
+]
+
+[[commands]]
+id = "tf-plan"
+cli = "ghdp tf-plan -e <env>"
+category = "terraform"
+tags = ["terraform", "plan"]
+summary = "Show Terraform plan/drift (PoC)."
+flags = [
+  { cli="--env/-e", type="string", required=true, help="Environment" },
+]
+examples = [
+  "ghdp tf-plan -e dev",
+]
+common_errors = [
+  { code="E_ACCESS_DENIED", when="running tf-plan without `local.lifecycle` in the current team context" },
+  { code="E_GIT_DIRTY", when="requires_clean_git blocks (if enabled)" },
+]
+
+[[commands]]
+id = "tf-deploy"
+cli = "ghdp tf-deploy -e <env>"
+category = "terraform"
+tags = ["terraform", "deploy"]
+summary = "Terraform apply/deploy (PoC). Local prod is blocked."
+flags = [
+  { cli="--env/-e", type="string", required=true, help="Environment" },
+]
+examples = [
+  "ghdp tf-deploy -e dev",
+  "ghdp tf-deploy -e prod  # expected to fail (blocked)",
+]
+common_errors = [
+  { code="E_ACCESS_DENIED", when="running tf-deploy without `local.lifecycle` in the current team context" },
+  { code="E_PERMISSION_DENIED", when="env=prod (local prod deploy blocked)" },
+  { code="E_GIT_DIRTY", when="requires_clean_git blocks (if enabled)" },
+]
+
+[[commands]]
+id = "tf-apply"
+cli = "ghdp tf-apply [--env <env>] [--account <name>] [--backend-account <name>] [--terraform-component <name>] [--commit-id <hash>] [--planfile <path>] [--tf-root <path>] [--backend-config-file <path>] [--backend-bucket <name>] [--backend-key <key>] [--aws-profile <name>] [--aws-region <region>] [--aws-login] [--refresh-deps] [--yes]"
+category = "terraform"
+tags = ["terraform", "apply"]
+summary = "Apply Terraform plan with mandatory plan inspection guardrails."
+flags = [
+  { cli="--env/-e", type="string", required=false, default="dev", help="Environment (local policy usually allows dev only)" },
+  { cli="--account", type="string", required=false, default="(repo name)", help="Terraform var account" },
+  { cli="--backend-account", type="string", required=false, default="", help="Override account used to select backend bucket template" },
+  { cli="--terraform-component", type="string", required=false, default="", help="Optional component suffix for backend key/file naming" },
+  { cli="--commit-id", type="string", required=false, default="(git SHA)", help="Terraform var commit_id" },
+  { cli="--planfile", type="path", required=false, default="", help="Existing plan file to apply" },
+  { cli="--tf-root", type="path", required=false, default="(policy default)", help="Terraform root path" },
+  { cli="--backend-config-file", type="path", required=false, default="", help="Existing backend properties file path" },
+  { cli="--backend-bucket", type="string", required=false, default="", help="Backend S3 bucket when generating backend config" },
+  { cli="--backend-key", type="string", required=false, default="", help="Backend state key when generating backend config" },
+  { cli="--aws-profile", type="string", required=false, default="", help="AWS profile for terraform commands" },
+  { cli="--aws-region", type="string", required=false, default="(policy default)", help="AWS region override" },
+  { cli="--aws-login", type="bool", required=false, default=false, help="Attempt aws sso login when auth preflight fails" },
+  { cli="--refresh-deps", type="bool", required=false, default=false, help="Delete and reclone policy dependencies when auto-planning" },
+  { cli="--yes/--auto-approve", type="bool", required=false, default=false, help="Skip confirmation prompt and auto-approve apply" },
+]
+examples = [
+  "ghdp tf-apply --env dev",
+  "ghdp tf-apply --env dev --planfile .terraform/dev.tfplan --yes",
+]
+common_errors = [
+  { code="E_ACCESS_DENIED", when="running tf-apply without `local.lifecycle` in the current team context" },
+  { code="E_TF_PLANFILE_NOT_FOUND", when="the supplied plan file does not exist" },
+  { code="E_GIT_DIRTY", when="requires_clean_git blocks (if enabled)" },
+]
+
+[[commands]]
+id = "tf-fmt"
+cli = "ghdp tf-fmt [--tf-root <path>] [--recursive|--no-recursive]"
+category = "terraform"
+tags = ["terraform", "fmt"]
+summary = "Run terraform fmt for the local terraform root."
+flags = [
+  { cli="--tf-root", type="path", required=false, default="(policy default)", help="Terraform root path" },
+  { cli="--recursive/--no-recursive", type="bool", required=false, default=true, help="Use terraform fmt -recursive" },
+]
+examples = [
+  "ghdp tf-fmt",
+  "ghdp tf-fmt --no-recursive",
+]
+common_errors = [
+  { code="E_ACCESS_DENIED", when="running tf-fmt without `local.lifecycle` in the current team context" },
+  { code="E_GIT_DIRTY", when="requires_clean_git blocks (if enabled)" },
+]
+
+[[commands]]
+id = "tf-set-workspace"
+cli = "ghdp tf-set-workspace <workspace_name> [--tf-root <path>] [--aws-profile <name>] [--aws-region <region>] [--aws-login]"
+category = "terraform"
+tags = ["terraform", "workspace"]
+summary = "Select or create a Terraform workspace."
+flags = [
+  { cli="workspace_name", type="arg", required=true, help="Workspace name to select or create" },
+  { cli="--tf-root", type="path", required=false, default="(policy default)", help="Terraform root path" },
+  { cli="--aws-profile", type="string", required=false, default="", help="AWS profile for terraform commands" },
+  { cli="--aws-region", type="string", required=false, default="(policy default)", help="AWS region override" },
+  { cli="--aws-login", type="bool", required=false, default=false, help="Attempt aws sso login when auth preflight fails" },
+]
+examples = [
+  "ghdp tf-set-workspace dev",
+]
+common_errors = [
+  { code="E_ACCESS_DENIED", when="running tf-set-workspace without `local.lifecycle` in the current team context" },
+  { code="E_GIT_DIRTY", when="requires_clean_git blocks (if enabled)" },
+]
+
+[[commands]]
+id = "tf-validate"
+cli = "ghdp tf-validate [--tf-root <path>]"
+category = "terraform"
+tags = ["terraform", "validate"]
+summary = "Run terraform validate in the resolved terraform root."
+flags = [
+  { cli="--tf-root", type="path", required=false, default="(policy default)", help="Terraform root path" },
+]
+examples = [
+  "ghdp tf-validate",
+]
+common_errors = [
+  { code="E_ACCESS_DENIED", when="running tf-validate without `local.lifecycle` in the current team context" },
+  { code="E_GIT_DIRTY", when="requires_clean_git blocks (if enabled)" },
+]
+
+# ───────────────── Developer (repo) utilities ─────────────────
+
+[[commands]]
+id = "scaffold"
+cli = "ghdp scaffold command <name> [--dangerous|--safe] [--git-clean|--no-git-clean] [--feature-flag <key>] [--force]"
+category = "dev"
+tags = ["scaffold", "contribute"]
+summary = "Generate a new command module under src/platform_cli/commands (for contributors). In release 1 this contributor/internal surface is admin-only and prerelease-only."
+flags = [
+  { cli="kind", type="arg", required=true, allowed=["command"], help="Currently only 'command' is supported" },
+  { cli="name", type="arg", required=true, help="Command name, e.g. tf-drift or doctor" },
+  { cli="--dangerous/--safe", type="bool", required=false, default=false, help="Template includes dangerous_command decorator" },
+  { cli="--git-clean/--no-git-clean", type="bool", required=false, default=false, help="Template includes requires_clean_git decorator" },
+  { cli="--feature-flag", type="string", required=false, default="", help="Template includes feature_flag decorator with this config key" },
+  { cli="--force/-f", type="bool", required=false, default=false, help="Overwrite existing file if present" },
+]
+examples = [
+  "ghdp scaffold command doctor",
+  "ghdp scaffold command tf-drift --git-clean",
+  "ghdp scaffold command tools-sync --feature-flag features.tools.sync.enabled",
+]
+common_errors = [
+  { code="E_ACCESS_DENIED", when="running scaffold without `platform.internal`" },
+  { code="E_RELEASE_CHANNEL_BLOCKED", when="running scaffold from a stable build" },
+  { code="E_COMMANDS_DIR_NOT_FOUND", when="run outside GHDP repo root" },
+  { code="E_SCAFFOLD_FILE_EXISTS", when="target exists and --force not provided" },
+]
+
+# ───────────────── Error model (high-level) ─────────────────
+[errors]
+primary = "PlatformError(code, reason, alert) with Rich panel output. Tracked commands write usage + error logs."
+logs = "errors.log contains structured errors; usage.log contains command usage (ok/error + metadata)."
+
+[mcp_future]
+note = "This TOML is intentionally machine-readable so an MCP server or IDE agent can map intents -> CLI invocations."
+
+[[commands]]
+id = "sync:list"
+cli = "ghdp sync list [--capability <id>] [--repo-root <path>]"
+category = "sync"
+tags = ["sync", "content", "list"]
+summary = "List known sync capabilities from content-index.json and local scan/state data. Defaults can be redirected for validation via GHDP_SYNC_INDEX_REPO, GHDP_SYNC_INDEX_TAG, and GHDP_SYNC_INDEX_ASSET."
+flags = [
+  { cli="--capability", type="string", required=false, default="", help="Limit results to one capability id" },
+  { cli="--repo-root", type="path", required=false, default="(global scope when omitted)", help="Scope sync operations to a repository root for repo-local capabilities" },
+]
+examples = [
+  "ghdp sync list",
+  "ghdp sync list --capability codex-skills-aws",
+]
+common_errors = [
+  { code="E_RELEASE_CONTENT_INDEX_INVALID", when="content-index.json is malformed" },
+  { code="E_RELEASE_CONTENT_DOWNLOAD_FAILED", when="content-index.json cannot be fetched" },
+  { code="E_SYNC_PROVIDER_UNSUPPORTED", when="a capability uses a provider GHDP does not yet support" },
+  { code="E_SYNC_TARGET_UNSUPPORTED", when="a capability uses a local target type GHDP does not yet support" },
+]
+
+[[commands]]
+id = "sync:scan"
+cli = "ghdp sync scan [--capability <id>] [--repo-root <path>]"
+category = "sync"
+tags = ["sync", "content", "scan"]
+summary = "Scan known local capability locations and record tracked plus extra local files. Defaults can be redirected for validation via GHDP_SYNC_INDEX_REPO, GHDP_SYNC_INDEX_TAG, and GHDP_SYNC_INDEX_ASSET."
+flags = [
+  { cli="--capability", type="string", required=false, default="", help="Limit results to one capability id" },
+  { cli="--repo-root", type="path", required=false, default="(global scope when omitted)", help="Scope sync operations to a repository root for repo-local capabilities" },
+]
+examples = [
+  "ghdp sync scan",
+  "ghdp sync scan --capability codex-skills-aws",
+]
+common_errors = [
+  { code="E_RELEASE_CONTENT_INDEX_INVALID", when="content-index.json is malformed" },
+  { code="E_RELEASE_CONTENT_MANIFEST_INVALID", when="content-manifest.json is malformed" },
+  { code="E_SYNC_PROVIDER_UNSUPPORTED", when="a capability uses a provider GHDP does not yet support" },
+  { code="E_SYNC_TARGET_UNSUPPORTED", when="a capability uses a local target type GHDP does not yet support" },
+]
+
+[[commands]]
+id = "sync:check"
+cli = "ghdp sync check [--capability <id>] [--repo-root <path>]"
+category = "sync"
+tags = ["sync", "content", "check"]
+summary = "Check scanned sync capabilities for bootstrap, repair, update, or blocked recovery needs. Defaults can be redirected for validation via GHDP_SYNC_INDEX_REPO, GHDP_SYNC_INDEX_TAG, and GHDP_SYNC_INDEX_ASSET."
+notes = "Shared-root capabilities are not treated as installed just because unrelated files already exist in the same root. When capability metadata includes a recovery hint, blocked entries can surface a `next step:` recommendation such as `ghdp tableau init`."
+flags = [
+  { cli="--capability", type="string", required=false, default="", help="Limit results to one capability id" },
+  { cli="--repo-root", type="path", required=false, default="(global scope when omitted)", help="Scope sync operations to a repository root for repo-local capabilities" },
+]
+examples = [
+  "ghdp sync check",
+  "ghdp sync check --capability tableau-athena-jars",
+]
+common_errors = [
+  { code="E_RELEASE_CONTENT_INDEX_INVALID", when="content-index.json is malformed" },
+  { code="E_RELEASE_CONTENT_MANIFEST_INVALID", when="content-manifest.json is malformed" },
+  { code="E_SYNC_PROVIDER_UNSUPPORTED", when="a capability uses a provider GHDP does not yet support" },
+  { code="E_SYNC_TARGET_UNSUPPORTED", when="a capability uses a local target type GHDP does not yet support" },
+]
+
+[[commands]]
+id = "sync:update"
+cli = "ghdp sync update [--capability <id>] [--auto-approve] [--repo-root <path>]"
+category = "sync"
+tags = ["sync", "content", "update"]
+summary = "Update only already-tracked files for installed sync capabilities. Current policy requires `sync.mutate`, which is temporarily granted to both admin and non-admin users for bootstrap recovery while sync mutation remains coarse-grained. Defaults can be redirected for validation via GHDP_SYNC_INDEX_REPO, GHDP_SYNC_INDEX_TAG, and GHDP_SYNC_INDEX_ASSET."
+flags = [
+  { cli="--capability", type="string", required=false, default="", help="Update only one capability id" },
+  { cli="--auto-approve/--yes", type="bool", required=false, default=false, help="Apply update without confirmation" },
+  { cli="--repo-root", type="path", required=false, default="(global scope when omitted)", help="Scope sync operations to a repository root for repo-local capabilities" },
+]
+examples = [
+  "ghdp sync update",
+  "ghdp sync update --capability codex-skills-aws --auto-approve",
+]
+common_errors = [
+  { code="E_ACCESS_DENIED", when="running sync update without `sync.mutate`" },
+  { code="E_ACTOR_IDENTITY_REQUIRED", when="sync update needs a resolved actor identity but GitHub login is not resolved" },
+  { code="E_SYNC_CONFIRM_REQUIRED", when="running non-interactive without --auto-approve" },
+  { code="E_SYNC_UPDATE_BLOCKED", when="latest manifest drops tracked local files" },
+  { code="E_SYNC_TARGET_UNSUPPORTED", when="a capability uses a local target type GHDP does not yet support" },
+]
+
+[[commands]]
+id = "sync:repair"
+cli = "ghdp sync repair [--capability <id>] [--auto-approve] [--repo-root <path>]"
+category = "sync"
+tags = ["sync", "content", "repair"]
+summary = "Repair missing tracked files for installed sync capabilities from the recorded version, or bootstrap-install a missing capability when the content index explicitly allows install-if-missing. Current policy requires `sync.mutate`, which is temporarily granted to both admin and non-admin users for bootstrap recovery while sync mutation remains coarse-grained. Defaults can be redirected for validation via GHDP_SYNC_INDEX_REPO, GHDP_SYNC_INDEX_TAG, and GHDP_SYNC_INDEX_ASSET."
+notes = "Unrelated files already present in a shared install root do not make that capability repairable by themselves; GHDP now requires tracked files or durable recorded install state before it enters a repair path."
+flags = [
+  { cli="--capability", type="string", required=false, default="", help="Repair only one capability id" },
+  { cli="--auto-approve/--yes", type="bool", required=false, default=false, help="Apply repair without confirmation" },
+  { cli="--repo-root", type="path", required=false, default="(global scope when omitted)", help="Scope sync operations to a repository root for repo-local capabilities" },
+]
+examples = [
+  "ghdp sync repair",
+  "ghdp sync repair --capability claude-skills-aws --auto-approve",
+]
+common_errors = [
+  { code="E_ACCESS_DENIED", when="running sync repair without `sync.mutate`" },
+  { code="E_ACTOR_IDENTITY_REQUIRED", when="sync repair needs a resolved actor identity but GitHub login is not resolved" },
+  { code="E_SYNC_CONFIRM_REQUIRED", when="running non-interactive without --auto-approve" },
+  { code="E_SYNC_REPAIR_FAILED", when="repair cannot rebuild the tracked files from recorded state" },
+  { code="E_SYNC_BOOTSTRAP_NOT_ALLOWED", when="the capability is missing locally and its content-index entry does not allow install-if-missing" },
+  { code="E_SYNC_ROOT_KEY_UNRESOLVABLE", when="bootstrap install is allowed but the capability target root cannot be resolved for the current scope" },
+  { code="E_SYNC_TARGET_UNSUPPORTED", when="a capability uses a local target type GHDP does not yet support" },
+]
+
+[[commands]]
+id = "sync:run"
+cli = "ghdp sync run [--capability <id>] [--auto-approve] [--repo-root <path>]"
+category = "sync"
+tags = ["sync", "content", "run"]
+summary = "Run scan, bootstrap/repair, and update through one shared reconciliation flow. Current policy requires `sync.mutate`, which is temporarily granted to both admin and non-admin users for bootstrap recovery while sync mutation remains coarse-grained. Defaults can be redirected for validation via GHDP_SYNC_INDEX_REPO, GHDP_SYNC_INDEX_TAG, and GHDP_SYNC_INDEX_ASSET."
+notes = "Bootstrap installs are previewed and reported separately from repairs. If a run has only blocked capabilities, GHDP ends with a blocked summary instead of `No sync actions needed`, and may surface capability-owned recovery guidance such as `ghdp tableau init` when the content index provides it."
+flags = [
+  { cli="--capability", type="string", required=false, default="", help="Limit results to one capability id" },
+  { cli="--auto-approve/--yes", type="bool", required=false, default=false, help="Apply repairs and updates without confirmation" },
+  { cli="--repo-root", type="path", required=false, default="(global scope when omitted)", help="Scope sync operations to a repository root for repo-local capabilities" },
+]
+examples = [
+  "ghdp sync run",
+  "ghdp sync run --capability tableau-athena-jars --auto-approve",
+]
+common_errors = [
+  { code="E_ACCESS_DENIED", when="running sync run without `sync.mutate`" },
+  { code="E_ACTOR_IDENTITY_REQUIRED", when="sync run needs a resolved actor identity but GitHub login is not resolved" },
+  { code="E_SYNC_CONFIRM_REQUIRED", when="running non-interactive without --auto-approve" },
+  { code="E_SYNC_UPDATE_BLOCKED", when="latest manifest drops tracked local files" },
+  { code="E_SYNC_REPAIR_FAILED", when="repair cannot rebuild the tracked files from recorded state" },
+  { code="E_SYNC_BOOTSTRAP_NOT_ALLOWED", when="the capability is missing locally and its content-index entry does not allow install-if-missing" },
+  { code="E_SYNC_ROOT_KEY_UNRESOLVABLE", when="bootstrap install is allowed but the capability target root cannot be resolved for the current scope" },
+  { code="E_SYNC_TARGET_UNSUPPORTED", when="a capability uses a local target type GHDP does not yet support" },
+]
+
+[[commands]]
+id = "tableau:init"
+cli = "ghdp tableau init [--download-dir <path>] [--drivers-dir <path>] [--dry-run] [--force]"
+category = "tableau"
+tags = ["tableau", "init", "aws"]
+summary = "Initialize Tableau Athena setup (drivers + Mac properties). This is the recovery/bootstrap path for Tableau Athena drivers when sync reports `tableau-athena-jars` as blocked. In release 1 this command is limited to the `data_analyst` team through `tableau.use`."
+flags = [
+  { cli="--download-dir", type="path", required=false, default="", help="Directory containing Athena JDBC jar files (optional local override)" },
+  { cli="--drivers-dir", type="path", required=false, default="", help="Override Tableau Drivers directory" },
+  { cli="--dry-run", type="bool", required=false, default=false, help="Show planned actions without writing files" },
+  { cli="--force", type="bool", required=false, default=false, help="Overwrite existing jar files" },
+]
+examples = [
+  "ghdp tableau init",
+  "ghdp tableau init --dry-run",
+]
+common_errors = [
+  { code="E_ACCESS_DENIED", when="running tableau init outside the `data_analyst` team policy" },
+]
+
+[[commands]]
+id = "tableau:login"
+cli = "ghdp tableau login [--profile <name>]"
+category = "tableau"
+tags = ["tableau", "login", "aws"]
+summary = "Authenticate for Tableau workflows. In release 1 this command is limited to the `data_analyst` team through `tableau.use`."
+flags = [
+  { cli="--profile", type="string", required=false, default="(prompt or resolved profile)", help="AWS SSO profile name override" },
+]
+examples = [
+  "ghdp tableau login",
+  "ghdp tableau login --profile aws-mcp",
+]
+common_errors = [
+  { code="E_ACCESS_DENIED", when="running tableau login outside the `data_analyst` team policy" },
+]
+
+# ───────────────── Data-Product Repo Operations ─────────────────
+
+[[commands]]
+id = "release:plan-binaries"
+cli = "ghdp release plan-binaries [--source-ref <ref>] [--workdir <path>] [--install-flavor <standard|managed>] [--version-override <tag>] [--release-visibility <auto|draft|published>] [--release-channel <auto|prerelease|ga>] [--python-version <version>]"
+category = "release"
+tags = ["release", "binaries", "plan"]
+summary = "Compute the portable manual binary-release plan GHDP will use for the current repo and executor. This command is admin-only through `release.manage`."
+flags = [
+  { cli="--source-ref", type="string", required=false, default="(current branch)", help="Branch, tag, or SHA to build from" },
+  { cli="--workdir", type="path", required=false, default="auto-detect", help="Override the auto-detected release workdir for non-standard layouts" },
+  { cli="--install-flavor", type="string", required=false, default="standard", allowed=["standard","managed"], help="Install flavor for the direct GHDP release flow" },
+  { cli="--version-override", type="string", required=false, default="", help="Optional release tag override for stable branches only, for example v0.2.3" },
+  { cli="--release-visibility", type="string", required=false, default="auto", allowed=["auto","draft","published"], help="Resolve release draft behavior" },
+  { cli="--release-channel", type="string", required=false, default="auto", allowed=["auto","prerelease","ga"], help="Resolve prerelease vs GA behavior" },
+  { cli="--python-version", type="string", required=false, default="(current python)", help="Python version for release metadata and CI parity (3.10+)" },
+]
+examples = [
+  "ghdp release plan-binaries",
+  "ghdp release plan-binaries --source-ref feature/EPPE-7087-TECHNICAL-cli-release-management-integration --workdir platform-cli",
+  "ghdp release plan-binaries --source-ref develop --version-override v0.2.3",
+]
+common_errors = [
+  { code="E_ACCESS_DENIED", when="running release plan-binaries without `release.manage`" },
+  { code="E_RELEASE_SOURCE_REF_MISSING", when="GHDP cannot resolve the current branch or an explicit --source-ref was not usable" },
+  { code="E_RELEASE_STABLE_TAGS_MISSING", when="the repo has no published stable semver releases to increment from" },
+  { code="E_RELEASE_PLATFORM_UNSUPPORTED", when="the current executor platform is not mapped to a binary asset target" },
+]
+
+[[commands]]
+id = "release:prepare-binaries-release"
+cli = "ghdp release prepare-binaries-release [--source-ref <ref>] [--workdir <path>] [--install-flavor <standard|managed>] [--version-override <tag>] [--release-visibility <auto|draft|published>] [--release-channel <auto|prerelease|ga>] [--python-version <version>]"
+category = "release"
+tags = ["release", "binaries", "prepare"]
+summary = "Validate release-note freshness, generate release notes, and create or update the GitHub release before building assets. This command is admin-only through `release.manage`, with a narrow CI bypass for the GitHub Actions binary-build workflow."
+flags = [
+  { cli="--source-ref", type="string", required=false, default="(current branch)", help="Branch, tag, or SHA to build from" },
+  { cli="--workdir", type="path", required=false, default="auto-detect", help="Override the auto-detected release workdir for non-standard layouts" },
+  { cli="--install-flavor", type="string", required=false, default="standard", allowed=["standard","managed"], help="Install flavor for the direct GHDP release flow" },
+  { cli="--version-override", type="string", required=false, default="", help="Optional release tag override for stable branches only, for example v0.2.3" },
+  { cli="--release-visibility", type="string", required=false, default="auto", allowed=["auto","draft","published"], help="Resolve release draft behavior" },
+  { cli="--release-channel", type="string", required=false, default="auto", allowed=["auto","prerelease","ga"], help="Resolve prerelease vs GA behavior" },
+  { cli="--python-version", type="string", required=false, default="(current python)", help="Python version for release metadata and CI parity (3.10+)" },
+]
+examples = [
+  "ghdp release prepare-binaries-release --source-ref develop",
+  "ghdp release prepare-binaries-release --source-ref develop --workdir platform-cli",
+  "ghdp release prepare-binaries-release --source-ref develop --version-override v0.2.3",
+]
+common_errors = [
+  { code="E_ACCESS_DENIED", when="running release prepare-binaries-release without `release.manage` outside the allowed CI executor path" },
+  { code="E_GH_NOT_AUTHENTICATED", when="gh is not authenticated and GH_TOKEN is not available" },
+  { code="E_RELEASE_NOTES_STALE", when="feature-branch release notes were not updated recently enough" },
+  { code="E_RELEASE_STABLE_EXISTS", when="a stable release tag already exists and GHDP refuses to mutate it" },
+]
+
+[[commands]]
+id = "release:build-binaries"
+cli = "ghdp release build-binaries [--source-ref <ref>] [--workdir <path>] [--install-flavor <standard|managed>] [--version-override <tag>] [--release-visibility <auto|draft|published>] [--release-channel <auto|prerelease|ga>] [--python-version <version>] [--ensure-release/--skip-ensure-release]"
+category = "release"
+tags = ["release", "binaries", "build"]
+summary = "Build the current-platform GHDP binary, generate checksum metadata, and upload the assets to the resolved GitHub release. This command is admin-only through `release.manage`, with a narrow CI bypass for the GitHub Actions binary-build workflow."
+flags = [
+  { cli="--source-ref", type="string", required=false, default="(current branch)", help="Branch, tag, or SHA to build from" },
+  { cli="--workdir", type="path", required=false, default="auto-detect", help="Override the auto-detected release workdir for non-standard layouts" },
+  { cli="--install-flavor", type="string", required=false, default="standard", allowed=["standard","managed"], help="Install flavor for the direct GHDP release flow" },
+  { cli="--version-override", type="string", required=false, default="", help="Optional release tag override for stable branches only, for example v0.2.3" },
+  { cli="--release-visibility", type="string", required=false, default="auto", allowed=["auto","draft","published"], help="Resolve release draft behavior" },
+  { cli="--release-channel", type="string", required=false, default="auto", allowed=["auto","prerelease","ga"], help="Resolve prerelease vs GA behavior" },
+  { cli="--python-version", type="string", required=false, default="(current python)", help="Python version for release metadata and CI parity (3.10+)" },
+  { cli="--ensure-release/--skip-ensure-release", type="bool", required=false, default=true, help="Ensure the GitHub release exists before building and uploading assets" },
+]
+examples = [
+  "ghdp release build-binaries --source-ref develop",
+  "ghdp release build-binaries --source-ref feature/EPPE-7087-TECHNICAL-cli-release-management-integration --skip-ensure-release",
+  "ghdp release build-binaries --source-ref develop --version-override v0.2.3",
+]
+common_errors = [
+  { code="E_ACCESS_DENIED", when="running release build-binaries without `release.manage` outside the allowed CI executor path" },
+  { code="E_RELEASE_ARTIFACT_MISSING", when="PyInstaller output could not be found for the current platform target" },
+  { code="E_RELEASE_PLATFORM_UNSUPPORTED", when="the current executor platform is not mapped to a binary asset target" },
+  { code="E_GH_NOT_AUTHENTICATED", when="gh is not authenticated and GH_TOKEN is not available" },
+]
+
+[[commands]]
+id = "repo-info"
+cli = "ghdp repo-info"
+category = "data-product"
+tags = ["data-product", "repo", "info"]
+summary = "Display repository structure information (apps + infra stacks). In release 1 this contributor/internal surface is admin-only and prerelease-only."
+flags = [
+  { cli="--format", type="string", required=false, default="text", allowed=["text","json"], help="Output format" },
+]
+examples = [
+  "ghdp repo-info",
+  "ghdp repo-info --format json",
+]
+common_errors = [
+  { code="E_ACCESS_DENIED", when="running repo-info without `platform.internal`" },
+  { code="E_RELEASE_CHANNEL_BLOCKED", when="running repo-info from a stable build" },
+  { code="E_STRUCTURE_INVALID", when="No apps.json or infra.json found" },
+  { code="E_MANIFEST_INVALID", when="apps.json or infra.json schema validation fails" },
+]
+
+[[commands]]
+id = "init"
+cli = "ghdp init [--app <name>]"
+category = "data-product"
+tags = ["data-product", "init", "apps", "infra", "uv", "maven", "terraform"]
+summary = "Initialize the local data-product lifecycle by refreshing app and infra dependencies. In release 1 this end-user surface is blocked only when team policy removes `local.lifecycle`, such as for `data_analyst`."
+flags = [
+  { cli="--app/--app-name/-a", type="string", required=false, default="(all apps when omitted)", help="Application path from apps.json" },
+]
+examples = [
+  "ghdp init",
+  "ghdp init --app batch-processor",
+]
+common_errors = [
+  { code="E_ACCESS_DENIED", when="running init without `local.lifecycle` in the current team context" },
+  { code="E_STRUCTURE_INVALID", when="No apps.json or infra.json found" },
+]
+
+[[commands]]
+id = "build"
+cli = "ghdp build [--app <name>]"
+category = "data-product"
+tags = ["data-product", "build", "apps", "python", "scala", "docker"]
+summary = "Build application artifacts using language-native tooling. In release 1 this end-user local lifecycle surface is blocked only when team policy removes `local.lifecycle`, such as for `data_analyst`."
+flags = [
+  { cli="--app/-a", type="string", required=false, default="(all apps when omitted)", help="Application path from apps.json" },
+]
+examples = [
+  "ghdp build",
+  "ghdp build --app batch-processor",
+]
+common_errors = [
+  { code="E_ACCESS_DENIED", when="running build without `local.lifecycle` in the current team context" },
+  { code="E_STRUCTURE_INVALID", when="No apps.json or infra.json found" },
+  { code="E_APP_NOT_FOUND", when="App name not found in apps.json" },
+  { code="E_BUILD_FAILED", when="one or more apps fail to build" },
+]
+
+[[commands]]
+id = "publish"
+cli = "ghdp publish [--env <env>] [--app <name>]"
+category = "data-product"
+tags = ["data-product", "publish", "apps", "codeartifact", "ecr", "docker"]
+summary = "Publish app artifacts to CodeArtifact and/or ECR. In release 1 this command is admin-only."
+flags = [
+  { cli="--env/-e", type="string", required=false, default="", help="Environment for Docker env tag (optional)" },
+  { cli="--app/-a", type="string", required=false, default="(all apps when omitted)", help="Application path from apps.json" },
+]
+examples = [
+  "ghdp publish",
+  "ghdp publish --app batch-processor",
+  "ghdp publish --env qa --app batch-processor",
+]
+common_errors = [
+  { code="E_ACCESS_DENIED", when="running publish without `publish.execute`" },
+  { code="E_ACTOR_IDENTITY_REQUIRED", when="publish needs privileged identity but GitHub login is not resolved" },
+  { code="E_STRUCTURE_INVALID", when="No apps.json or infra.json found" },
+  { code="E_INVALID_ENV", when="Environment is not allowed" },
+  { code="E_APP_NOT_FOUND", when="App name not found in apps.json" },
+  { code="E_PUBLISH_FAILED", when="one or more apps fail to publish" },
+]
+
+[[commands]]
+id = "deploy"
+cli = "ghdp deploy --env <env> [--stack <name>] [--commit-id <hash>] [--plan-only] [--refresh-deps] [--target <resource>] [--yes]"
+category = "data-product"
+tags = ["data-product", "deploy", "infra", "terraform"]
+summary = "Deploy infrastructure stacks from infra.json. In release 1 this end-user local lifecycle surface is blocked only when team policy removes `local.lifecycle`, such as for `data_analyst`."
+flags = [
+  { cli="--env/-e", type="string", required=true, help="Environment to deploy (dev, qa, prod)" },
+  { cli="--stack/-s", type="string", required=false, default="(all stacks when omitted)", help="Stack name/ID from infra.json" },
+  { cli="--commit-id/-c", type="string", required=false, default="(current HEAD)", help="Git commit hash to deploy" },
+  { cli="--plan-only", type="bool", required=false, default=false, help="Only run terraform plan (do not apply)" },
+  { cli="--refresh-deps", type="bool", required=false, default=false, help="Delete and reclone terraform dependencies" },
+  { cli="--target/-t", type="string[]", required=false, default=[], help="Terraform target(s) to deploy; may be repeated" },
+  { cli="--yes/--auto-approve", type="bool", required=false, default=false, help="Skip confirmation and auto-approve apply" },
+]
+examples = [
+  "ghdp deploy --env dev --plan-only",
+  "ghdp deploy --env qa --stack networking",
+]
+common_errors = [
+  { code="E_ACCESS_DENIED", when="running deploy without `local.lifecycle` in the current team context" },
+  { code="E_STRUCTURE_INVALID", when="No apps.json or infra.json found" },
+  { code="E_STACK_NOT_FOUND", when="Stack name not found in infra.json" },
+  { code="E_INVALID_ENV", when="Environment is not dev/qa/prod" },
+  { code="E_DEPLOY_FAILED", when="one or more stacks fail to deploy" },
+]

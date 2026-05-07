@@ -1,0 +1,94 @@
+name: Sample – Create Release Tag
+
+on:
+  workflow_dispatch:
+    inputs:
+      aws_role_arn:
+        description: "IAM Role ARN to assume via GitHub OIDC"
+        required: true
+        type: string
+      aws_region:
+        description: "AWS region (e.g., us-west-2)"
+        required: true
+        default: "us-west-2"
+        type: string
+      secret_id:
+        description: "Secrets Manager secret id/name/ARN (e.g., ghdp/jira/token or full ARN)"
+        required: true
+        type: string
+      secret_json_key:
+        description: "Optional: if SecretString is JSON, extract this key (e.g., token). Leave blank to use whole SecretString."
+        required: false
+        default: ""
+        type: string
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  read-secret:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ inputs.aws_role_arn }}
+          aws-region: ${{ inputs.aws_region }}
+
+      - name: Verify assumed identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          aws sts get-caller-identity
+
+      - name: Fetch secret (safe output; value NOT printed)
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          SECRET_ID="${{ inputs.secret_id }}"
+          JSON_KEY="${{ inputs.secret_json_key }}"
+
+          echo "Reading secret from Secrets Manager..."
+          echo "  secret_id : $SECRET_ID"
+          echo "  json_key  : ${JSON_KEY:-<none>}"
+
+          SECRET_STRING="$(aws secretsmanager get-secret-value \
+            --secret-id "$SECRET_ID" \
+            --query 'SecretString' \
+            --output text)"
+
+          if [[ "$SECRET_STRING" == "None" || -z "$SECRET_STRING" ]]; then
+            echo "ERROR: SecretString is empty or not present."
+            exit 1
+          fi
+
+          export SECRET_STRING
+          export JSON_KEY
+
+          python - <<'PY'
+          import os, json, hashlib, sys
+
+          s = os.environ.get("SECRET_STRING", "")
+          key = os.environ.get("JSON_KEY", "").strip()
+
+          val = s
+          if key:
+              try:
+                  obj = json.loads(s)
+              except Exception:
+                  print("ERROR: SecretString is not JSON but secret_json_key was provided.")
+                  sys.exit(2)
+
+              if key not in obj:
+                  print(f"ERROR: key '{key}' not found. Available keys: {', '.join(obj.keys())}")
+                  sys.exit(3)
+
+              val = str(obj[key])
+
+          print("  Secret read OK (value NOT printed).")
+          print("  length :", len(val))
+          print("  sha256 :", hashlib.sha256(val.encode()).hexdigest())
+          print("  masked :", (val[:2] + "***" + val[-2:]) if len(val) >= 4 else "***")
+          PY

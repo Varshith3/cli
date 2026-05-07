@@ -1,0 +1,28 @@
+{
+  "schema_version": "1.0",
+  "id": "new_feature_subagent_smoke",
+  "title": "New Feature Sub-Agent Smoke",
+  "goal": "Prove that repo-defined sub-agents, topology, and provider adapters can produce a deterministic execution packet for a new feature flow.",
+  "host_mode": "vscode_codex",
+  "provider_plugin": "provider-vscode-codex",
+  "requested_agents": [
+    "ticket-intake",
+    "work-type-classifier",
+    "autonomy-assessor",
+    "context-capability-discovery",
+    "parallel-work-awareness",
+    "blueprint-planner",
+    "architecture-review",
+    "ux-dx-review"
+  ],
+  "prompt_brief": [
+    "Use repo-defined agent contracts only.",
+    "Respect the topology contract for parallel versus sequential work.",
+    "Produce prompt packets and provider-ready payloads that another host can execute without hidden chat memory."
+  ],
+  "expected_artifacts": [
+    "subagent_execution_plan.json",
+    "subagent_prompt_packets.md",
+    "subagent_execution_result.json"
+  ]
+}

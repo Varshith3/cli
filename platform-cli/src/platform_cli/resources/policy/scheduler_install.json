@@ -1,0 +1,34 @@
+{
+  "schema_version": "1.0",
+  "phase": "release1",
+  "install_completion": {
+    "enabled": true,
+    "required": true,
+    "capability_id": "background-scheduler",
+    "mode": "sync-then-apply-required-tasks",
+    "command": "schedule apply",
+    "scope": "user",
+    "notes": "Installation should reconcile required scheduler tasks as part of one-step setup."
+  },
+  "supported_platforms": [
+    "windows",
+    "darwin",
+    "linux"
+  ],
+  "required_tasks": [
+    {
+      "task_id": "sync-run-background",
+      "interval_minutes": 1440,
+      "reason": "Keep installed GHDP capabilities refreshed after setup."
+    },
+    {
+      "task_id": "version-change-latest-stable",
+      "interval_minutes": 60,
+      "reason": "Keep managed installs aligned to the latest stable GHDP release."
+    }
+  ],
+  "recovery": {
+    "missing_or_invalid_local_assets": "sync-before-apply",
+    "steady_state_source": "installed-capability-assets"
+  }
+}

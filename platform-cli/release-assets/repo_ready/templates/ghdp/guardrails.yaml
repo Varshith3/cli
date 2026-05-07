@@ -1,0 +1,23 @@
+schema_version: "1.0"
+baseline:
+  enforced: true
+deny:
+  folders: []
+  patterns: []
+  commands: []
+skills:
+  allow: []
+  deny: []
+mcp:
+  allow: []
+  deny: []
+approvals:
+  confirm_before:
+    - big_change
+data_safety:
+  mode: standard
+  pii: false
+  phi: false
+metadata:
+  managed_by: ghdp
+  template_version: "__GHDP_TEMPLATE_VERSION__"

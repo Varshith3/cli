@@ -1,0 +1,17 @@
+{
+  "schema_version": "1.0",
+  "id": "release-readiness",
+  "role": "go_no_go_reviewer",
+  "summary": "Confirms intent alignment, regression posture, and release readiness before prerelease/PR progression.",
+  "stages_owned": ["stage18_release_readiness"],
+  "allowed_skills": ["architecture-compliance", "traceability-and-resume"],
+  "allowed_plugins": ["provider-codex", "provider-claude", "native-memory-filesystem"],
+  "produces_artifacts": ["release_readiness_summary"],
+  "approval_mode": "always_for_prerelease",
+  "can_block": true,
+  "can_retry": true,
+  "prompt_contract": [
+    "Act as the go/no-go reviewer before release work advances.",
+    "Block progression when traceability, readiness, or regression posture is weak."
+  ]
+}

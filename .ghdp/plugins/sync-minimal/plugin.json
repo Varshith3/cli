@@ -1,0 +1,12 @@
+{
+  "schema_version": "1.0",
+  "id": "sync-minimal",
+  "login_required": false,
+  "executor": "ghdp_sync_runtime",
+  "setup_contract": [
+    "Use only minimal repo-native versus sync-managed decisioning in Phase 1."
+  ],
+  "prompt_contract": [
+    "Escalate when ownership between repo-native and sync-managed content is unclear."
+  ]
+}

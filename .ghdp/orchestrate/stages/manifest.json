@@ -1,0 +1,69 @@
+{
+  "schema_version": "1.0",
+  "stages": [
+    {
+      "id": "stage_c_front_door_gates",
+      "contract_path": ".ghdp/orchestrate/stages/stage_c_front_door_gates.json"
+    },
+    {
+      "id": "stage_d_review_layer",
+      "contract_path": ".ghdp/orchestrate/stages/stage_d_review_layer.json"
+    },
+    {
+      "id": "stage_e_execution_prep",
+      "contract_path": ".ghdp/orchestrate/stages/stage_e_execution_prep.json"
+    },
+    {
+      "id": "stage11_implementation",
+      "contract_path": ".ghdp/orchestrate/stages/stage11_implementation.json"
+    },
+    {
+      "id": "stage12_commit_push",
+      "contract_path": ".ghdp/orchestrate/stages/stage12_commit_push.json"
+    },
+    {
+      "id": "stage13_qa_scenario_design",
+      "contract_path": ".ghdp/orchestrate/stages/stage13_qa_scenario_design.json"
+    },
+    {
+      "id": "stage14_touched_scope_regression",
+      "contract_path": ".ghdp/orchestrate/stages/stage14_touched_scope_regression.json"
+    },
+    {
+      "id": "stage15_new_test_coverage",
+      "contract_path": ".ghdp/orchestrate/stages/stage15_new_test_coverage.json"
+    },
+    {
+      "id": "stage16_developer_test_execution",
+      "contract_path": ".ghdp/orchestrate/stages/stage16_developer_test_execution.json"
+    },
+    {
+      "id": "stage17_packaged_artifact_validation",
+      "contract_path": ".ghdp/orchestrate/stages/stage17_packaged_artifact_validation.json"
+    },
+    {
+      "id": "stage18_release_readiness",
+      "contract_path": ".ghdp/orchestrate/stages/stage18_release_readiness.json"
+    },
+    {
+      "id": "stage19_prerelease_creation",
+      "contract_path": ".ghdp/orchestrate/stages/stage19_prerelease_creation.json"
+    },
+    {
+      "id": "stage19b_published_prerelease_retest",
+      "contract_path": ".ghdp/orchestrate/stages/stage19b_published_prerelease_retest.json"
+    },
+    {
+      "id": "stage20_release_notes_refresh",
+      "contract_path": ".ghdp/orchestrate/stages/stage20_release_notes_refresh.json"
+    },
+    {
+      "id": "stage21_pr_external_integration",
+      "contract_path": ".ghdp/orchestrate/stages/stage21_pr_external_integration.json"
+    },
+    {
+      "id": "stage22_traceability_capture",
+      "contract_path": ".ghdp/orchestrate/stages/stage22_traceability_capture.json"
+    }
+  ]
+}

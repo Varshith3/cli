@@ -1,0 +1,33 @@
+{
+  "schema_version": "1.0",
+  "generated_by": "ghdp",
+  "purpose": "Narrow packaged fallback for first-release sync capability gating only.",
+  "teams": {
+    "data_platform": {
+      "sync": {
+        "allow_capabilities": [
+          "codex-skills-aws",
+          "claude-skills-aws",
+          "marketplace-skill-allowlist",
+          "marketplace-claude-skill-skill-workbench",
+          "marketplace-claude-skill-git-branch-review",
+          "marketplace-claude-plugin-query-athena",
+          "marketplace-claude-plugin-data-governance",
+          "marketplace-codex-skill-skill-workbench",
+          "marketplace-codex-skill-git-branch-review",
+          "marketplace-codex-plugin-query-athena",
+          "marketplace-codex-plugin-data-governance"
+        ],
+        "deny_capabilities": []
+      }
+    },
+    "data_analyst": {
+      "sync": {
+        "allow_capabilities": [
+          "tableau-athena-jars"
+        ],
+        "deny_capabilities": []
+      }
+    }
+  }
+}

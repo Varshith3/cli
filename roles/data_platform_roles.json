@@ -1,0 +1,40 @@
+{
+  "dps": {
+    "account_id": "424080309803",
+    "okta_url": "https://guardanthealth.okta.com/app/amazon_aws/exkwad8k47plYnipJ0x7/sso/saml",
+    "roles": [
+      {
+        "name": "okta-account-admin",
+        "short_name": "admin"
+      }
+    ]
+  },
+  "dpnp": {
+    "account_id": "617336469044",
+    "okta_url": "https://guardanthealth.okta.com/app/amazon_aws/exkwad8k47plYnipJ0x7/sso/saml",
+    "roles": [
+      {
+        "name": "okta-account-admin",
+        "short_name": "admin"
+      },
+      {
+        "name": "user-role-dp-data-engineers",
+        "short_name": "data_eng"
+      },
+      {
+        "name": "user-role-dp-visualisation-engineer",
+        "short_name": "vz_eng"
+      }
+    ]
+  },
+  "dpp": {
+    "account_id": "626645654318",
+    "okta_url": "https://guardanthealth.okta.com/app/amazon_aws/exkwad8k47plYnipJ0x7/sso/saml",
+    "roles": [
+      {
+        "name": "okta-account-admin",
+        "short_name": "admin"
+      }
+    ]
+  }
+}

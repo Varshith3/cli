@@ -1,0 +1,17 @@
+{
+  "schema_version": "1.0",
+  "runtime": {
+    "default_execution_mode": "auto",
+    "default_provider_mode": "codex",
+    "run_key_timezone": "Asia/Calcutta",
+    "run_key_tz_slug": "ist"
+  },
+  "front_door": {
+    "minimum_intake_confidence": 0.7,
+    "semi_autonomous_confidence_threshold": 0.78,
+    "autonomous_confidence_threshold": 0.92
+  },
+  "branch": {
+    "single_active_run_per_branch": true
+  }
+}

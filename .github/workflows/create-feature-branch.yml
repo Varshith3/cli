@@ -1,0 +1,74 @@
+name: Create-Branch
+
+on:
+  workflow_dispatch:
+    inputs:
+      request_id:
+        description: "Unique request id for tracking (optional; GHDP CLI will send)"
+        required: false
+        default: ""
+        type: string
+
+      jira_key:
+        description: "Jira key (e.g., EPP-1234)"
+        required: true
+        type: string
+      branch_type:
+        description: "Branch type"
+        required: true
+        type: choice
+        options: [feature, bugfix, enhancement]
+      slug:
+        description: "Short description slug (e.g., email-cleanup)"
+        required: true
+        type: string
+      base_branch:
+        description: "Base branch (blank = repo default branch)"
+        required: false
+        default: ""
+        type: string
+      validate_jira:
+        description: "Validate Jira ticket exists?"
+        required: false
+        default: false
+        type: boolean
+      comment_on_jira:
+        description: "Add a comment on Jira?"
+        required: false
+        default: false
+        type: boolean
+
+run-name: >-
+  create-branch • ${{ inputs.jira_key }} • ${{ inputs.branch_type }} •
+  ${{ inputs.request_id != '' && inputs.request_id || format('ui-{0}', github.run_id) }}
+
+permissions:
+  contents: write
+
+jobs:
+  guard:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Guardrail - workflow disabled?
+        shell: bash
+        run: |
+          if [[ "${{ vars.GHDP_WORKFLOWS_ENABLED }}" == "false" ]]; then
+            echo "GHDP workflows are disabled for this repo (GHDP_WORKFLOWS_ENABLED=false)."
+            exit 1
+          fi
+          if [[ "${{ vars.GHDP_WF_CREATE_BRANCH_ENABLED }}" == "false" ]]; then
+            echo "Create-branch workflow is disabled for this repo (GHDP_WF_CREATE_BRANCH_ENABLED=false)."
+            exit 1
+          fi
+  call-reusable:
+    needs: guard
+    uses: gh-org-data-platform/dp-tools-local-setup/.github/workflows/reusable-create-branch.yml@develop
+    with:
+      request_id: ${{ inputs.request_id }}
+      jira_key: ${{ inputs.jira_key }}
+      branch_type: ${{ inputs.branch_type }}
+      slug: ${{ inputs.slug }}
+      base_branch: ${{ inputs.base_branch }}
+      validate_jira: ${{ inputs.validate_jira }}
+      comment_on_jira: ${{ inputs.comment_on_jira }}
+    secrets: inherit

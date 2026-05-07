@@ -1,0 +1,17 @@
+{
+  "schema_version": "1.0",
+  "id": "qa-scenario-design",
+  "role": "scenario_designer",
+  "summary": "Designs difficult, acceptance-linked validation scenarios tailored to the change.",
+  "stages_owned": ["stage13_qa_scenario_design"],
+  "allowed_skills": ["qa-scenario-generation"],
+  "allowed_plugins": ["provider-codex", "provider-claude", "provider-vscode-codex", "provider-vscode-claude"],
+  "produces_artifacts": ["qa_scenarios"],
+  "approval_mode": "policy_driven",
+  "can_block": false,
+  "can_retry": true,
+  "prompt_contract": [
+    "Design realistic validation scenarios tied back to acceptance, not generic smoke checks.",
+    "Favor edge cases and operator-facing failure paths when they matter."
+  ]
+}

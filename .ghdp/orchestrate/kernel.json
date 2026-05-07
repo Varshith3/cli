@@ -1,0 +1,31 @@
+{
+  "schema_version": "1.0",
+  "id": "phase1_repo_kernel_contract",
+  "scheduler_mode": "repo_contract_driven",
+  "execution_kernel": {
+    "type": "ghdp_kernel_adapter",
+    "host_entrypoints": ["platform_cli", "codex_cli", "claude_cli", "vscode_codex", "vscode_claude"],
+    "side_effects_owned_by_kernel": ["git", "process", "locks", "state_mutation", "error_normalization"]
+  },
+  "repo_contract_sources": [
+    ".ghdp/agents",
+    ".ghdp/skills",
+    ".ghdp/plugins",
+    ".ghdp/orchestrate/stages",
+    ".ghdp/orchestrate/topology.json",
+    ".ghdp/orchestrate/scenarios"
+  ],
+  "provider_resolution": {
+    "default_provider": "codex",
+    "supported_provider_plugins": [
+      "provider-codex",
+      "provider-claude",
+      "provider-vscode-codex",
+      "provider-vscode-claude"
+    ],
+    "headless_host_fallbacks": {
+      "vscode_codex": "codex",
+      "vscode_claude": "claude"
+    }
+  }
+}

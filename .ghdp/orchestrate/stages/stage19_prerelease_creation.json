@@ -1,0 +1,36 @@
+{
+  "schema_version": "1.0",
+  "id": "stage19_prerelease_creation",
+  "title": "Stage 19 Prerelease Creation",
+  "owner_agent": "release-prerelease",
+  "messages": {
+    "completed": "Stage 19 prerelease creation completed and recorded the prerelease link.",
+    "blocked": "Stage 19 prerelease creation was blocked by the external release engine and recorded the reason."
+  },
+  "next_actions": {
+    "completed": "Proceed into Stage 19B published prerelease retest using the real released asset for this host.",
+    "blocked": "Run Stage 20 release-notes assembly or resolve the external prerelease blocker, then retry Stage 19."
+  },
+  "handoff_summaries": {
+    "completed": "Stage 19 prerelease creation completed with a recorded tag and prerelease location.",
+    "blocked": "Stage 19 prerelease creation blocked and captured the release-engine failure for follow-up."
+  },
+  "prerelease_posture": [
+    "Use the existing release engine instead of inventing a second prerelease path.",
+    "If the release engine blocks, record the exact blocker rather than hiding it behind a generic failure.",
+    "Keep the prerelease packet small and factual so later stages can communicate it cleanly."
+  ],
+  "summary_ready_inputs": [
+    "prerelease_prompt.md",
+    "prerelease_plan.json",
+    "prerelease_summary.md"
+  ],
+  "summary_expected_next_step": "If blocked, repair the release-note or auth issue before retrying prerelease creation. If successful, validate the published artifact directly in Stage 19B before PR progression.",
+  "resume_note_templates": [
+    "Prerelease agent: {prerelease_agent}.",
+    "Allowed skills: {allowed_skill_count}.",
+    "Allowed plugins: {allowed_plugin_count}.",
+    "Planned prerelease tag: {prerelease_tag}.",
+    "Blocked reason: {blocked_reason}."
+  ]
+}

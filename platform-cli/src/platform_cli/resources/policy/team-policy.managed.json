@@ -1,0 +1,39 @@
+{
+  "schema_version": "1.0",
+  "managed_by": "ghdp",
+  "access": {
+    "support_contact": "Shyam / platform team"
+  },
+  "admin_users": [
+    "gh-mshyam"
+  ],
+  "teams": {
+    "data_analyst": {
+      "allow_capabilities": [
+        "tableau.use"
+      ],
+      "deny_capabilities": [
+        "local.lifecycle",
+        "publish.execute"
+      ]
+    },
+    "data_platform": {
+      "allow_capabilities": [
+        "release.manage",
+        "branch.create"
+      ],
+      "deny_capabilities": []
+    },
+    "inform": {
+      "deny_capabilities": [
+        "tools.install",
+        "config.user_safe_write",
+        "usage.read"
+      ]
+    },
+    "platform": {
+      "allow_capabilities": [],
+      "deny_capabilities": []
+    }
+  }
+}

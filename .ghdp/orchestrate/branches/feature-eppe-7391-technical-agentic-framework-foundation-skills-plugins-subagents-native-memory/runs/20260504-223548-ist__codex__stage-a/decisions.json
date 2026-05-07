@@ -1,0 +1,149 @@
+{
+  "decisions": [
+    {
+      "decision": "Use separate repo-level folders for agents, skills, plugins, and memory while keeping runtime state under .ghdp/orchestrate.",
+      "id": "repo_level_split",
+      "source": "user_confirmation",
+      "status": "accepted"
+    },
+    {
+      "decision": "Regenerate .ghdp/frbr/intent.json for EPPE-7391 before implementation continues.",
+      "id": "stale_intent_refresh",
+      "source": "repo_alignment",
+      "status": "completed"
+    },
+    {
+      "decision": "Implement Stage A contract foundation before runtime behavior and specialist agents.",
+      "id": "stage_order",
+      "source": "implementation_plan",
+      "status": "accepted"
+    },
+    {
+      "decision": "Input sufficiency confidence is 0.99.",
+      "id": "front_door_intake",
+      "source": "stage_c_front_door",
+      "status": "accepted"
+    },
+    {
+      "decision": "Classify this run as new_feature.",
+      "id": "front_door_work_type",
+      "source": "stage_c_front_door",
+      "status": "accepted"
+    },
+    {
+      "decision": "Proceed with semi_autonomous autonomy.",
+      "id": "front_door_autonomy",
+      "source": "stage_c_front_door",
+      "status": "accepted"
+    },
+    {
+      "decision": "Parallel-work decision: proceed.",
+      "id": "front_door_parallel_work",
+      "source": "stage_c_front_door",
+      "status": "accepted"
+    },
+    {
+      "decision": "Use spec action create_new_spec.",
+      "id": "front_door_spec_action",
+      "source": "stage_c_front_door",
+      "status": "accepted"
+    },
+    {
+      "decision": "Architecture review completed.",
+      "id": "stage_d_architecture_review",
+      "source": "stage_d_review_layer",
+      "status": "accepted"
+    },
+    {
+      "decision": "UX/DX review completed.",
+      "id": "stage_d_uxdx_review",
+      "source": "stage_d_review_layer",
+      "status": "accepted"
+    },
+    {
+      "decision": "Stage E execution prep artifacts were generated from the accepted Stage D plan.",
+      "id": "stage_e_execution_prep",
+      "source": "stage_e_execution_prep",
+      "status": "accepted"
+    },
+    {
+      "decision": "Stage 11 implementation was activated from the repo-level implementation agent contract.",
+      "id": "stage11_implementation_activation",
+      "source": "stage11_implementation",
+      "status": "accepted"
+    },
+    {
+      "decision": "Stage 12 commit/push committed and pushed the current implementation worktree.",
+      "id": "stage12_commit_push",
+      "source": "stage12_commit_push",
+      "status": "completed"
+    },
+    {
+      "decision": "Stage 13 QA scenario design produced acceptance-linked validation scenarios for the current branch run.",
+      "id": "stage13_qa_scenario_design",
+      "source": "stage13_qa_scenario_design",
+      "status": "completed"
+    },
+    {
+      "decision": "Stage 14 regression validation selected the touched-scope regression set for downstream execution.",
+      "id": "stage14_touched_scope_regression",
+      "source": "stage14_touched_scope_regression",
+      "status": "completed"
+    },
+    {
+      "decision": "Stage 15 authored the new or expanded test backlog required to validate the current touched scope.",
+      "id": "stage15_new_test_coverage",
+      "source": "stage15_new_test_coverage",
+      "status": "completed"
+    },
+    {
+      "decision": "Stage 16 completed the planned validation run.",
+      "id": "stage16_developer_test_execution",
+      "source": "stage16_developer_test_execution",
+      "status": "completed"
+    },
+    {
+      "decision": "Stage 17 validated the installed packaged CLI path before release-facing progression continued.",
+      "id": "stage17_packaged_artifact_validation",
+      "source": "stage17_packaged_artifact_validation",
+      "status": "completed"
+    },
+    {
+      "decision": "Stage 18 accepted the current branch evidence as release-ready.",
+      "id": "stage18_release_readiness",
+      "source": "stage18_release_readiness",
+      "status": "completed"
+    },
+    {
+      "decision": "Stage 19 created or updated the prerelease successfully.",
+      "id": "stage19_prerelease_creation",
+      "source": "stage19_prerelease_creation",
+      "status": "completed"
+    },
+    {
+      "decision": "Release notes were refreshed from repo-backed orchestrator artifacts and committed.",
+      "id": "stage20_release_notes_refresh",
+      "source": "stage20_release_notes_refresh",
+      "status": "completed"
+    },
+    {
+      "decision": "PR and Jira integration completed.",
+      "id": "stage21_pr_external_integration",
+      "source": "stage21_pr_external_integration",
+      "status": "completed"
+    },
+    {
+      "decision": "Traceability and final resume state were captured for the branch run.",
+      "id": "stage22_traceability_capture",
+      "source": "stage22_traceability_capture",
+      "status": "completed"
+    },
+    {
+      "decision": "Revised the Codex minimum version to 0.128.0 across the team toolset assets.",
+      "id": "asset_lifecycle_toolset_codex_version_update_versioned_asset",
+      "source": "asset_lifecycle",
+      "status": "accepted"
+    }
+  ],
+  "schema_version": "1.0"
+}

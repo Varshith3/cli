@@ -1,0 +1,34 @@
+{
+  "schema_version": "1.0",
+  "id": "stage_c_front_door_gates",
+  "title": "Stage C Front-Door Gates",
+  "owner_agent": "orchestrator",
+  "messages": {
+    "completed": "Front-door gates completed and the branch is ready for review-layer orchestration.",
+    "intake_insufficient": "Front-door gates paused because the initiating context is not yet sufficient.",
+    "autonomy_blocked": "Front-door gates paused because autonomy cannot be granted safely yet.",
+    "parallel_blocked": "Front-door gates paused because overlapping parallel work was detected.",
+    "asset_only": "Front-door gates detected an asset-only request and routed it to the lightweight asset lifecycle path."
+  },
+  "next_actions": {
+    "completed": "Run Stage D architecture review and UX/DX review using the refreshed POA.",
+    "intake_insufficient": "Answer the clarification questions and rerun the front-door gates.",
+    "autonomy_blocked": "Clarify the ambiguous scope and rerun the front-door gates.",
+    "parallel_blocked": "Resolve the overlapping in-flight branch work before continuing.",
+    "asset_only": "Run the independent asset lifecycle path for the requested asset operation, then return to SDLC only if broader code or release work is still needed."
+  },
+  "stage_status_summary_template": "Front-door gates classified this run as {work_type} with {autonomy_level} autonomy and a parallel-work decision of {parallel_work_decision}.",
+  "resume_note_templates": [
+    "Intake sufficiency: {intake_confidence:.2f} ({intake_state}).",
+    "Work type: {work_type}.",
+    "Autonomy: {autonomy_level} at confidence {autonomy_confidence:.2f}.",
+    "Parallel-work decision: {parallel_work_decision}."
+  ],
+  "watchpoints": [
+    "Do not mix static capability contracts with runtime state.",
+    "Keep machine-local noise out of repo `.ghdp`.",
+    "Keep review personas and testing personas as first-class concepts, not optional notes.",
+    "Keep sync awareness minimal but explicit in Phase 1.",
+    "Do not force asset-only requests through full SDLC when the repo contracts support a lighter asset lifecycle path."
+  ]
+}

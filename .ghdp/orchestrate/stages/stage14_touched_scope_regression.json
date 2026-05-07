@@ -1,0 +1,34 @@
+{
+  "schema_version": "1.0",
+  "id": "stage14_touched_scope_regression",
+  "title": "Stage 14 Touched Scope Regression",
+  "owner_agent": "regression-validation",
+  "messages": {
+    "completed": "Stage 14 touched-scope regression validation completed with a repo-backed regression packet."
+  },
+  "next_actions": {
+    "completed": "Proceed into Stage 15 new test coverage authoring using regression_selection.md and qa_scenario_plan.md."
+  },
+  "handoff_summaries": {
+    "completed": "Stage 14 touched-scope regression validation completed with selected tests, rationale, and downstream execution guidance."
+  },
+  "selection_posture": [
+    "Protect already-working behavior before expanding into new implementation work.",
+    "Prefer the narrowest relevant tests first, then add shared-capability tests when runtime, manifests, and contracts intersect.",
+    "Make the selected regression surface explicit enough that Stage 16 can execute it without rediscovering scope."
+  ],
+  "summary_ready_inputs": [
+    "regression_prompt.md",
+    "regression_bindings.json",
+    "regression_selection.md",
+    "regression_summary.md"
+  ],
+  "summary_expected_next_step": "Use the selected regression set while authoring new coverage and later during developer test execution.",
+  "resume_note_templates": [
+    "Regression agent: {regression_agent}.",
+    "Allowed skills: {allowed_skill_count}.",
+    "Allowed plugins: {allowed_plugin_count}.",
+    "Selected tests: {selected_test_count}.",
+    "Selection reasons recorded: {selection_reason_count}."
+  ]
+}

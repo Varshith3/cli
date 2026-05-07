@@ -1,0 +1,14 @@
+{
+  "schema_version": "1.0",
+  "id": "jira-acli",
+  "login_required": true,
+  "executor": "acli",
+  "login_contract": [
+    "Expect ACLI auth to be present before Jira comment/update steps run.",
+    "If ACLI is unavailable, block the Jira-facing step rather than silently skipping it."
+  ],
+  "prompt_contract": [
+    "Keep Jira updates concise and traceable to branch/prerelease/PR state."
+  ]
+}
+

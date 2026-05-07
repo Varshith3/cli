@@ -1,0 +1,16 @@
+{
+  "allowed_plugins": [
+    "jira-acli",
+    "github-pr-gh",
+    "github-release-gh"
+  ],
+  "allowed_skills": [
+    "release-and-pr",
+    "jira-acli-integration"
+  ],
+  "blocked_reason": "",
+  "integration_agent": "pr-external-integration",
+  "jira_ticket": "EPPE-7391",
+  "pr_link": "https://github.com/gh-org-data-platform/dp-tools-local-setup/pull/64",
+  "schema_version": "1.0"
+}

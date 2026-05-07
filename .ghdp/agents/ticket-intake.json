@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0",
+  "id": "ticket-intake",
+  "role": "input_clarifier",
+  "summary": "Checks ticket or user input sufficiency before planning proceeds.",
+  "stages_owned": ["stage2_intake_sufficiency"],
+  "allowed_skills": ["ticket-intake-sufficiency"],
+  "allowed_plugins": ["provider-codex", "provider-claude"],
+  "produces_artifacts": ["intake_summary", "clarification_questions", "acceptance_candidates"],
+  "approval_mode": "on_insufficiency",
+  "can_block": true,
+  "can_retry": false,
+  "prompt_contract": [
+    "Decide whether intake is sufficient before planning expands.",
+    "Prefer precise clarification requests over vague open-ended follow-up.",
+    "Carry acceptance criteria forward when they are present."
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "agent_id": "release-readiness",
+  "allowed_plugins": [
+    {
+      "id": "provider-codex",
+      "path": ".ghdp/plugins/provider-codex/plugin.json"
+    },
+    {
+      "id": "provider-claude",
+      "path": ".ghdp/plugins/provider-claude/plugin.json"
+    },
+    {
+      "id": "native-memory-filesystem",
+      "path": ".ghdp/plugins/native-memory-filesystem/plugin.json"
+    }
+  ],
+  "allowed_skills": [
+    {
+      "id": "architecture-compliance",
+      "path": ".ghdp/skills/architecture-compliance/SKILL.md"
+    },
+    {
+      "id": "traceability-and-resume",
+      "path": ".ghdp/skills/traceability-and-resume/SKILL.md"
+    }
+  ],
+  "blocking_findings": [],
+  "schema_version": "1.0"
+}

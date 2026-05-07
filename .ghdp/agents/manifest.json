@@ -1,0 +1,134 @@
+{
+  "schema_version": "1.0",
+  "generated_by": "ghdp",
+  "phase": "phase1",
+  "source_of_truth": "phase1_agentic_orchestrator_ground_truth.md",
+  "agents": [
+    {
+      "id": "orchestrator",
+      "role": "control_plane",
+      "summary": "Owns overall control-plane behavior, run transitions, policy loading, and pause/resume routing.",
+      "contract_path": ".ghdp/agents/orchestrator.json"
+    },
+    {
+      "id": "ticket-intake",
+      "role": "input_clarifier",
+      "summary": "Checks ticket or user input sufficiency before planning proceeds.",
+      "contract_path": ".ghdp/agents/ticket-intake.json"
+    },
+    {
+      "id": "work-type-classifier",
+      "role": "lifecycle_router",
+      "summary": "Classifies work into feature, enhancement, bug fix, or maintenance flows.",
+      "contract_path": ".ghdp/agents/work-type-classifier.json"
+    },
+    {
+      "id": "autonomy-assessor",
+      "role": "risk_gate",
+      "summary": "Determines safe autonomy level based on ambiguity, risk, and blast radius.",
+      "contract_path": ".ghdp/agents/autonomy-assessor.json"
+    },
+    {
+      "id": "context-capability-discovery",
+      "role": "reuse_mapper",
+      "summary": "Maps the request to existing capabilities, touched areas, and likely shared dependencies.",
+      "contract_path": ".ghdp/agents/context-capability-discovery.json"
+    },
+    {
+      "id": "asset-lifecycle",
+      "role": "asset_operator",
+      "summary": "Owns lightweight asset create/revise/version-update/remove flows for sync-managed or repo-owned capability assets.",
+      "contract_path": ".ghdp/agents/asset-lifecycle.json"
+    },
+    {
+      "id": "parallel-work-awareness",
+      "role": "duplication_guard",
+      "summary": "Checks branch-local and shared memory state for in-flight overlapping work.",
+      "contract_path": ".ghdp/agents/parallel-work-awareness.json"
+    },
+    {
+      "id": "blueprint-planner",
+      "role": "canonical_planner",
+      "summary": "Produces the canonical plan of action and keeps it aligned with intake, risk, and capability decisions.",
+      "contract_path": ".ghdp/agents/blueprint-planner.json"
+    },
+    {
+      "id": "architecture-review",
+      "role": "design_critic",
+      "summary": "Performs architecture compliance review against repo design principles and capability-first rules.",
+      "contract_path": ".ghdp/agents/architecture-review.json"
+    },
+    {
+      "id": "ux-dx-review",
+      "role": "ergonomics_critic",
+      "summary": "Reviews command UX, DX, contributor ergonomics, and operator clarity.",
+      "contract_path": ".ghdp/agents/ux-dx-review.json"
+    },
+    {
+      "id": "implementation",
+      "role": "delivery_worker",
+      "summary": "Applies code and artifact changes after the planning and review loops are clear.",
+      "contract_path": ".ghdp/agents/implementation.json"
+    },
+    {
+      "id": "qa-scenario-design",
+      "role": "scenario_designer",
+      "summary": "Designs difficult, acceptance-linked validation scenarios tailored to the change.",
+      "contract_path": ".ghdp/agents/qa-scenario-design.json"
+    },
+    {
+      "id": "regression-validation",
+      "role": "behavior_guard",
+      "summary": "Protects already-working behavior by selecting and interpreting touched-scope regression tests.",
+      "contract_path": ".ghdp/agents/regression-validation.json"
+    },
+    {
+      "id": "test-coverage-authoring",
+      "role": "coverage_expander",
+      "summary": "Designs and authors new tests reflecting changed or newly introduced behavior.",
+      "contract_path": ".ghdp/agents/test-coverage-authoring.json"
+    },
+    {
+      "id": "developer-test-execution",
+      "role": "validation_executor",
+      "summary": "Executes the authored and selected test plan, respecting pipx and local-resource locks.",
+      "contract_path": ".ghdp/agents/developer-test-execution.json"
+    },
+    {
+      "id": "binary-validation",
+      "role": "artifact_validator",
+      "summary": "Installs and validates the actual packaged artifact rather than stopping at dev-mode checks.",
+      "contract_path": ".ghdp/agents/binary-validation.json"
+    },
+    {
+      "id": "release-readiness",
+      "role": "go_no_go_reviewer",
+      "summary": "Confirms intent alignment, regression posture, and release readiness before prerelease/PR progression.",
+      "contract_path": ".ghdp/agents/release-readiness.json"
+    },
+    {
+      "id": "release-prerelease",
+      "role": "release_operator",
+      "summary": "Updates branch release notes, creates the prerelease, and assembles stable-note context when needed.",
+      "contract_path": ".ghdp/agents/release-prerelease.json"
+    },
+    {
+      "id": "published-prerelease-validation",
+      "role": "published_artifact_validator",
+      "summary": "Downloads and validates the actual published prerelease artifact for the current host before PR progression.",
+      "contract_path": ".ghdp/agents/published-prerelease-validation.json"
+    },
+    {
+      "id": "pr-external-integration",
+      "role": "external_communicator",
+      "summary": "Creates the PR and updates external systems such as Jira through the frozen integration paths.",
+      "contract_path": ".ghdp/agents/pr-external-integration.json"
+    },
+    {
+      "id": "traceability-historian",
+      "role": "execution_historian",
+      "summary": "Preserves prompts, decisions, iteration counts, and resume state so runs stay auditable and resumable.",
+      "contract_path": ".ghdp/agents/traceability-historian.json"
+    }
+  ]
+}

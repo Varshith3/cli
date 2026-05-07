@@ -1,0 +1,24 @@
+{
+  "asset_target": "toolset_codex_version",
+  "changed_files": [
+    "platform-cli/src/platform_cli/resources/manifests/toolset.json",
+    "platform-cli/release-assets/team_toolset/toolset.json"
+  ],
+  "changed_teams": [
+    "data_analyst",
+    "data_engineer",
+    "data_ops",
+    "data_platform",
+    "data_scientist"
+  ],
+  "message": "Revised the Codex minimum version to 0.128.0 across the team toolset assets.",
+  "operation": "update_versioned_asset",
+  "recorded_at": "2026-05-05T08:40:11Z",
+  "release_implications": [
+    "Target provider family: `github_release`.",
+    "Managed capability surface: `ghdp-team-toolset`.",
+    "If this target ships through a managed GHDP capability release, the corresponding packaged asset bundle and content-manifest payload must be published together.",
+    "If the effective release tag/version changes, the active content index entry must be updated before downstream sync consumers will observe the new version."
+  ],
+  "schema_version": "1.0"
+}

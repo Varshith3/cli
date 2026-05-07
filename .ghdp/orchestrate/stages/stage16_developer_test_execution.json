@@ -1,0 +1,39 @@
+{
+  "schema_version": "1.0",
+  "id": "stage16_developer_test_execution",
+  "title": "Stage 16 Developer Test Execution",
+  "owner_agent": "developer-test-execution",
+  "execution_mode": "sequential",
+  "messages": {
+    "completed": "Stage 16 developer test execution completed successfully with a repo-backed execution log.",
+    "failed": "Stage 16 developer test execution found failing validation and blocked the downstream release path."
+  },
+  "next_actions": {
+    "completed": "Proceed into Stage 17 packaged artifact validation and binary-focused verification.",
+    "failed": "Resolve the failing validation and rerun Stage 16 before any release-facing stages continue."
+  },
+  "handoff_summaries": {
+    "completed": "Stage 16 developer test execution completed with the selected regression and authored coverage backlog executed in a reproducible order.",
+    "failed": "Stage 16 developer test execution failed and recorded the blocking validation output for the next owner."
+  },
+  "execution_posture": [
+    "Run the focused regression and authored coverage backlog in a deterministic order.",
+    "Serialize this stage when local runtime artifacts or locks could interfere with one another.",
+    "Capture the exact command and output so a later owner can replay the same validation path."
+  ],
+  "summary_ready_inputs": [
+    "test_execution_prompt.md",
+    "test_execution_bindings.json",
+    "test_execution_log.md",
+    "test_execution_summary.md"
+  ],
+  "summary_expected_next_step": "Use the completed test execution evidence to decide whether packaged artifact validation can proceed.",
+  "resume_note_templates": [
+    "Execution agent: {execution_agent}.",
+    "Allowed skills: {allowed_skill_count}.",
+    "Allowed plugins: {allowed_plugin_count}.",
+    "Execution mode: {execution_mode}.",
+    "Executed tests: {executed_test_count}.",
+    "Failed tests: {failed_test_count}."
+  ]
+}

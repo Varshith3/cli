@@ -1,0 +1,9 @@
+{
+  "schema_version": "1.0",
+  "scenarios": [
+    {
+      "id": "new_feature_subagent_smoke",
+      "contract_path": ".ghdp/orchestrate/scenarios/new_feature_subagent_smoke.json"
+    }
+  ]
+}

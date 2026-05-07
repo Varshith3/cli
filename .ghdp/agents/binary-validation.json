@@ -1,0 +1,17 @@
+{
+  "schema_version": "1.0",
+  "id": "binary-validation",
+  "role": "artifact_validator",
+  "summary": "Installs and validates the actual packaged artifact rather than stopping at dev-mode checks.",
+  "stages_owned": ["stage17_packaged_artifact_validation"],
+  "allowed_skills": ["isolated-binary-validation"],
+  "allowed_plugins": ["native-memory-filesystem"],
+  "produces_artifacts": ["artifact_validation_result", "packaged_cli_smoke"],
+  "approval_mode": "on_failure",
+  "can_block": true,
+  "can_retry": true,
+  "prompt_contract": [
+    "Validate the packaged artifact in isolation, not only source-mode behavior.",
+    "Record the exact install-and-run evidence needed for release confidence."
+  ]
+}

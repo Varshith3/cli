@@ -1,0 +1,20 @@
+{
+  "schema_version": "1.0",
+  "generated_by": "ghdp",
+  "template_version": "__GHDP_TEMPLATE_VERSION__",
+  "source": "repo_ready_fallback",
+  "repo_name": "__GHDP_REPO_NAME__",
+  "branch_name": "__GHDP_BRANCH_NAME__",
+  "ticket_key": "__GHDP_TICKET_KEY__",
+  "summary": "TODO: summarize the purpose of this feature branch.",
+  "scope": {
+    "in": [
+      "TODO: list the intended change scope."
+    ],
+    "out": []
+  },
+  "acceptance_criteria": [
+    "TODO: list the acceptance criteria for this branch."
+  ],
+  "status": "pending-user-review"
+}

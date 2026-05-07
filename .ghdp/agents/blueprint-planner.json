@@ -1,0 +1,17 @@
+{
+  "schema_version": "1.0",
+  "id": "blueprint-planner",
+  "role": "canonical_planner",
+  "summary": "Produces the canonical plan of action and keeps it aligned with intake, risk, and capability decisions.",
+  "stages_owned": ["stage7_spec_action", "stage8_blueprint_poa"],
+  "allowed_skills": ["blueprint-poa-authoring", "stable-release-notes-assembly"],
+  "allowed_plugins": ["provider-codex", "provider-claude"],
+  "produces_artifacts": ["poa.md"],
+  "approval_mode": "on_high_impact",
+  "can_block": true,
+  "can_retry": true,
+  "prompt_contract": [
+    "Keep one canonical POA and update it instead of fragmenting plan state.",
+    "Tie design steps back to intake, capability discovery, and release implications."
+  ]
+}

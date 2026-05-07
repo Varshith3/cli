@@ -1,0 +1,16 @@
+schema_version: "1.0"
+commands:
+  build: []
+  test: []
+  lint: []
+  format: []
+  start: []
+  dev: []
+entrypoints: []
+services: []
+env_vars: []
+notes:
+  status: pending-user-review
+metadata:
+  managed_by: ghdp
+  template_version: "__GHDP_TEMPLATE_VERSION__"

@@ -1,0 +1,2 @@
+[console_scripts]
+ghdp = platform_cli.cli:_run

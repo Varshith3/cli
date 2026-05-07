@@ -1,0 +1,16 @@
+schema_version: "1.0"
+template_set: repo_ready
+template_version: "__GHDP_TEMPLATE_VERSION__"
+applied_at: "__GHDP_APPLIED_AT__"
+managed_files:
+  - .ghdp/config.yaml
+  - .ghdp/guardrails.yaml
+  - .ghdp/lock.yaml
+  - .ghdp/runbook.yaml
+  - .ghdp/architecture.md
+  - .ghdp/readiness.json
+  - .github/workflows/ghdp-agent-policy.yml
+approved_by: []
+known_bad:
+  skills: []
+  mcp_servers: []

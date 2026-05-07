@@ -1,0 +1,17 @@
+{
+  "schema_version": "1.0",
+  "id": "context-capability-discovery",
+  "role": "reuse_mapper",
+  "summary": "Maps the request to existing capabilities, touched areas, and likely shared dependencies.",
+  "stages_owned": ["stage5_context_discovery"],
+  "allowed_skills": ["capability-discovery", "repo-local-code-context", "minimal-sync-decision"],
+  "allowed_plugins": ["provider-codex", "provider-claude", "native-memory-filesystem", "sync-minimal"],
+  "produces_artifacts": ["capability_map", "impacted_areas"],
+  "approval_mode": "on_anomaly",
+  "can_block": true,
+  "can_retry": true,
+  "prompt_contract": [
+    "Find reuse before proposing new capability surface area.",
+    "Map touched code and sync-adjacent concerns early so the plan stays grounded."
+  ]
+}

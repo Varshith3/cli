@@ -1,0 +1,193 @@
+{
+  "effective_host": "codex",
+  "effective_plugin": "provider-codex",
+  "effective_provider": "codex",
+  "executed": true,
+  "execution_waves": [
+    [
+      "ticket-intake",
+      "work-type-classifier",
+      "autonomy-assessor",
+      "context-capability-discovery",
+      "parallel-work-awareness"
+    ],
+    [
+      "blueprint-planner"
+    ],
+    [
+      "architecture-review",
+      "ux-dx-review"
+    ]
+  ],
+  "fallback_used": true,
+  "outputs": [
+    {
+      "agent_id": "ticket-intake",
+      "output": "- `intake_summary`: Insufficient to expand planning. This brief matches the repo smoke scenario, but that path is not execution-deterministic until the provider is explicit: the sub-agent allows only `provider-codex` or `provider-claude`, so keep work in the `front_door_analysis` parallel wave and block any handoff into `blueprint-planner` or later sequential stages.\n- `clarification_questions`: Which allowed provider should replace the default scenario routing for this run: `provider-codex` or `provider-claude`? If the intent is cross-host replay, confirm whether the host should emit dual payloads for both instead of one resolved provider.\n- `acceptance_candidates`: Use only repo-defined contracts, preserve topology-owned parallel versus sequential routing, and emit self-contained prompt packets plus provider-ready payloads with the downstream artifacts `subagent_execution_plan.json`, `subagent_prompt_packets.md`, and `subagent_execution_result.json` so another host can execute without hidden chat memory."
+    },
+    {
+      "agent_id": "work-type-classifier",
+      "output": "- `work_type_decision`: `new_feature`. The scenario matches `.ghdp/orchestrate/scenarios/new_feature_subagent_smoke.json`, which is explicitly about proving a net-new deterministic sub-agent/provider execution flow; `enhancement` or `maintenance` would under-scope that lifecycle.\n- Topology routing: run `work-type-classifier` in the `front_door_analysis` parallel wave from `.ghdp/orchestrate/topology.json` with `ticket-intake`, `autonomy-assessor`, `context-capability-discovery`, and `parallel-work-awareness`, and complete this artifact before any sequential `delivery_backbone` stage consumes it.\n- Provider-ready payload: emit a self-contained `work_type_decision` packet for `provider-codex` or `provider-claude` that includes `work_type=new_feature`, the routing rationale, the scenario brief, the prompt contract, and the allowed skill/plugin lists so another host can execute it without hidden chat memory."
+    },
+    {
+      "agent_id": "autonomy-assessor",
+      "output": "- `autonomy_decision`: `bounded-medium`. Ambiguity is low to moderate because the repo-level agent, skill, topology, and provider contracts are explicit; blast radius is moderate because the output steers downstream execution; reversibility is high because this stage produces stateless packet artifacts, not direct implementation changes.\n- `gating_rationale`: keep this sub-agent scoped to `stage4_autonomy` in the `front_door_analysis` parallel wave and emit only self-contained `autonomy_decision` and `gating_rationale` content that carries the scenario brief, allowed skill `complexity-autonomy-assessment`, and allowed plugins `provider-codex` and `provider-claude` so another host can execute without hidden chat memory.\n- Escalate and reduce autonomy to `low` if the task expands into host/plugin resolution beyond `provider-codex` or `provider-claude`, if parallel vs sequential ownership is not fully determined by `.ghdp/orchestrate/topology.json`, or if the packet would depend on unstated repo context; those are kernel/orchestrator concerns, not this sub-agent\u2019s safe execution boundary."
+    },
+    {
+      "agent_id": "context-capability-discovery",
+      "output": "- `capability_map`: Reuse the existing repo-contract pipeline before adding anything new: [context-capability-discovery.json](/C:/Users/Hi/Downloads/git-repos/dp-tools-local-setup/.ghdp/agents/context-capability-discovery.json:1) already bounds this agent, [orchestrate_front_door.py](/C:/Users/Hi/Downloads/git-repos/dp-tools-local-setup/platform-cli/src/platform_cli/tools/orchestrate_front_door.py:401) already derives `capability_matches` and `impacted_areas` from `.ghdp/agents`, `.ghdp/skills`, and `.ghdp/plugins`, and [subagents.py](/C:/Users/Hi/Downloads/git-repos/dp-tools-local-setup/platform-cli/src/platform_cli/orchestrate_kernel/subagents.py:142) already persists prompt-packet artifacts for host execution.\n\n- `impacted_areas`: Keep this in the topology\u2019s `front_door_analysis` wave from [topology.json](/C:/Users/Hi/Downloads/git-repos/dp-tools-local-setup/.ghdp/orchestrate/topology.json:5), then hand off through the existing scenario/runtime path in [new_feature_subagent_smoke.json](/C:/Users/Hi/Downloads/git-repos/dp-tools-local-setup/.ghdp/orchestrate/scenarios/new_feature_subagent_smoke.json:1) and [orchestrate.py](/C:/Users/Hi/Downloads/git-repos/dp-tools-local-setup/platform-cli/src/platform_cli/commands/orchestrate.py:445); grounded touched surfaces are `.ghdp/agents`, `.ghdp/skills`, `.ghdp/plugins`, `.ghdp/orchestrate/scenarios`, `platform-cli/src/platform_cli/tools/orchestrate_front_door.py`, and `platform-cli/src/platform_cli/orchestrate_kernel/*`.\n\n- `sync_decision`: Stay repo-native by default: write `subagent_execution_plan.json`, `subagent_prompt_packets.md`, and `subagent_execution_result.json` under `.ghdp/orchestrate` per [orchestrate/README.md](/C:/Users/Hi/Downloads/git-repos/dp-tools-local-setup/.ghdp/orchestrate/README.md:3) and [memory/README.md](/C:/Users/Hi/Downloads/git-repos/dp-tools-local-setup/.ghdp/memory/README.md:21), route provider-ready payloads through `provider-codex` or `provider-claude` using [provider_adapters.py](/C:/Users/Hi/Downloads/git-repos/dp-tools-local-setup/platform-cli/src/platform_cli/orchestrate_kernel/provider_adapters.py:29), and only invoke `sync-minimal` if ownership clearly crosses into managed `~/.ghdp` policy or state."
+    },
+    {
+      "agent_id": "parallel-work-awareness",
+      "output": "- `parallel_work_decision: block_and_resume`. Per `.ghdp/orchestrate/topology.json`, `parallel-work-awareness` stays in the `front_door_analysis` parallel wave only; do not hand this scenario into the sequential `delivery_backbone` until the overlap signal is resolved.\n\n- `Conflict signal: explicit.` The current branch already has an active run: [branch_state.json](</C:/Users/Hi/Downloads/git-repos/dp-tools-local-setup/.ghdp/orchestrate/branches/feature-eppe-7391-technical-agentic-framework-foundation-skills-plugins-subagents-native-memory/branch_state.json>) is `paused` with `active_run_key=20260504-223548-ist__codex__stage-a` and next action `Stage 22 traceability capture`, while [run_state.json](</C:/Users/Hi/Downloads/git-repos/dp-tools-local-setup/.ghdp/orchestrate/branches/feature-eppe-7391-technical-agentic-framework-foundation-skills-plugins-subagents-native-memory/runs/20260504-223548-ist__codex__stage-a/run_state.json>) is still `in_progress`; treat a new start as duplicate work and resume the existing run instead.\n\n- `Provider-ready payload:` build the next-host packet for `provider-codex` or `provider-claude` from repo-backed artifacts only: `.ghdp/agents/parallel-work-awareness.json`, `.ghdp/skills/folder-backed-shared-memory/SKILL.md`, `.ghdp/skills/traceability-and-resume/SKILL.md`, [handoff.md](</C:/Users/Hi/Downloads/git-repos/dp-tools-local-setup/.ghdp/orchestrate/branches/feature-eppe-7391-technical-agentic-framework-foundation-skills-plugins-subagents-native-memory/handoff.md>), and [resume_context.md](</C:/Users/Hi/Downloads/git-repos/dp-tools-local-setup/.ghdp/orchestrate/branches/feature-eppe-7391-technical-agentic-framework-foundation-skills-plugins-subagents-native-memory/runs/20260504-223548-ist__codex__stage-a/resume_context.md>); set `conflict_status=resume_existing_run`. `.ghdp/memory/shared` has no durable overlap record and `~/.ghdp` shows no stronger lock/heartbeat, so prefer this repo-local conflict signal over silent assumption."
+    },
+    {
+      "agent_id": "blueprint-planner",
+      "output": "- Run the topology in contract order: complete the `front_door_analysis` wave in parallel, execute `blueprint-planner` in the sequential backbone, then hand off to the review wave; do not flatten or reorder work outside [.ghdp/orchestrate/topology.json](/C:/Users/Hi/Downloads/git-repos/dp-tools-local-setup/.ghdp/orchestrate/topology.json:1).\n\n- Use `blueprint-poa-authoring` to update one canonical [poa.md](/C:/Users/Hi/Downloads/git-repos/dp-tools-local-setup/.ghdp/orchestrate/branches/feature-eppe-7391-technical-agentic-framework-foundation-skills-plugins-subagents-native-memory/poa.md:1) from [.ghdp/frbr/intent.json](/C:/Users/Hi/Downloads/git-repos/dp-tools-local-setup/.ghdp/frbr/intent.json:1) plus the front-door outputs, carrying forward intake, capability discovery, impacted areas, and the exact downstream execution basis.\n\n- Use `stable-release-notes-assembly` to record concise release implications in that same POA and emit self-contained prompt packets/provider payloads for `provider-codex` and `provider-claude`, so another host can execute the planner stage without hidden chat memory."
+    },
+    {
+      "agent_id": "architecture-review",
+      "output": "- `BLOCK`: scheduling is still partly scenario-owned, not topology-owned. [subagents.py](</C:/Users/Hi/Downloads/git-repos/dp-tools-local-setup/platform-cli/src/platform_cli/orchestrate_kernel/subagents.py:261>) builds waves by iterating `requested_agents`, while [topology.json](</C:/Users/Hi/Downloads/git-repos/dp-tools-local-setup/.ghdp/orchestrate/topology.json:5>) and [kernel.json](</C:/Users/Hi/Downloads/git-repos/dp-tools-local-setup/.ghdp/orchestrate/kernel.json:4>) say execution is repo-contract-driven. Make topology the only source of wave order; let scenarios select subsets only.\n\n- `ACCEPT`: per-agent provider policy is now enforced at the runtime boundary. [subagents.py](</C:/Users/Hi/Downloads/git-repos/dp-tools-local-setup/platform-cli/src/platform_cli/orchestrate_kernel/subagents.py:218>) rejects an `effective_plugin` outside each agent\u2019s `allowed_plugins`, and both [architecture-review.json](</C:/Users/Hi/Downloads/git-repos/dp-tools-local-setup/.ghdp/agents/architecture-review.json:8>) and [ux-dx-review.json](</C:/Users/Hi/Downloads/git-repos/dp-tools-local-setup/.ghdp/agents/ux-dx-review.json:8>) are compatible with headless Codex/Claude execution. Keep this strict; do not move provider selection back into host convention.\n\n- `BLOCK`: \u201crepo-defined contracts only\u201d is still diluted by runtime/headless gaps. [subagents.py](</C:/Users/Hi/Downloads/git-repos/dp-tools-local-setup/platform-cli/src/platform_cli/orchestrate_kernel/subagents.py:227>) hardcodes prompt scaffolding and the 3-bullet output rule, [provider-codex/plugin.json](</C:/Users/Hi/Downloads/git-repos/dp-tools-local-setup/.ghdp/plugins/provider-codex/plugin.json:7>) and [provider-claude/plugin.json](</C:/Users/Hi/Downloads/git-repos/dp-tools-local-setup/.ghdp/plugins/provider-claude/plugin.json:6>) omit topology that the VS Code adapters carry, and [subagents.py](</C:/Users/Hi/Downloads/git-repos/dp-tools-local-setup/platform-cli/src/platform_cli/orchestrate_kernel/subagents.py:172>) only publishes artifact names. Move prompt template, topology obligations, and artifact path/schema into `.ghdp` contracts before calling this host-independent."
+    },
+    {
+      "agent_id": "ux-dx-review",
+      "output": "- `Block:` The headless provider payloads are not topology-complete. [provider-codex](</C:/Users/Hi/Downloads/git-repos/dp-tools-local-setup/.ghdp/plugins/provider-codex/plugin.json:1>) and [provider-claude](</C:/Users/Hi/Downloads/git-repos/dp-tools-local-setup/.ghdp/plugins/provider-claude/plugin.json:1>) omit `.ghdp/orchestrate/topology.json`, while the topology contract is the source of parallel vs sequential scheduling in [topology.json](</C:/Users/Hi/Downloads/git-repos/dp-tools-local-setup/.ghdp/orchestrate/topology.json:5>). Mirror the richer VS Code provider contracts so another host does not need out-of-band orchestration knowledge.\n\n- `Block:` Execution order is still partly hidden in scenario ordering instead of being fully derived from the topology contract. [plan_execution_waves()](</C:/Users/Hi/Downloads/git-repos/dp-tools-local-setup/platform-cli/src/platform_cli/orchestrate_kernel/subagents.py:261>) walks `requested_agents` and groups opportunistically, so a host must trust scenario order rather than the canonical contract. Make the persisted plan topology-and-dependency derived first, then replay from that saved schedule only.\n\n- `Gap:` The prompt packets are readable but not fully executable as handoff artifacts. [ux-dx-review.json](</C:/Users/Hi/Downloads/git-repos/dp-tools-local-setup/.ghdp/agents/ux-dx-review.json:9>) declares only `ux_dx_findings`, and [persist_scenario_result()](</C:/Users/Hi/Downloads/git-repos/dp-tools-local-setup/platform-cli/src/platform_cli/orchestrate_kernel/subagents.py:159>) writes artifact names without required path, format, or schema. Add explicit output location and minimal payload shape to `subagent_execution_plan.json` so the next host can write the artifact without repo intuition."
+    }
+  ],
+  "packets": [
+    {
+      "agent_id": "ticket-intake",
+      "allowed_plugins": [
+        "provider-codex",
+        "provider-claude"
+      ],
+      "allowed_skills": [
+        "ticket-intake-sufficiency"
+      ],
+      "mode": "parallel",
+      "produces_artifacts": [
+        "intake_summary",
+        "clarification_questions",
+        "acceptance_candidates"
+      ],
+      "prompt": "You are the repo-defined sub-agent 'ticket-intake'.\nRole: input_clarifier\nUse only the allowed skills and plugins below.\nReturn a short execution-ready assessment for this scenario in 3 bullets.\n\nScenario brief:\n- Use repo-defined agent contracts only.\n- Respect the topology contract for parallel versus sequential work.\n- Produce prompt packets and provider-ready payloads that another host can execute without hidden chat memory.\n\nPrompt contract:\n- Decide whether intake is sufficient before planning expands.\n- Prefer precise clarification requests over vague open-ended follow-up.\n- Carry acceptance criteria forward when they are present.\n\nAllowed skills:\n- ticket-intake-sufficiency\n\nAllowed plugins:\n- provider-codex\n- provider-claude\n\nProduces artifacts:\n- intake_summary\n- clarification_questions\n- acceptance_candidates"
+    },
+    {
+      "agent_id": "work-type-classifier",
+      "allowed_plugins": [
+        "provider-codex",
+        "provider-claude"
+      ],
+      "allowed_skills": [
+        "work-type-classification"
+      ],
+      "mode": "parallel",
+      "produces_artifacts": [
+        "work_type_decision"
+      ],
+      "prompt": "You are the repo-defined sub-agent 'work-type-classifier'.\nRole: lifecycle_router\nUse only the allowed skills and plugins below.\nReturn a short execution-ready assessment for this scenario in 3 bullets.\n\nScenario brief:\n- Use repo-defined agent contracts only.\n- Respect the topology contract for parallel versus sequential work.\n- Produce prompt packets and provider-ready payloads that another host can execute without hidden chat memory.\n\nPrompt contract:\n- Choose the simplest correct lifecycle for the request.\n- Avoid forcing all work into new-feature behavior when enhancement or maintenance fits better.\n\nAllowed skills:\n- work-type-classification\n\nAllowed plugins:\n- provider-codex\n- provider-claude\n\nProduces artifacts:\n- work_type_decision"
+    },
+    {
+      "agent_id": "autonomy-assessor",
+      "allowed_plugins": [
+        "provider-codex",
+        "provider-claude"
+      ],
+      "allowed_skills": [
+        "complexity-autonomy-assessment"
+      ],
+      "mode": "parallel",
+      "produces_artifacts": [
+        "autonomy_decision",
+        "gating_rationale"
+      ],
+      "prompt": "You are the repo-defined sub-agent 'autonomy-assessor'.\nRole: risk_gate\nUse only the allowed skills and plugins below.\nReturn a short execution-ready assessment for this scenario in 3 bullets.\n\nScenario brief:\n- Use repo-defined agent contracts only.\n- Respect the topology contract for parallel versus sequential work.\n- Produce prompt packets and provider-ready payloads that another host can execute without hidden chat memory.\n\nPrompt contract:\n- Keep autonomy proportional to confidence and blast radius.\n- Escalate when the repo contract or the request leaves too much ambiguity.\n\nAllowed skills:\n- complexity-autonomy-assessment\n\nAllowed plugins:\n- provider-codex\n- provider-claude\n\nProduces artifacts:\n- autonomy_decision\n- gating_rationale"
+    },
+    {
+      "agent_id": "context-capability-discovery",
+      "allowed_plugins": [
+        "provider-codex",
+        "provider-claude",
+        "native-memory-filesystem",
+        "sync-minimal"
+      ],
+      "allowed_skills": [
+        "capability-discovery",
+        "repo-local-code-context",
+        "minimal-sync-decision"
+      ],
+      "mode": "parallel",
+      "produces_artifacts": [
+        "capability_map",
+        "impacted_areas"
+      ],
+      "prompt": "You are the repo-defined sub-agent 'context-capability-discovery'.\nRole: reuse_mapper\nUse only the allowed skills and plugins below.\nReturn a short execution-ready assessment for this scenario in 3 bullets.\n\nScenario brief:\n- Use repo-defined agent contracts only.\n- Respect the topology contract for parallel versus sequential work.\n- Produce prompt packets and provider-ready payloads that another host can execute without hidden chat memory.\n\nPrompt contract:\n- Find reuse before proposing new capability surface area.\n- Map touched code and sync-adjacent concerns early so the plan stays grounded.\n\nAllowed skills:\n- capability-discovery\n- repo-local-code-context\n- minimal-sync-decision\n\nAllowed plugins:\n- provider-codex\n- provider-claude\n- native-memory-filesystem\n- sync-minimal\n\nProduces artifacts:\n- capability_map\n- impacted_areas"
+    },
+    {
+      "agent_id": "parallel-work-awareness",
+      "allowed_plugins": [
+        "provider-codex",
+        "provider-claude",
+        "native-memory-filesystem"
+      ],
+      "allowed_skills": [
+        "folder-backed-shared-memory",
+        "traceability-and-resume"
+      ],
+      "mode": "parallel",
+      "produces_artifacts": [
+        "parallel_work_decision"
+      ],
+      "prompt": "You are the repo-defined sub-agent 'parallel-work-awareness'.\nRole: duplication_guard\nUse only the allowed skills and plugins below.\nReturn a short execution-ready assessment for this scenario in 3 bullets.\n\nScenario brief:\n- Use repo-defined agent contracts only.\n- Respect the topology contract for parallel versus sequential work.\n- Produce prompt packets and provider-ready payloads that another host can execute without hidden chat memory.\n\nPrompt contract:\n- Use repo and user-global memory to detect overlap before duplicate work begins.\n- Prefer explicit conflict signaling over silent assumption.\n\nAllowed skills:\n- folder-backed-shared-memory\n- traceability-and-resume\n\nAllowed plugins:\n- provider-codex\n- provider-claude\n- native-memory-filesystem\n\nProduces artifacts:\n- parallel_work_decision"
+    },
+    {
+      "agent_id": "blueprint-planner",
+      "allowed_plugins": [
+        "provider-codex",
+        "provider-claude"
+      ],
+      "allowed_skills": [
+        "blueprint-poa-authoring",
+        "stable-release-notes-assembly"
+      ],
+      "mode": "sequential",
+      "produces_artifacts": [
+        "poa.md"
+      ],
+      "prompt": "You are the repo-defined sub-agent 'blueprint-planner'.\nRole: canonical_planner\nUse only the allowed skills and plugins below.\nReturn a short execution-ready assessment for this scenario in 3 bullets.\n\nScenario brief:\n- Use repo-defined agent contracts only.\n- Respect the topology contract for parallel versus sequential work.\n- Produce prompt packets and provider-ready payloads that another host can execute without hidden chat memory.\n\nPrompt contract:\n- Keep one canonical POA and update it instead of fragmenting plan state.\n- Tie design steps back to intake, capability discovery, and release implications.\n\nAllowed skills:\n- blueprint-poa-authoring\n- stable-release-notes-assembly\n\nAllowed plugins:\n- provider-codex\n- provider-claude\n\nProduces artifacts:\n- poa.md"
+    },
+    {
+      "agent_id": "architecture-review",
+      "allowed_plugins": [
+        "provider-codex",
+        "provider-claude"
+      ],
+      "allowed_skills": [
+        "architecture-compliance"
+      ],
+      "mode": "parallel",
+      "produces_artifacts": [
+        "architecture_review_findings"
+      ],
+      "prompt": "You are the repo-defined sub-agent 'architecture-review'.\nRole: design_critic\nUse only the allowed skills and plugins below.\nReturn a short execution-ready assessment for this scenario in 3 bullets.\n\nScenario brief:\n- Use repo-defined agent contracts only.\n- Respect the topology contract for parallel versus sequential work.\n- Produce prompt packets and provider-ready payloads that another host can execute without hidden chat memory.\n\nPrompt contract:\n- Be skeptical about layering, capability duplication, and policy drift.\n- Block changes that move manifest concerns into runtime layers or vice versa.\n\nAllowed skills:\n- architecture-compliance\n\nAllowed plugins:\n- provider-codex\n- provider-claude\n\nProduces artifacts:\n- architecture_review_findings"
+    },
+    {
+      "agent_id": "ux-dx-review",
+      "allowed_plugins": [
+        "provider-codex",
+        "provider-claude"
+      ],
+      "allowed_skills": [
+        "ux-dx-review"
+      ],
+      "mode": "parallel",
+      "produces_artifacts": [
+        "ux_dx_findings"
+      ],
+      "prompt": "You are the repo-defined sub-agent 'ux-dx-review'.\nRole: ergonomics_critic\nUse only the allowed skills and plugins below.\nReturn a short execution-ready assessment for this scenario in 3 bullets.\n\nScenario brief:\n- Use repo-defined agent contracts only.\n- Respect the topology contract for parallel versus sequential work.\n- Produce prompt packets and provider-ready payloads that another host can execute without hidden chat memory.\n\nPrompt contract:\n- Prefer simple, understandable command surfaces over clever ones.\n- Call out places where contributors or operators would need hidden context to succeed.\n\nAllowed skills:\n- ux-dx-review\n\nAllowed plugins:\n- provider-codex\n- provider-claude\n\nProduces artifacts:\n- ux_dx_findings"
+    }
+  ],
+  "provider_plugin": "provider-vscode-codex",
+  "requested_host": "vscode_codex",
+  "scenario_id": "new_feature_subagent_smoke"
+}

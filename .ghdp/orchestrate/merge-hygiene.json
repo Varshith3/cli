@@ -1,0 +1,19 @@
+{
+  "schema_version": "1.0",
+  "id": "phase1_merge_hygiene",
+  "retained_memory": {
+    "shared_closeout_dir": ".ghdp/memory/shared/orchestrate-closeouts"
+  },
+  "archive": {
+    "destination_mode": "local",
+    "local": {
+      "output_dir": "tmp/orchestrate-merge-archives",
+      "retention_days": 7
+    }
+  },
+  "merge_blockers": {
+    "require_stage22_closeout": true,
+    "block_active_runtime_state": true,
+    "require_promoted_memory_receipt": true
+  }
+}

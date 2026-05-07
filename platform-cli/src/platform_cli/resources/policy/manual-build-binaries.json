@@ -1,0 +1,50 @@
+{
+  "schema_version": "1.0",
+  "stable_branches": [
+    "main",
+    "develop"
+  ],
+  "branch_kind_tokens": [
+    "feature",
+    "bugfix",
+    "enhancement",
+    "technical",
+    "hotfix",
+    "chore"
+  ],
+  "release_notes": {
+    "summary_file": ".github/release-notes/notes.md",
+    "template_file": ".github/release-notes/template.md"
+  },
+  "build": {
+    "workdir_default": "platform-cli",
+    "build_meta_path": "src/platform_cli/_build_meta.py",
+    "runtime_defaults_path": "src/platform_cli/_runtime_defaults.py",
+    "asset_targets": [
+      {
+        "system": "darwin",
+        "machine": "x86_64",
+        "asset": "ghdp-darwin-amd64",
+        "built_path": "dist/ghdp"
+      },
+      {
+        "system": "darwin",
+        "machine": "arm64",
+        "asset": "ghdp-darwin-arm64",
+        "built_path": "dist/ghdp"
+      },
+      {
+        "system": "linux",
+        "machine": "x86_64",
+        "asset": "ghdp-linux-amd64",
+        "built_path": "dist/ghdp"
+      },
+      {
+        "system": "windows",
+        "machine": "x86_64",
+        "asset": "ghdp-windows-amd64.exe",
+        "built_path": "dist/ghdp.exe"
+      }
+    ]
+  }
+}

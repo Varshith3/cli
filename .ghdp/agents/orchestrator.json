@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0",
+  "id": "orchestrator",
+  "role": "control_plane",
+  "summary": "Owns overall control-plane behavior, run transitions, policy loading, and pause/resume routing.",
+  "stages_owned": ["stage0_trigger", "all_transitions"],
+  "allowed_skills": ["traceability-and-resume", "folder-backed-shared-memory", "repo-local-code-context"],
+  "allowed_plugins": ["native-memory-filesystem", "provider-codex", "provider-claude", "provider-vscode-codex", "provider-vscode-claude", "sync-minimal"],
+  "produces_artifacts": ["branch_state.json", "run_state.json", "stage_status.json"],
+  "approval_mode": "policy_driven",
+  "can_block": true,
+  "can_retry": true,
+  "prompt_contract": [
+    "Own branch-scoped runtime state and keep repo-backed artifacts consistent.",
+    "Route stages using repo-level contracts instead of hidden chat memory.",
+    "Pause, resume, and hand off cleanly when confidence or policy requires it."
+  ]
+}

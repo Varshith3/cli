@@ -1,0 +1,35 @@
+{
+  "agent_id": "implementation",
+  "allowed_plugins": [
+    {
+      "id": "provider-codex",
+      "path": ".ghdp/plugins/provider-codex/plugin.json"
+    },
+    {
+      "id": "provider-claude",
+      "path": ".ghdp/plugins/provider-claude/plugin.json"
+    },
+    {
+      "id": "native-memory-filesystem",
+      "path": ".ghdp/plugins/native-memory-filesystem/plugin.json"
+    }
+  ],
+  "allowed_skills": [
+    {
+      "id": "traceability-and-resume",
+      "path": ".ghdp/skills/traceability-and-resume/SKILL.md"
+    }
+  ],
+  "implementation_targets": [
+    ".ghdp/agents/manifest.json",
+    ".ghdp/memory/context/README.md",
+    ".ghdp/memory/manifest.json",
+    ".ghdp/memory/shared/README.md",
+    ".ghdp/plugins/manifest.json",
+    ".ghdp/skills/manifest.json",
+    "platform-cli/src/platform_cli/commands/orchestrate.py",
+    "platform-cli/src/platform_cli/tools/orchestrate_front_door.py",
+    "platform-cli/src/platform_cli/tools/orchestrate_runtime.py"
+  ],
+  "schema_version": "1.0"
+}

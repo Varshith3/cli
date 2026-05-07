@@ -1,0 +1,102 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-04-21T00:00:00Z",
+  "capabilities": [
+    {
+      "capability": "codex-skills-aws",
+      "version": "1.0.0",
+      "repo": "gh-org-data-platform/dp-tools-local-setup",
+      "tag": "codex-skills-aws-v1.0.0",
+      "manifest_asset": "content-manifest.json",
+      "allow_update_existing_files": true,
+      "allow_new_files_on_update": false,
+      "min_cli_version": "0.1.0"
+    },
+    {
+      "capability": "claude-skills-aws",
+      "version": "1.0.0",
+      "repo": "gh-org-data-platform/dp-tools-local-setup",
+      "tag": "claude-skills-aws-v1.0.0",
+      "manifest_asset": "content-manifest.json",
+      "allow_update_existing_files": true,
+      "allow_new_files_on_update": false,
+      "min_cli_version": "0.1.0"
+    },
+    {
+      "capability": "tableau-athena-jars",
+      "version": "0.1.0",
+      "repo": "gh-org-data-platform/dp-tools-local-setup",
+      "tag": "v0.1.0-tableau-athena-jars",
+      "manifest_asset": "content-manifest.json",
+      "allow_update_existing_files": true,
+      "allow_new_files_on_update": false,
+      "min_cli_version": "0.1.0"
+    },
+    {
+      "capability": "marketplace-skill-allowlist",
+      "version": "1.2.3",
+      "repo": "gh-org-data-platform/dp-tools-local-setup",
+      "tag": "marketplace-skill-allowlist-v1.2.3",
+      "manifest_asset": "content-manifest.json",
+      "allow_update_existing_files": true,
+      "allow_new_files_on_update": false,
+      "allow_install_if_missing": true,
+      "min_cli_version": "0.1.0"
+    },
+    {
+      "capability": "repo-ready-assets",
+      "version": "1.0.0",
+      "repo": "gh-org-data-platform/dp-tools-local-setup",
+      "tag": "repo-ready-assets-v1.0.0",
+      "manifest_asset": "content-manifest.json",
+      "allow_update_existing_files": true,
+      "allow_new_files_on_update": false,
+      "allow_install_if_missing": true,
+      "min_cli_version": "0.1.0"
+    },
+    {
+      "capability": "ghdp-team-toolset",
+      "version": "1.0.5",
+      "repo": "gh-org-data-platform/dp-tools-local-setup",
+      "tag": "ghdp-team-toolset-v1.0.5",
+      "manifest_asset": "content-manifest.json",
+      "allow_update_existing_files": true,
+      "allow_new_files_on_update": false,
+      "allow_install_if_missing": true,
+      "min_cli_version": "0.1.0"
+    },
+    {
+      "capability": "claude-athena-workgroup-map",
+      "version": "1.0.3",
+      "repo": "gh-org-data-platform/dp-tools-local-setup",
+      "tag": "claude-athena-workgroup-map-v1.0.3",
+      "manifest_asset": "content-manifest.json",
+      "allow_update_existing_files": true,
+      "allow_new_files_on_update": false,
+      "allow_install_if_missing": true,
+      "min_cli_version": "0.1.0"
+    },
+    {
+      "capability": "background-scheduler",
+      "version": "1.0.6",
+      "repo": "gh-org-data-platform/dp-tools-local-setup",
+      "tag": "background-scheduler-v1.0.6",
+      "manifest_asset": "content-manifest.json",
+      "allow_update_existing_files": true,
+      "allow_new_files_on_update": false,
+      "allow_install_if_missing": true,
+      "min_cli_version": "0.1.0"
+    },
+    {
+      "capability": "ghdp-admin-policy",
+      "version": "1.1.8",
+      "repo": "gh-org-data-platform/dp-tools-local-setup",
+      "tag": "ghdp-admin-policy-v1.1.8",
+      "manifest_asset": "content-manifest.json",
+      "allow_update_existing_files": true,
+      "allow_new_files_on_update": true,
+      "allow_install_if_missing": true,
+      "min_cli_version": "0.1.0"
+    }
+  ]
+}

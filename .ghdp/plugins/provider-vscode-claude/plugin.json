@@ -1,0 +1,14 @@
+{
+  "schema_version": "1.0",
+  "id": "provider-vscode-claude",
+  "login_required": false,
+  "executor": "claude_cli",
+  "host_mode": "vscode_claude",
+  "headless_compatibility": "claude_cli",
+  "prompt_source": ".ghdp/agents + .ghdp/skills + .ghdp/plugins + .ghdp/orchestrate/topology.json",
+  "setup_contract": [
+    "Resolve repo-level agents, skills, plugins, and topology before host-specific prompting.",
+    "When the VS Code host is unavailable, fall back to the Claude CLI-compatible execution contract without changing repo semantics.",
+    "Preserve sequential and parallel scheduling decisions from .ghdp/orchestrate/topology.json."
+  ]
+}

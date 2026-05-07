@@ -1,0 +1,17 @@
+{
+  "schema_version": "1.0",
+  "id": "published-prerelease-validation",
+  "role": "published_artifact_validator",
+  "summary": "Downloads the actual published prerelease artifact for the current host and validates it before PR progression.",
+  "stages_owned": ["stage19b_published_prerelease_retest"],
+  "allowed_skills": ["published-prerelease-retest"],
+  "allowed_plugins": ["github-release-gh"],
+  "produces_artifacts": ["published_prerelease_validation"],
+  "approval_mode": "always",
+  "can_block": true,
+  "can_retry": true,
+  "prompt_contract": [
+    "Validate the actual published prerelease artifact, not only the local package root.",
+    "Keep the host-specific validation deterministic and record the exact artifact used."
+  ]
+}

@@ -1,0 +1,170 @@
+{
+  "schema_version": "1.0",
+  "generated_by": "ghdp",
+  "phase": "phase1",
+  "source_of_truth": "phase1_agentic_orchestrator_ground_truth.md",
+  "skills": [
+    {
+      "id": "ticket-intake-sufficiency",
+      "purpose": "Parse initiating input and identify missing details before planning begins.",
+      "stage_scope": ["stage2_intake_sufficiency"],
+      "outputs": ["intake_summary", "clarification_questions", "acceptance_candidates"]
+    },
+    {
+      "id": "work-type-classification",
+      "purpose": "Classify the run into new feature, enhancement, bug fix, or maintenance.",
+      "stage_scope": ["stage3_work_type"],
+      "outputs": ["work_type_decision"]
+    },
+    {
+      "id": "complexity-autonomy-assessment",
+      "purpose": "Score ambiguity, blast radius, and risk so autonomy remains policy-backed.",
+      "stage_scope": ["stage4_autonomy"],
+      "outputs": ["autonomy_decision", "gating_rationale"]
+    },
+    {
+      "id": "capability-discovery",
+      "purpose": "Identify reusable capabilities and the most likely impacted code areas.",
+      "stage_scope": ["stage5_context_discovery"],
+      "outputs": ["capability_map", "impacted_areas"]
+    },
+    {
+      "id": "blueprint-poa-authoring",
+      "purpose": "Produce and evolve the canonical POA before implementation begins.",
+      "stage_scope": ["stage7_spec_action", "stage8_blueprint_poa"],
+      "outputs": ["poa.md"]
+    },
+    {
+      "id": "architecture-compliance",
+      "purpose": "Check design or implementation against architecture and capability-first rules.",
+      "stage_scope": ["stage9_architecture_review", "stage18_release_readiness"],
+      "outputs": ["architecture_findings"]
+    },
+    {
+      "id": "ux-dx-review",
+      "purpose": "Check user and contributor ergonomics for commands, prompts, docs, and operator flow.",
+      "stage_scope": ["stage10_ux_dx_review"],
+      "outputs": ["ux_dx_findings"]
+    },
+    {
+      "id": "qa-scenario-generation",
+      "purpose": "Produce realistic, tricky scenario coverage that maps back to acceptance criteria.",
+      "stage_scope": ["stage13_qa_scenario_design"],
+      "outputs": ["qa_scenarios"]
+    },
+    {
+      "id": "touched-scope-regression",
+      "purpose": "Select and validate the existing tests that protect already-working behavior.",
+      "stage_scope": ["stage14_touched_scope_regression"],
+      "outputs": ["regression_selection", "regression_results"]
+    },
+    {
+      "id": "test-coverage-authoring",
+      "purpose": "Design and author new tests for changed or added behavior.",
+      "stage_scope": ["stage15_new_test_coverage"],
+      "outputs": ["coverage_plan", "new_test_files"]
+    },
+    {
+      "id": "developer-test-execution",
+      "purpose": "Run functional, scenario, and regression validation while respecting shared local resources.",
+      "stage_scope": ["stage16_developer_test_execution", "stage17_iteration_loop"],
+      "outputs": ["test_execution_log", "iteration_decision"]
+    },
+    {
+      "id": "isolated-binary-validation",
+      "purpose": "Install and validate the actual packaged artifact in a controlled environment.",
+      "stage_scope": ["stage20_packaged_artifact_validation"],
+      "outputs": ["artifact_validation_result"]
+    },
+    {
+      "id": "release-and-pr",
+      "purpose": "Coordinate prerelease creation, release-note updates, and PR progression.",
+      "stage_scope": ["stage19_prerelease_creation", "stage21_pr_external_integration"],
+      "outputs": ["prerelease_link", "pr_link"]
+    },
+    {
+      "id": "published-prerelease-retest",
+      "purpose": "Validate the actual published prerelease artifact for the current host before PR progression.",
+      "stage_scope": ["stage19b_published_prerelease_retest"],
+      "outputs": ["published_prerelease_validation"]
+    },
+    {
+      "id": "pr-branch-hygiene",
+      "purpose": "Enforce rebasing onto the latest develop branch and block merge-commit history before PR creation.",
+      "stage_scope": ["stage21_pr_external_integration"],
+      "outputs": ["pr_branch_hygiene"]
+    },
+    {
+      "id": "pr-prerelease-commentary",
+      "purpose": "Post the latest prerelease link into the PR through the approved GitHub path.",
+      "stage_scope": ["stage21_pr_external_integration"],
+      "outputs": ["pr_prerelease_comment"]
+    },
+    {
+      "id": "jira-acli-integration",
+      "purpose": "Own Jira communication through ACLI rather than ad hoc external paths.",
+      "stage_scope": ["stage21_pr_external_integration"],
+      "outputs": ["jira_update_summary"]
+    },
+    {
+      "id": "minimal-sync-decision",
+      "purpose": "Determine whether work should stay repo-native or be treated as sync-managed.",
+      "stage_scope": ["stage5_context_discovery", "stage18_release_readiness"],
+      "outputs": ["sync_decision"]
+    },
+    {
+      "id": "traceability-and-resume",
+      "purpose": "Persist enough structure that another person or agent can resume safely.",
+      "stage_scope": ["all"],
+      "outputs": ["branch_state.json", "decisions.json", "resume_context.md"]
+    },
+    {
+      "id": "audit-export-persistence",
+      "purpose": "Mirror final orchestration evidence to the configured local or AWS-backed audit destination.",
+      "stage_scope": ["stage22_traceability_capture"],
+      "outputs": ["audit_export_summary"]
+    },
+    {
+      "id": "folder-backed-shared-memory",
+      "purpose": "Provide interim shared-memory behavior using repo and user-global folders instead of external memory services.",
+      "stage_scope": ["stage6_parallel_work_awareness", "stage22_traceability_capture"],
+      "outputs": ["shared_memory_records"]
+    },
+    {
+      "id": "repo-local-code-context",
+      "purpose": "Provide interim code/context behavior using repo-local summaries instead of full Graphify.",
+      "stage_scope": ["stage5_context_discovery"],
+      "outputs": ["context_summary"]
+    },
+    {
+      "id": "stable-release-notes-assembly",
+      "purpose": "Assemble stable-release lineage context distinct from branch prerelease notes.",
+      "stage_scope": ["stage8_blueprint_poa", "stage19_prerelease_creation"],
+      "outputs": ["stable_release_note_context"]
+    },
+    {
+      "id": "asset-capability-discovery",
+      "purpose": "Inventory existing sync/capability assets, providers, manifests, and update obligations before deciding whether full SDLC is needed.",
+      "stage_scope": ["stage5_context_discovery", "independent_asset_lifecycle"],
+      "outputs": ["asset_inventory", "asset_target_candidates", "asset_update_scope"]
+    },
+    {
+      "id": "asset-lifecycle-operations",
+      "purpose": "Create, revise, version-update, or retire repo-managed capability assets through a lightweight asset lifecycle path.",
+      "stage_scope": ["independent_asset_lifecycle", "stage11_implementation", "stage18_release_readiness"],
+      "outputs": ["asset_operation_plan", "asset_operation_result", "asset_release_implications"]
+    },
+    {
+      "id": "phase-regroup-and-restart",
+      "purpose": "Formalize phase slicing and restart destinations when scope or blockers outgrow a single phase.",
+      "stage_scope": ["stage3_work_type", "stage7_spec_action", "stage22_traceability_capture"],
+      "outputs": ["phase_plan", "phase_regroup_summary"]
+    },
+    {
+      "id": "merge-hygiene-finalization",
+      "purpose": "Archive runtime-only branch artifacts, promote durable closeout memory, and prove merge hygiene through a repo-backed receipt.",
+      "stage_scope": ["post_stage22_merge_hygiene"],
+      "outputs": ["merge_hygiene_receipt", "promoted_memory_summary"]
+    }
+  ]
+}

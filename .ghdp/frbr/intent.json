@@ -1,0 +1,12 @@
+{
+  "branch_name": "feature/EPPE-7391-TECHNICAL-agentic-framework-foundation-skills-plugins-subagents-native-memory",
+  "generated_at": "2026-05-04T16:29:30Z",
+  "generated_by": "ghdp",
+  "intent": "Implement the Phase 1 agentic orchestrator foundation inside GHDP so repo-level skills, plugins, sub-agents, and native memory handling work through one consistent orchestration framework. Establish the baseline contracts, repo-local runtime layout under .ghdp, and human/agent-consumable guidance needed to make the orchestrator trustworthy, practical, and testable today without depending on later external memory integrations.",
+  "provider": "codex",
+  "repo_name": "dp-tools-local-setup",
+  "schema_version": "1.0",
+  "source": "branch_create_generated",
+  "summary": "Objective\nMake this ticket the primary implementation source for the orchestrator agentic framework foundation in GHDP CLI.\n\nScope\n- define and implement the framework baseline for skills orchestration\n- define and implement plugin integration patterns for agent workflows\n- define and implement sub-agent role model, invocation flow, and handoff contracts\n- implement non-library/native memory handling required for baseline orchestration behavior\n- provide documentation and usage flow consumable by both humans and coding agents\n\nOut of Scope\n- external memory-system integration (Graphify/Mem0), which is tracked separately in EPPE-7581 and should plug into this framework later\n\nDeliverables\n- framework design and implementation notes\n- agent-consumable run instructions and human-readable operator guide\n- validation checklist for skills/plugins/sub-agent orchestration and native memory behavior\n\nAcceptance Criteria\n- skills, plugins, and sub-agent orchestration are usable through a consistent framework path\n- native memory handling works for the baseline agentic flow without external memory dependencies\n- framework docs clearly separate current baseline capabilities from later EPPE-7581 integration work",
+  "ticket_key": "EPPE-7391"
+}

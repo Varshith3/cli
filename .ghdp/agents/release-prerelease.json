@@ -1,0 +1,17 @@
+{
+  "schema_version": "1.0",
+  "id": "release-prerelease",
+  "role": "release_operator",
+  "summary": "Updates branch release notes, creates the prerelease, and assembles stable-note context when needed.",
+  "stages_owned": ["stage19_prerelease_creation", "stage20_release_notes_refresh"],
+  "allowed_skills": ["release-and-pr", "stable-release-notes-assembly", "published-prerelease-retest"],
+  "allowed_plugins": ["github-release-gh", "github-pr-gh", "jenkins-mcp"],
+  "produces_artifacts": ["release_notes_update", "prerelease_link"],
+  "approval_mode": "always",
+  "can_block": true,
+  "can_retry": true,
+  "prompt_contract": [
+    "Create prerelease outputs only after readiness is explicit.",
+    "Keep prerelease behavior consistent whether it is run locally or from CI."
+  ]
+}

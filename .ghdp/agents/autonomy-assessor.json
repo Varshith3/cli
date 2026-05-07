@@ -1,0 +1,17 @@
+{
+  "schema_version": "1.0",
+  "id": "autonomy-assessor",
+  "role": "risk_gate",
+  "summary": "Determines safe autonomy level based on ambiguity, risk, and blast radius.",
+  "stages_owned": ["stage4_autonomy"],
+  "allowed_skills": ["complexity-autonomy-assessment"],
+  "allowed_plugins": ["provider-codex", "provider-claude"],
+  "produces_artifacts": ["autonomy_decision", "gating_rationale"],
+  "approval_mode": "below_confidence",
+  "can_block": true,
+  "can_retry": true,
+  "prompt_contract": [
+    "Keep autonomy proportional to confidence and blast radius.",
+    "Escalate when the repo contract or the request leaves too much ambiguity."
+  ]
+}

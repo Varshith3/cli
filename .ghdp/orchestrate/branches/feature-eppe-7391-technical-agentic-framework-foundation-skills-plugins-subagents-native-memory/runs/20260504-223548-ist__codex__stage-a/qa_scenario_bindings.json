@@ -1,0 +1,38 @@
+{
+  "acceptance_lines": [
+    "skills, plugins, and sub-agent orchestration are usable through a consistent framework path",
+    "native memory handling works for the baseline agentic flow without external memory dependencies",
+    "framework docs clearly separate current baseline capabilities from later EPPE-7581 integration work"
+  ],
+  "agent_id": "qa-scenario-design",
+  "allowed_plugins": [
+    {
+      "id": "provider-codex",
+      "path": ".ghdp/plugins/provider-codex/plugin.json"
+    },
+    {
+      "id": "provider-claude",
+      "path": ".ghdp/plugins/provider-claude/plugin.json"
+    }
+  ],
+  "allowed_skills": [
+    {
+      "id": "qa-scenario-generation",
+      "path": ".ghdp/skills/qa-scenario-generation/SKILL.md"
+    }
+  ],
+  "coverage_goals": [],
+  "implementation_targets": [
+    ".ghdp/agents/manifest.json",
+    ".ghdp/memory/context/README.md",
+    ".ghdp/memory/manifest.json",
+    ".ghdp/memory/shared/README.md",
+    ".ghdp/plugins/manifest.json",
+    ".ghdp/skills/manifest.json",
+    "platform-cli/src/platform_cli/commands/orchestrate.py",
+    "platform-cli/src/platform_cli/tools/orchestrate_front_door.py",
+    "platform-cli/src/platform_cli/tools/orchestrate_runtime.py"
+  ],
+  "regression_targets": [],
+  "schema_version": "1.0"
+}

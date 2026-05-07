@@ -1,0 +1,33 @@
+{
+  "schema_version": "1.0",
+  "id": "stage13_qa_scenario_design",
+  "title": "Stage 13 QA Scenario Design",
+  "owner_agent": "qa-scenario-design",
+  "messages": {
+    "completed": "Stage 13 QA scenario design completed with a repo-backed scenario packet."
+  },
+  "next_actions": {
+    "completed": "Proceed into Stage 14 touched-scope regression validation and Stage 15 new test coverage authoring using qa_scenario_plan.md."
+  },
+  "handoff_summaries": {
+    "completed": "Stage 13 QA scenario design completed with acceptance-linked scenarios and explicit edge cases for downstream validation."
+  },
+  "scenario_design_posture": [
+    "Tie every scenario back to the acceptance and touched scope of this branch run.",
+    "Include operator-facing failures and recovery paths, not just the success path.",
+    "Keep the output ready for Stage 14 and Stage 16 to consume without re-deriving context."
+  ],
+  "summary_ready_inputs": [
+    "qa_scenario_prompt.md",
+    "qa_scenario_bindings.json",
+    "qa_scenario_plan.md"
+  ],
+  "summary_expected_next_step": "Consume these scenarios in Stage 14 regression validation and Stage 16 developer test execution.",
+  "resume_note_templates": [
+    "QA scenario agent: {qa_agent}.",
+    "Allowed skills: {allowed_skill_count}.",
+    "Allowed plugins: {allowed_plugin_count}.",
+    "Scenarios designed: {scenario_count}.",
+    "Edge cases captured: {edge_case_count}."
+  ]
+}

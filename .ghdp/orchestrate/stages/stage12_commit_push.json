@@ -1,0 +1,21 @@
+{
+  "schema_version": "1.0",
+  "id": "stage12_commit_push",
+  "title": "Stage 12 Commit Push",
+  "owner_agent": "implementation",
+  "messages": {
+    "completed": "Stage 12 commit/push completed and the branch has been pushed."
+  },
+  "next_actions": {
+    "completed": "Proceed into Stage 13 QA scenario design, Stage 14 regression validation, and Stage 15 test coverage authoring."
+  },
+  "handoff_summaries": {
+    "completed": "Stage 12 commit/push completed and the branch was pushed with the current implementation checkpoint."
+  },
+  "resume_note_templates": [
+    "Commit message: {commit_message}.",
+    "Files committed: {files_committed_count}.",
+    "Head SHA: {head_sha}.",
+    "Pushed to {remote_name}/{branch_name}."
+  ]
+}

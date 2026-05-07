@@ -1,0 +1,25 @@
+﻿{
+  "schema_version": "1.0",
+  "defaults": {
+    "telemetry.enabled": true,
+    "updates.enabled": true,
+    "git.strict_clean": true,
+    "precommit.mode": "off",
+    "features.terraform_local": true,
+    "confirm.dangerous": true,
+    "aws.active_profile": "",
+    "team.selected": "",
+    "claude.athena_workgroup": "",
+    "jenkins.okta_email": "",
+    "repo.ai.provider": "auto",
+    "repo.ai.refresh_on_missing": true,
+    "branch.create.prompt_for_missing": true,
+    "branch.create.jira_check_mode": "warn",
+    "branch.ai.provider": "auto",
+    "branch.ai.refresh_on_missing": true,
+    "branch.intent.enabled": true,
+    "branch.intent.include_description": true,
+    "branch.intent.prompt_if_no_ai": true,
+    "branch.intent.repo_path": ".ghdp/frbr/intent.json"
+  }
+}

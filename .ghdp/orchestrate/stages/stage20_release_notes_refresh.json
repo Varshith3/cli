@@ -1,0 +1,34 @@
+{
+  "schema_version": "1.0",
+  "id": "stage20_release_notes_refresh",
+  "title": "Stage 20 Release Notes Refresh",
+  "owner_agent": "release-prerelease",
+  "messages": {
+    "completed": "Stage 20 refreshed the branch release notes and committed the update so prerelease freshness gates can pass."
+  },
+  "next_actions": {
+    "completed": "Rerun Stage 19 prerelease creation now that the release notes gate has been refreshed.",
+    "blocked": "Resolve the release-note write or git commit issue, then rerun Stage 20 before Stage 19 can proceed."
+  },
+  "handoff_summaries": {
+    "completed": "Stage 20 refreshed notes.md from repo-backed run artifacts and pushed the freshness commit.",
+    "blocked": "Stage 20 could not refresh the release notes or push the freshness commit."
+  },
+  "delivery_posture": [
+    "Assemble the release summary from repo-backed run artifacts rather than hidden chat memory.",
+    "Keep the notes concise, branch-specific, and recent enough to satisfy the prerelease freshness gate.",
+    "Treat the git commit and push as part of the stage, not as an external manual action."
+  ],
+  "summary_ready_inputs": [
+    "release_notes_refresh.md",
+    "release_notes_commit.json",
+    "release_notes_context.json"
+  ],
+  "summary_expected_next_step": "Retry Stage 19 prerelease creation against the refreshed branch notes.",
+  "resume_note_templates": [
+    "Release-note owner agent: {release_agent}.",
+    "Notes path: {notes_path}.",
+    "Freshness commit: {freshness_commit}.",
+    "Blocked reason: {blocked_reason}."
+  ]
+}

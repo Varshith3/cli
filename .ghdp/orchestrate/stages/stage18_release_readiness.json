@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0",
+  "id": "stage18_release_readiness",
+  "title": "Stage 18 Release Readiness",
+  "owner_agent": "release-readiness",
+  "messages": {
+    "completed": "Stage 18 release readiness review accepted the current branch evidence for prerelease progression.",
+    "blocked": "Stage 18 release readiness review found blocking issues that must be resolved before prerelease creation."
+  },
+  "next_actions": {
+    "completed": "Proceed into Stage 19 prerelease creation with the current execution and artifact evidence.",
+    "blocked": "Resolve the blocking findings and rerun Stage 18 before any prerelease step continues."
+  },
+  "handoff_summaries": {
+    "completed": "Stage 18 release readiness review completed with a clear go/no-go decision recorded in repo artifacts.",
+    "blocked": "Stage 18 release readiness review blocked downstream release work until the listed findings are resolved."
+  },
+  "readiness_posture": [
+    "Review the accumulated evidence instead of assuming that passing tests alone means release-ready.",
+    "Block prerelease creation if traceability, artifact validation, or execution evidence is weak or missing.",
+    "Keep the findings explicit enough that a later owner can resolve them without rediscovering context."
+  ],
+  "summary_ready_inputs": [
+    "release_readiness_prompt.md",
+    "release_readiness_bindings.json",
+    "release_readiness_summary.md"
+  ],
+  "summary_expected_next_step": "Use this go/no-go decision immediately before prerelease creation.",
+  "resume_note_templates": [
+    "Readiness agent: {readiness_agent}.",
+    "Allowed skills: {allowed_skill_count}.",
+    "Allowed plugins: {allowed_plugin_count}.",
+    "Blocking findings: {blocking_finding_count}."
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "schema_version": "1.0",
+  "id": "jenkins-mcp",
+  "login_required": true,
+  "executor": "jenkins_mcp",
+  "login_contract": [
+    "Require the configured Jenkins MCP auth path before PR/release promotion steps execute."
+  ],
+  "prompt_contract": [
+    "Use Jenkins MCP only for the frozen PR and release-owned paths."
+  ]
+}
+

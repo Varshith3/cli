@@ -1,0 +1,11 @@
+{
+  "schema_version": "1.0",
+  "id": "github-pr-gh",
+  "login_required": true,
+  "executor": "gh_cli",
+  "prompt_source": ".ghdp/agents + .ghdp/skills + .ghdp/plugins",
+  "setup_contract": [
+    "Use gh-based pull request creation and comment progression when Phase 1 needs a portable PR path.",
+    "Do not hide PR side effects; write the created PR link and comment actions back into repo-backed orchestrator artifacts."
+  ]
+}

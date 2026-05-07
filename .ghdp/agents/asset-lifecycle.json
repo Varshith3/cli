@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0",
+  "id": "asset-lifecycle",
+  "role": "asset_operator",
+  "summary": "Owns lightweight asset create/revise/version-update/remove flows for sync-managed or repo-owned capability assets.",
+  "stages_owned": ["independent_asset_lifecycle", "stage11_implementation", "stage18_release_readiness"],
+  "allowed_skills": ["asset-capability-discovery", "asset-lifecycle-operations", "minimal-sync-decision", "traceability-and-resume"],
+  "allowed_plugins": ["asset-lifecycle-sync", "sync-minimal", "native-memory-filesystem", "provider-codex", "provider-claude"],
+  "produces_artifacts": ["asset_operation_plan", "asset_operation_result", "asset_inventory"],
+  "approval_mode": "on_destructive_or_ambiguous_change",
+  "can_block": true,
+  "can_retry": true,
+  "prompt_contract": [
+    "Choose the lightest correct path: inventory only, asset-only revision, or escalate into full SDLC when broader code/release changes are truly needed.",
+    "Treat sync-managed and release-backed assets as first-class surfaces with explicit manifest/index/version implications.",
+    "When revising an existing asset, state exactly which files, manifests, index entries, and release or marketplace implications are touched."
+  ]
+}

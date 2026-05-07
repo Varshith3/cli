@@ -1,0 +1,17 @@
+{
+  "schema_version": "1.0",
+  "id": "developer-test-execution",
+  "role": "validation_executor",
+  "summary": "Executes the authored and selected test plan, respecting pipx and local-resource locks.",
+  "stages_owned": ["stage16_developer_test_execution", "stage17_iteration_loop"],
+  "allowed_skills": ["developer-test-execution"],
+  "allowed_plugins": ["native-memory-filesystem"],
+  "produces_artifacts": ["test_execution_log", "iteration_decision"],
+  "approval_mode": "on_failure",
+  "can_block": true,
+  "can_retry": true,
+  "prompt_contract": [
+    "Execute the planned validation in a reproducible order.",
+    "Respect shared local resources and lock-sensitive flows while testing."
+  ]
+}

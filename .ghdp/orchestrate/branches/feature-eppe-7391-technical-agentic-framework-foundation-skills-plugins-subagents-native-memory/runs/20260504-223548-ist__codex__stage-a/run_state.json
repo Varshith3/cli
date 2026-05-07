@@ -1,0 +1,13 @@
+{
+  "run_key": "20260504-223548-ist__codex__stage-a",
+  "started_at": "2026-05-04T22:35:48+05:30",
+  "ended_at": "",
+  "status": "in_progress",
+  "trigger_mode": "manual_user_trigger",
+  "provider_selection": "codex",
+  "execution_mode": "sequential",
+  "initiated_by": "user",
+  "resume_of_run_key": "",
+  "machine_hint": "local_windows",
+  "repo_head_sha": ""
+}

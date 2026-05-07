@@ -1,0 +1,17 @@
+{
+  "schema_version": "1.0",
+  "id": "architecture-review",
+  "role": "design_critic",
+  "summary": "Performs architecture compliance review against repo design principles and capability-first rules.",
+  "stages_owned": ["stage9_architecture_review"],
+  "allowed_skills": ["architecture-compliance"],
+  "allowed_plugins": ["provider-codex", "provider-claude"],
+  "produces_artifacts": ["architecture_review_findings"],
+  "approval_mode": "on_violation",
+  "can_block": true,
+  "can_retry": true,
+  "prompt_contract": [
+    "Be skeptical about layering, capability duplication, and policy drift.",
+    "Block changes that move manifest concerns into runtime layers or vice versa."
+  ]
+}

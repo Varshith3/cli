@@ -1,0 +1,92 @@
+name: Scheduler - Cross Platform Validation
+
+on:
+  workflow_dispatch:
+    inputs:
+      source_ref:
+        description: "Branch / tag / SHA to validate"
+        required: true
+        default: "develop"
+        type: string
+      workdir:
+        description: "Folder containing the GHDP CLI project"
+        required: true
+        default: "platform-cli"
+        type: string
+      python_version:
+        description: "Python version to use"
+        required: true
+        default: "3.11"
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  scheduler-validation:
+    name: scheduler-${{ matrix.os-name }}
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os-name: windows
+            runner: windows-latest
+          - os-name: macos
+            runner: macos-15
+          - os-name: ubuntu
+            runner: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{ inputs.workdir }}
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.source_ref }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ inputs.python_version }}
+
+      - name: Install Linux cron dependency
+        if: matrix.os-name == 'ubuntu'
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y cron
+
+      - name: Install GHDP test dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install --upgrade pip
+          python -m pip install -e . pytest
+
+      - name: Run focused cross-platform scheduler tests
+        shell: bash
+        env:
+          PYTHONPATH: src
+        run: |
+          set -euo pipefail
+          python -m pytest \
+            tests/test_schedule.py \
+            tests/test_schedule_windows.py \
+            tests/test_scheduler_manifest.py \
+            tests/test_scheduler_assets.py \
+            tests/test_scheduler_launchd.py \
+            tests/test_scheduler_cron.py \
+            tests/test_schedule_cross_platform.py \
+            tests/test_version_change.py \
+            tests/test_version_change_command.py \
+            tests/test_runtime_env.py
+
+      - name: Run scheduler provider smoke validation
+        shell: bash
+        env:
+          PYTHONPATH: src
+        run: |
+          set -euo pipefail
+          python tests/scheduler_ci_smoke.py

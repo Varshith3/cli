@@ -1,0 +1,32 @@
+{
+  "schema_version": "1.0",
+  "id": "stage22_traceability_capture",
+  "title": "Stage 22 Traceability Capture",
+  "owner_agent": "traceability-historian",
+  "messages": {
+    "completed": "Stage 22 captured final traceability, resume, and scenario evidence for the branch run."
+  },
+  "next_actions": {
+    "completed": "Review the final scenario findings, then hand off to the next orchestrated feature run or kernel-extraction follow-up."
+  },
+  "handoff_summaries": {
+    "completed": "Stage 22 finalized the run packet with compact traceability, scenario evidence, and reusable follow-up context."
+  },
+  "watchpoints": [
+    "Do not overwrite earlier stage artifacts; append compact final summaries.",
+    "Keep the closeout useful for another human or agent without requiring hidden chat context."
+  ],
+  "summary_ready_inputs": [
+    "historian_closeout.md",
+    "subagent_execution_plan.json",
+    "subagent_execution_result.json",
+    "audit_export_summary.json"
+  ],
+  "summary_expected_next_step": "Use the final run packet as the starting point for the next orchestrated feature or enhancement.",
+  "resume_note_templates": [
+    "Historian agent: {historian_agent}.",
+    "Scenario id: {scenario_id}.",
+    "Executed sub-agents: {executed_agent_count}.",
+    "Final run status: {final_status}."
+  ]
+}

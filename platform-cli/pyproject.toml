@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=64", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ghdp"
+version = "0.0.0"
+description = "Guardant Dev Platform CLI (beta)"
+readme = "README.md"
+requires-python = ">=3.9"
+
+dependencies = [
+  "typer[all]>=0.12.0,<1.0.0",
+  "rich>=13.0.0,<14.0.0",
+  "packaging>=23.0,<25.0",
+  "PyYAML>=6.0,<7.0",
+  "jsonschema>=4.0.0,<5.0.0",
+  "cryptography>=45.0.0,<46.0.0",
+]
+
+[project.scripts]
+ghdp = "platform_cli.cli:_run"
+
+# Tell setuptools to look under src/ for packages
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+platform_cli = ["resources/**/*.json", "resources/**/*.md", "resources/**/*.yaml", "resources/**/*.yml", "resources/**/*.toml"]

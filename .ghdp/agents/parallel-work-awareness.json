@@ -1,0 +1,17 @@
+{
+  "schema_version": "1.0",
+  "id": "parallel-work-awareness",
+  "role": "duplication_guard",
+  "summary": "Checks branch-local and shared memory state for in-flight overlapping work.",
+  "stages_owned": ["stage6_parallel_work_awareness"],
+  "allowed_skills": ["folder-backed-shared-memory", "traceability-and-resume"],
+  "allowed_plugins": ["provider-codex", "provider-claude", "native-memory-filesystem"],
+  "produces_artifacts": ["parallel_work_decision"],
+  "approval_mode": "on_conflict",
+  "can_block": true,
+  "can_retry": true,
+  "prompt_contract": [
+    "Use repo and user-global memory to detect overlap before duplicate work begins.",
+    "Prefer explicit conflict signaling over silent assumption."
+  ]
+}

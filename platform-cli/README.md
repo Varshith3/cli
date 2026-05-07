@@ -1,0 +1,2185 @@
+# GHDP Platform CLI – v0.1.0-beta
+
+> 🚀 **Quick Start (Humans + Coding Agents)**
+>
+> **Start here (single source of truth):** `00_GHDP_CLI_COMMANDS_REFERENCE.toml`  
+> Includes **all commands + flags + examples**, config keys/defaults, and common error codes.
+>
+> **Architecture + design rules:** `ARCHITECTURE.md`  
+> Explains the **folder responsibilities**, layering rules, and what *must not* be reorganized.
+>
+> **Folder-level guidance (read before editing a folder):**
+> - `AGENTS.md` *(repo-wide conventions & do/don’t)*
+> - `src/platform_cli/commands/AGENTS.md` *(CLI surface area patterns)*
+> - `src/platform_cli/core/AGENTS.md` *(core primitives & error semantics)*
+> - `src/platform_cli/tools/AGENTS.md` *(reusable tool logic; no CLI arg parsing)*
+> - `src/platform_cli/exec/AGENTS.md` *(subprocess boundary; no business logic)*
+> - `src/platform_cli/state/AGENTS.md` *(persistence rules; keys & stability)*
+> - `src/platform_cli/resources/AGENTS.md` *(registries/templates; no Python logic)*
+> - `src/platform_cli/manifests/AGENTS.md` *(desired-state + validation; keep separate from tools)*
+>
+> **Agent-specific instructions (must follow):**
+> - `.github/copilot-instructions.md`
+>
+> ✅ **Rule:** Do **not** move code across layers/folders unless the PR explicitly says “refactor architecture”.
+
+
+> **Please Use this Prompt for Coding Agents before contributing (Recommended):**
+> "Before answering or suggesting any changes, please review all documentation, guidelines, and instructions in this repository—including README.md, ARCHITECTURE.md, AGENTS.md, and any folder-specific guidance. Ensure your response strictly follows all project-specific rules and instructions."
+
+GHDP is the **Guardant Dev Platform CLI**:
+
+<p align="center">
+  <img src="images/ghdp-cli.png" alt="Logo" width="500"/>
+</p>
+
+
+- A single entrypoint for **local dev setup** (tools, AWS, Git flows).
+- Opinionated but **non-intrusive**: you can always fall back to normal Git / shell.
+- Designed for **teams** (platform, inform, R-adjacent, etc.), not just individuals.
+- Built to work **identically across macOS + Windows** (via `brew` + `winget`).
+- For contributors: a **scaffold + decorators** pattern that makes adding commands safe and consistent.
+
+This document focuses on **v0.1.10-beta**, where the main goals are:
+
+1. **Local tool setup** per team (from manifests).
+2. **Feature-branch + release flows** via GitHub Actions (Jenkins parity).
+3. A small, solid **CLI core** that is easy to extend and maintain.
+
+---
+
+## 1. Installation & Uninstallation
+
+We support two main installation flows:
+
+- **A. From GitHub Releases** → recommended for normal users.
+- **B. From a pre-downloaded binary** → recommended for guided/internal distribution (for example SharePoint).
+- **C. From local source via `pipx`** → recommended for CLI contributors.
+
+### 1.1 Install from GitHub Releases (recommended for users)
+
+1. Go to the **GitHub repo → Releases**.
+2. Pick the **latest GHDP CLI release** (e.g. `v0.1.10-beta`).
+3. Download the appropriate artifact for your OS:
+
+   - macOS (e.g. `ghdp-macos-universal` or similar)
+   - Windows (e.g. `ghdp-windows-amd64.exe` or similar)
+
+> The exact filenames will be visible on the Releases page. Below are **template commands**.
+
+#### macOS (template)
+
+```bash
+# 1) Download from Releases (example – adjust URL/filename)
+curl -L -o ghdp \
+  "https://github.com/<org>/<repo>/releases/download/<VERSION>/ghdp-macos-universal"
+
+# 2) Make it executable and move into PATH
+chmod +x ghdp
+mv ghdp /usr/local/bin/ghdp  # or any dir on your PATH
+
+# 3) Sanity check
+ghdp --help
+ghdp
+```
+
+#### Windows (template, PowerShell)
+
+```bash
+# 1) Download from Releases (example – adjust URL/filename)
+Invoke-WebRequest `
+  -Uri "https://github.com/<org>/<repo>/releases/download/<VERSION>/ghdp-windows-amd64.exe" `
+  -OutFile "$env:LOCALAPPDATA\Programs\ghdp.exe"
+
+# 2) Ensure that folder is on PATH, then:
+ghdp --help
+ghdp
+```
+
+> Note: Replace <org>, <repo>, and <VERSION> with actual values from the Releases page.
+
+### 1.2 Install from a pre-downloaded binary
+
+This is the best fit when the binary is distributed internally outside GitHub Releases, such as SharePoint or another company-managed file store. The user downloads the binary first, then runs the installer against that local file.
+
+The installer still takes care of the normal setup steps, including:
+
+- copying the binary into the install location
+- updating `PATH` when applicable
+- creating `~/.ghdp/managed-install` when `GHDP_MANAGED_INSTALL=1` is used
+- launching `ghdp` once so the welcome banner is shown
+- applying the default local scheduler setup with `ghdp schedule apply --auto-approve`
+
+Full step-by-step guide:
+
+- [Internal Binary Install Guide](/Users/kushalsaraf/Documents/local-setup/dp-tools-local-setup/platform-cli/INTERNAL_BINARY_INSTALL_GUIDE.md)
+
+You can place the downloaded binary in any folder you prefer. `Downloads` is only used in the examples below; `GHDP_BINARY_PATH` can point to a file in `Documents`, `Desktop`, a shared drive, or any other readable location.
+
+#### macOS / Linux
+
+```bash
+curl -L -o ~/Downloads/ghdp-darwin-arm64 "<internal-download-url>"
+GHDP_BINARY_PATH="$HOME/Downloads/ghdp-darwin-arm64" bash install_ghdp.sh
+```
+
+If this internal distribution should also behave like the company-managed install flow, run:
+
+```bash
+GHDP_MANAGED_INSTALL=1 GHDP_BINARY_PATH="$HOME/Downloads/ghdp-darwin-arm64" bash install_ghdp.sh
+```
+
+Managed-install auth governance defaults:
+- Managed installs default to auth mode `managed_locked`.
+- `managed_locked` allows only the managed local auth state for GHDP-owned GitHub operations.
+- Admins can switch mode (with audit event) using:
+  - `ghdp access auth-mode` (view)
+  - `ghdp admin auth-mode --mode personal_allowed --reason "<why>"`
+
+#### Windows (PowerShell)
+
+```powershell
+Invoke-WebRequest -Uri "<internal-download-url>" -OutFile "$env:USERPROFILE\Downloads\ghdp-windows-amd64.exe"
+$env:GHDP_BINARY_PATH="$env:USERPROFILE\Downloads\ghdp-windows-amd64.exe"
+powershell -ExecutionPolicy Bypass -File .\install_ghdp.ps1
+```
+
+If this internal distribution should also behave like the company-managed install flow, run:
+
+```powershell
+$env:GHDP_MANAGED_INSTALL="1"
+$env:GHDP_BINARY_PATH="$env:USERPROFILE\Downloads\ghdp-windows-amd64.exe"
+powershell -ExecutionPolicy Bypass -File .\install_ghdp.ps1
+```
+
+Managed-install auth governance defaults:
+- Managed installs default to auth mode `managed_locked`.
+- `managed_locked` allows only the managed local auth state for GHDP-owned GitHub operations.
+- Admins can switch mode (with audit event) using:
+  - `ghdp access auth-mode` (view)
+  - `ghdp admin auth-mode --mode personal_allowed --reason "<why>"`
+
+### 1.3 Dev / contributor install via pipx (from source)
+
+This is for CLI developers working inside the platform-cli repo.
+
+#### 1.3.1 Prerequisites
+
+- Python ≥ 3.9
+
+```bash
+python3 --version
+```
+
+- pipx
+
+```bash
+pipx --version  # if this fails, install:
+python3 -m pip install --user pipx
+python3 -m pipx ensurepath
+# restart shell
+pipx --version
+```
+
+#### 1.3.2 Clone repo & install from local source
+
+```bash
+git clone git@github.com:<org>/<repo>.git
+cd <repo>/platform-cli
+
+# Optional: clean previous installation
+pipx uninstall ghdp  # safe even if not installed
+
+# Install from local source (edit → re-install loop)
+pipx install --force .
+```
+
+Usage:
+
+```bash
+ghdp
+ghdp hello -n Megha
+ghdp tools status --refresh
+```
+
+#### 1.3.3 Uninstall (pipx install)
+
+```bash
+pipx uninstall ghdp
+```
+
+### 1.4 Uninstall for Release builds
+
+For Release-based installs:
+
+#### macOS
+
+If you placed ghdp under /usr/local/bin:
+
+```bash
+rm /usr/local/bin/ghdp
+```
+
+#### Windows
+
+If you placed ghdp.exe under $env:LOCALAPPDATA\Programs:
+
+```bash
+Remove-Item "$env:LOCALAPPDATA\Programs\ghdp.exe"
+```
+
+(Adjust paths according to where you actually placed the binary.)
+
+---
+
+## 2. v0.1.0-beta: What to focus on
+
+For this beta, please focus on two big capabilities:
+
+### Local tool setup per team
+
+From the resolved team-toolset manifest shape (`toolset.json` schema) + `tool_registry.json` we can:
+
+- Detect current tools and versions.
+- Install missing tools.
+- Upgrade GHDP-managed tools.
+- Safely uninstall only what GHDP installed.
+
+### Feature-branch & release flows via GitHub Actions
+
+GitHub Actions POC to:
+
+- Create feature branches with standard naming.
+- Open PRs for merging code into default branches.
+- Create release tags and PRs for release flows.
+- Keep Jira ticket + branch + release wiring similar to Jenkins.
+
+Installed GHDP binaries now support build-time injected runtime defaults plus AWS-backed runtime secret resolution.
+The manual build workflow injects release-specific defaults into the built binary from GitHub Actions variables/secrets.
+GHDP loads those packaged defaults first and then applies runtime overrides from one of these locations, in order:
+
+- `GHDP_RUNTIME_ENV_PATH` when explicitly set
+- the nearest repo-local `.env` found while walking upward to the Git root
+- `~/.ghdp/runtime.env` as the user-level fallback outside repo-scoped usage
+
+Important runtime keys for this release include:
+
+- `GHDP_DEFAULT_REPO`
+- `GHDP_AWS_REGION`
+- `GHDP_AWS_SSO_SESSION_NAME`
+- `GHDP_AWS_SSO_START_URL`
+- `GHDP_AWS_SSO_REGION`
+- `GHDP_AWS_DEFAULT_REGION`
+- `GHDP_TABLEAU_RELEASE_BASE_URL`
+- `GHDP_TOKEN_SECRET_ID`
+
+For admin access-token flows, GHDP no longer depends on AWS Secrets Manager. Verification metadata comes from synced policy, while admin-only signing material lives locally on admin laptops.
+
+---
+
+## 3. Commands for this release (surface area to care about)
+
+### 3.1 Local tool setup (team-based)
+
+We use two manifests:
+
+- `tool_registry.json` → how to install/detect each tool per OS/manager.
+- `toolset.json` → fallback schema shape for what each team wants (tool + version constraint).
+
+Toolset source priority now distinguishes:
+
+- user override: `~/.ghdp/manifests/toolset.json` or legacy `~/.ghdp/toolset.json`
+- env override: `GHDP_TOOLSET_JSON_PATH`
+- managed synced source: `~/.ghdp/policies/team-toolset.managed.json`
+- packaged fallback: `platform_cli/resources/manifests/toolset.json`
+
+For centrally governed ownership policy, the managed synced source is the source of truth. The packaged fallback is bootstrap-only and should stay ownership-aligned with the synced artifact. If you need to verify or refresh that source, use the synced capability path:
+
+```bash
+ghdp sync list --capability ghdp-team-toolset
+ghdp sync check --capability ghdp-team-toolset
+ghdp sync run --capability ghdp-team-toolset
+```
+
+In the current EPPE-7317 rollout, the approved synced team names are:
+
+- `data-engg`
+- `platform-engg`
+- `data-scientist`
+- `data-analyst`
+
+The packaged manifest still exists as a bootstrap/dev fallback and may not match the centrally managed synced team list. It is intentionally temporary and is expected to be removed later once the managed sync path is mature enough to stand on its own.
+
+The current key commands:
+
+#### 3.1.1 ghdp tools validate
+
+```bash
+ghdp tools validate [--team <team-name>]
+# Example:
+ghdp tools validate
+```
+
+**What it does**
+
+Validates that:
+
+- The team exists in the resolved team-toolset source.
+- All tools in the team's toolset are present in tool_registry.json.
+- Each declared tool has both macOS and Windows entries (where expected).
+
+Fails fast and prints a clear error if something is misconfigured.
+
+**Key flags**
+
+- `--team <TEAM>` → optional; defaults to `default`. E.g. default, platform, inform, rwe_adjacent.
+- `--json` (if supported) → emit machine-readable validation summary.
+
+#### 3.1.2 ghdp version change
+
+```bash
+ghdp version change
+ghdp version change --latest-stable
+ghdp --non-interactive version change --latest-stable --method auto
+ghdp version change --version v0.1.0
+```
+
+**What it does**
+
+- In interactive mode with no flags, offers:
+  - latest stable convergence
+  - or picking a specific release tag
+- `--latest-stable` checks the configured release repo and installs the latest stable release only when the current version is behind it.
+- In `--non-interactive` mode, requires either `--version` or `--latest-stable`.
+- Uses the installed/binary-safe update flow, so it is suitable for scheduler-driven execution.
+
+#### 3.1.3 ghdp tools status
+
+```bash
+ghdp tools status [--team <team-name>] [--refresh]
+# Example:
+ghdp tools status --refresh
+```
+
+**What it does**
+
+For each tool in the selected team's toolset:
+
+- Detects whether it is installed.
+- Tries to determine:
+  - Manager install (e.g. brew/winget version).
+  - Active PATH version.
+- Computes status vs the team's version policy (>=, ==, etc.).
+- Writes a state snapshot under ~/.ghdp/, e.g. a JSON like `~/.ghdp/tools/<team>.json`
+- Distinguishes between:
+  - `user-managed` → tool existed before GHDP; we don't own it.
+  - `ghdp-managed` → tool was installed/updated via GHDP.
+
+**Key flags**
+
+- `--team <TEAM>` → optional; defaults to `default`.
+- `--refresh` → forces re-detection instead of using cached state.
+- `--json` → optional JSON output (where supported).
+
+#### 3.1.4 ghdp tools install
+
+```bash
+# install missing tools only
+ghdp tools install [--team <team-name>]
+
+# install + upgrade GHDP-managed tools to meet policy
+ghdp tools install [--team <team-name>] --upgrade
+
+# install only Claude Code
+ghdp tools install --tool claude
+
+# install only Codex
+ghdp tools install --tool codex
+```
+
+**What it does**
+
+For each tool in the team's toolset:
+
+- If not installed → installs via the configured manager:
+  - macOS → `brew` / `brew --cask`.
+  - Windows → `winget`.
+- If installed and GHDP-managed and `--upgrade` → upgrades to meet policy.
+- If installed and user-managed → does not touch it, unless we later implement an explicit "adopt" flow.
+- For Claude Code → GHDP runs AWS readiness checks, resolves the Athena workgroup from env, AWS identity mapping, saved config, or a final prompt fallback, writes Bedrock env config, syncs Claude skill files, and handles Windows/macOS first-run guidance. Prompted values are saved to GHDP config; env-derived and AWS-derived values are reused for the current run without being saved back to the config key.
+- For Claude Code → GHDP also safely creates or adopts `~/.claude/CLAUDE.md` by appending or refreshing only the GHDP-managed block without overwriting unrelated user content.
+- For Codex → GHDP verifies the executable, syncs the AWS read-only skill, and triggers Codex login when needed.
+
+After install/upgrade:
+
+- Re-detects versions.
+- Checks version policy (>=, ==, <=).
+- Fails with a clear error if the policy is still not met (no fake "success").
+
+**Key flags**
+
+- `--team <TEAM>` → optional; defaults to `default`.
+- If `--tool` is omitted, install acts on all tools in the selected team.
+- `--all` → optional explicit flag for all-team install behavior.
+- `--upgrade` → upgrades GHDP-managed tools to meet policy.
+- `--tool claude` → install only Claude Code and run Claude bootstrap.
+- `--tool codex` → install only Codex and run Codex bootstrap.
+- `ghdp tools setup-agent-config --tool claude` → explicitly create or refresh the GHDP-managed block in `~/.claude/CLAUDE.md`.
+
+#### 3.1.4 ghdp tools uninstall
+
+```bash
+ghdp tools uninstall [--team <team-name>] --all
+# Example:
+ghdp tools uninstall --all
+```
+
+**What it does**
+
+Reads the GHDP tools state file for that team.
+
+Attempts to uninstall only GHDP-managed tools via manager:
+
+- macOS → `brew uninstall` / `brew uninstall --cask ...`
+- Windows → `winget uninstall ...`
+
+Will not remove:
+
+- Tools marked as user-managed.
+- Tools it cannot safely attribute to GHDP.
+
+**Key flags**
+
+- `--team <TEAM>` → optional; defaults to `default`.
+- `--all` → acts on all GHDP-managed tools for that team.
+
+**Phase-0 access**
+
+- `ghdp tools uninstall` is admin-only in phase 0.
+- Non-admin users need a valid admin token that grants `tools.uninstall`.
+
+#### 3.1.5 ghdp sync
+
+```bash
+ghdp sync list
+ghdp sync scan
+ghdp sync check
+ghdp sync update [--capability <id>] [--auto-approve]
+ghdp sync repair [--capability <id>] [--auto-approve]
+ghdp sync run [--capability <id>] [--auto-approve]
+```
+
+**What it does**
+
+Manages release-backed capability files that GHDP installs outside the main CLI binary, such as:
+
+- Codex skill bundles
+- Claude skill bundles
+- Tableau Athena JDBC jars
+- synced GHDP policy/manifests such as the team-toolset payload
+
+The sync engine uses a provider-aware capability registry model:
+
+- `content-index.json` -> central capability registry, including provider/source metadata
+- `content-manifest.json` -> per-capability install contract for one version
+
+Current provider:
+
+- `github_release`
+
+Core extension points:
+
+- provider implementations fetch package metadata and asset bytes from a source system
+- package normalization converts provider-native metadata into GHDP's internal install contract
+- target handlers control how a normalized package resolves to a local install path
+
+This keeps the sync engine reusable for future providers without changing the command surface or the repair/update lifecycle.
+
+Repo-local generated artifacts such as `.ghdp/ci/jenkins_contract.json`, repo readiness files under `.ghdp/`, and repo-specific release notes stay owned by the repository and are not managed through `ghdp sync`.
+
+**Important behavior**
+
+- `sync scan` records local tracked files plus extra user-added files in known capability locations
+- `sync check` shows bootstrap, repair, update, or blocked recovery state for each capability
+- shared-root capabilities are not treated as installed just because unrelated files exist under the same root
+- `sync update` updates only files already tracked locally by GHDP
+- newly introduced remote files are ignored by default
+- `sync repair` restores missing tracked files from the recorded installed version and can bootstrap-install a missing capability when the content index explicitly allows install-if-missing
+- unrelated files in a shared root do not make a capability repairable by themselves
+- `sync run` performs scan, bootstrap/repair, and update in one shared reconciliation flow
+- `sync run` previews and reports bootstrap installs separately from repairs, and blocked-only runs end with an explicit blocked summary instead of a false "no actions needed" message
+- when the content index provides a recovery hint, `sync check` and `sync run` show `next step:` guidance for blocked capabilities such as `ghdp tableau init` for Tableau Athena drivers
+- the same sync capability can be reused by commands, pre-hooks, and future doctor checks
+- managed-policy capabilities can resolve either `ghdp_root` or `ghdp_user_root` to the same `~/.ghdp` install root
+- default sync-index lookups can be redirected for prerelease/test validation through:
+  - `GHDP_SYNC_INDEX_REPO`
+  - `GHDP_SYNC_INDEX_TAG`
+  - `GHDP_SYNC_INDEX_ASSET`
+
+**Key flags**
+
+- `--capability <ID>` -> limit action to one capability
+- `--auto-approve` -> skip confirmation for update, repair, or run
+
+**Phase-0 access**
+
+- `ghdp sync list`, `ghdp sync scan`, and `ghdp sync check` stay available to all users.
+- `ghdp sync update`, `ghdp sync repair`, and `ghdp sync run` currently rely on `sync.mutate`.
+- The synced admin-policy now grants `sync.mutate` to both `admin` and `non_admin` as a temporary operational concession so users can recover `ghdp-admin-policy` after a local `.ghdp` wipe.
+- When the effective persona is not full admin, sync mutation also honors team-scoped sync policy from `team-policy.managed.json`.
+- Preferred team-policy fields:
+  - `teams.<team>.sync.allow_capabilities`
+  - `teams.<team>.sync.deny_capabilities`
+- Legacy fallback fields:
+  - `teams.<team>.allow_sync_capabilities`
+  - `teams.<team>.deny_sync_capabilities`
+- Full admin mode remains unrestricted; assumed-team and token-team contexts honor the effective team's sync capability policy.
+
+**Examples**
+
+```bash
+ghdp sync list
+ghdp sync scan --capability codex-skills-aws
+ghdp sync check --capability tableau-athena-jars
+ghdp sync update --capability codex-skills-aws --auto-approve
+ghdp sync repair --capability claude-skills-aws --auto-approve
+ghdp sync run --auto-approve
+ghdp tableau init
+```
+
+#### 3.1.6 ghdp schedule
+
+```bash
+ghdp schedule
+ghdp schedule list [--task-id <id>]
+ghdp schedule check [--task-id <id>]
+ghdp schedule apply [--task-id <id>] [--auto-approve] [--dry-run]
+ghdp schedule repair [--task-id <id>] [--auto-approve] [--dry-run]
+ghdp schedule remove [--task-id <id>] [--auto-approve]
+ghdp schedule run --task-id <id>
+```
+
+**What it does**
+
+Reads scheduler desired state from synced Git artifacts installed under `~/.ghdp/capabilities/scheduler/`, then reconciles that user-scoped capability against the local OS scheduler.
+
+Phase 1 runtime source of truth:
+
+- externally managed Git artifacts pulled via `ghdp sync`
+- installed scheduler capability metadata -> `~/.ghdp/capabilities/scheduler/capability.json`
+- installed scheduler defaults -> `~/.ghdp/capabilities/scheduler/defaults.json`
+- installed scheduler task definitions -> `~/.ghdp/capabilities/scheduler/tasks.json`
+- observed runtime state -> `~/.ghdp/state/state.json`
+- execution logs -> `~/.ghdp/schedule/logs/*.jsonl`
+
+Current providers:
+
+- Windows Task Scheduler via wrapper scripts under `~/.ghdp/schedule/wrappers/`
+- macOS `launchd` via per-user plists under `~/Library/LaunchAgents`
+- Linux `cron` via user crontab entries with GHDP ownership markers
+
+**Important behavior**
+
+- `ghdp schedule` uses the sync capability model under the hood and checks the installed scheduler capability first; if the local installed config is missing, empty, or incomplete it triggers sync before local scheduler reconciliation
+- when installed scheduler config is already healthy, `ghdp schedule` still runs a targeted scheduler-capability sync pre-hook so `background-scheduler` can refresh without running a broad all-capability sync
+- `ghdp schedule` is user-scoped and does not require a repo root for normal use
+- bare `ghdp schedule` opens an interactive numbered action picker in normal interactive mode; explicit subcommands and all `--non-interactive` flows still work directly
+- hidden runtime wrappers execute the synced task definition directly so `ghdp schedule run-job` stays deterministic
+- advanced scheduler policy stays in Git artifacts outside the CLI repo, so defaults and task overrides remain reviewable and versioned without making the installed CLI the authoring surface
+- `schedule list` shows effective tasks and runtime state
+- `schedule check` reports missing tasks, drift, unsupported phase-1 policy, and wrapper repair needs
+- `schedule apply` creates or updates local scheduler entries from the synced capability task set
+- `schedule repair` restores missing or drifted local tasks from the synced task artifacts
+- `schedule remove` unregisters local tasks without deleting the synced capability assets
+- `schedule run` force-runs one synced task immediately
+- scheduled executions run through hidden `ghdp schedule run-job`, which records local run logs and state
+- new jobs are maintained manually in external Git artifacts for now; the CLI syncs and consumes them but does not author, package, or publish them from this repo
+- cross-platform validation now runs in GitHub Actions through the scheduler validation workflow on Windows, macOS, and Ubuntu
+
+**Key flags**
+
+- `--task-id <id>` -> limit actions to one scheduler task
+- `--auto-approve` -> skip confirmation for apply, repair, or remove
+- `--dry-run` -> preview apply/repair actions without making changes
+
+**Examples**
+
+```bash
+ghdp schedule
+ghdp schedule list
+ghdp schedule check --task-id sync-run-background
+ghdp schedule check --task-id version-change-latest-stable
+ghdp schedule apply --auto-approve
+ghdp schedule apply --dry-run
+ghdp schedule repair --task-id sync-run-background --auto-approve
+ghdp schedule run --task-id sync-run-background
+```
+
+The synced scheduler artifact currently includes:
+
+- `sync-run-background` every 1440 minutes
+- `version-change-latest-stable` every 60 minutes
+
+**Phase roadmap**
+
+- Phase 1
+  Release-backed scheduler capability artifacts synced into each repo, runtime logs, and explicit policy defaults for battery, network, timeout, retry, and overlap behavior.
+- Phase 2
+  launchd and cron providers behind the same task contract, plus richer health and repair flows.
+- Phase 3
+  Service-account and non-interactive host support, richer trigger types, and stronger automatic repair and doctor integrations.
+
+### 3.2 Feature-branch & release flows
+
+This area now spans both GitHub Actions and the CLI.
+
+High-level behaviour:
+
+A reusable workflow (e.g. `reusable-create-branch.yml`) takes inputs like:
+
+- `jira_key` (e.g. EPP-1234).
+- `branch_type` (feature, bugfix, enhancement).
+- `slug` (short description, e.g. email-cleanup).
+- `base_branch` (defaults to repo's default branch).
+- Flags like `validate_jira`, `comment_on_jira`.
+
+A calling workflow (per repo) triggers this via `workflow_dispatch`, so users can:
+
+- Select the Jira key and branch type.
+- Have a feature branch created consistently, e.g.: `feature/EPP-1234-email-cleanup`
+
+Separate GA workflows:
+
+- Create PRs from feature branches into default branches.
+- Create release tags and PRs for release.
+- Aggregate the list of tickets going into a release (Jira parity with Jenkins).
+
+Current GHDP CLI support:
+
+- `ghdp create-branch` / `ghdp crbr`
+  - creates the standard feature branch directly on GitHub
+  - validates Jira locally
+  - stores branch intent locally when checkout succeeds
+- `ghdp release`
+  - opens a guided selector for `feature-to-dev` and `make-release`, then runs the same flow as the explicit subcommands
+  - uses GHDP's Jenkins release backend, which now defaults to direct Jenkins API execution for the supported shared release-management flows
+  - uses canonical Jenkins folder-job paths rooted at `job/UDP/...` for the shared release-management jobs, with backward-compatible normalization for older repo-local contracts
+  - uses a shared live-status presenter for `feature-to-dev`, so interactive runs show one updating progress line while non-interactive or redirected output falls back to durable plain lines
+  - prefers smart defaults from the current repo and branch
+  - auto-generates and refreshes a repo-local Jenkins contract from `Jenkinsfile` when needed
+  - prompts only for missing or ambiguous inputs
+  - resolves Jenkins auth from:
+    - Okta email:
+      - `OKTA_USER_EMAIL`
+      - `ghdp config jenkins-okta-email --email ...`
+      - otherwise best-effort inference from `gh`, `acli jira auth status`, and `git config user.email`
+    - Jenkins API token:
+      - `JENKINS_API_TOKEN`
+      - `GHDP_JENKINS_API_TOKEN`
+      - saved local GHDP config via `ghdp config jenkins-api-token --token ...`
+    - Jenkins TLS trust bundle:
+      - `GHDP_JENKINS_CA_BUNDLE=/path/to/cert.pem`
+      - falls back to `SSL_CERT_FILE` when set
+      - useful on macOS or packaged installs when the embedded Python/OpenSSL trust store does not include the Jenkins issuer
+    - GitHub API token:
+      - `gh auth token`
+      - `GITHUB_API_TOKEN`
+- `ghdp repo ready`
+  - still owns the broader repo-governance readiness flow
+  - now supports targeted Jenkins contract maintenance:
+    - `ghdp repo ready --fix-jenkins-contract`
+    - `ghdp repo ready --refresh-jenkins-contract`
+  - stores the generated contract at `.ghdp/ci/jenkins_contract.json`
+  - keeps that Jenkins contract as repo-local metadata derived from `Jenkinsfile`, not as GitHub-backed sync capability content
+  - emits canonical shared Jenkins release job paths in the `job/UDP/...` form; older repo-local `UDP/...` values remain backward-compatible because GHDP normalizes them at runtime
+
+The README doesn't duplicate the workflow YAML or Jenkins job contracts here – but you should know:
+
+- GA is intended to be the only path for prod deployment.
+- GHDP now also provides a local entrypoint for release-management orchestration where the real execution still happens in Jenkins.
+- Jenkins API tokens are stored locally once you save them with `ghdp config jenkins-api-token`; use `--clear` to remove the saved token.
+- Local GHDP commands continue to stay focused on:
+  - local tools
+  - local Terraform / AWS helpers
+  - dev workflow guardrails
+  - guided entrypoints into remote automation
+
+---
+
+## 4. CLI-wide behaviours & capabilities
+
+These apply across commands, not just tools.
+
+### 4.1 Global flags
+
+Available on any `ghdp` command:
+
+- `--verbose` / `-v` → more detail, show underlying steps where supported.
+- `--quiet` → suppress non-essential output.
+- `--json` → JSON output when supported (e.g. `doctor`, `tools`, etc.).
+- `--non-interactive` (or `GHDP_NON_INTERACTIVE=1`) → fail instead of prompting.
+
+The global flags are stored in a shared CLI context, so commands can adapt behaviour based on them.
+
+### 4.2 Config: `~/.ghdp/config.json` + `ghdp config`
+
+Config lives at:
+
+```
+~/.ghdp/config.json
+```
+
+Defaults (conceptually):
+
+- `telemetry.enabled` → true
+- `git.strict_clean` → true
+- `precommit.mode` → "off" (values: off | warn | enforce)
+- `updates.enabled` → true (even if there is no public config updates knob yet)
+
+Key command group:
+
+```bash
+ghdp config list
+ghdp config telemetry --on/--off
+ghdp config precommit --mode off|warn|enforce
+ghdp config git-strict-clean --enabled/--disabled
+ghdp config jenkins-okta-email --email user@guardanthealth.com
+ghdp config jenkins-api-token --token <token>
+ghdp config jenkins-api-token --clear
+```
+
+- `config list` → merged view (defaults + overrides).
+- `telemetry` → toggles logging to `~/.ghdp/usage.log` and `~/.ghdp/errors.log`.
+- `precommit.mode` → reserved for future integration with pre-commit hooks.
+- `git.strict_clean` → controls whether "dirty git" blocks certain commands.
+- `jenkins.okta_email` → stored locally for Jenkins release execution when the email is not inferable.
+- `jenkins.api_token` → stored locally for Jenkins release execution and redacted in `ghdp config list`.
+
+Release-1 access and release-channel model:
+
+- GHDP resolves privileged identity from `gh api user -q .login`.
+- GHDP uses three policy layers together:
+  - persona: `admin` vs `non_admin`
+  - team policy: for domain-specific restrictions such as Tableau
+  - release policy: `stable` vs `prerelease`
+- Policy precedence is:
+  - synced Git artifact content
+  - local synced/runtime copy under `~/.ghdp`
+  - packaged fallback under `platform_cli/resources/policy`
+- The synced `ghdp-admin-policy` capability now carries:
+  - `team-policy.managed.json`
+  - `access_policy.json`
+  - `release-policy.managed.json`
+- Packaged fallbacks exist for those same files so the CLI can still resolve access and release rules after a sync failure or a local `.ghdp` wipe.
+- `GHDP_ACCESS_POLICY_PATH`, `GHDP_TEAM_POLICY_PATH`, and `GHDP_RELEASE_POLICY_PATH` remain compatibility escape hatches for loader overrides, but they are not part of the normal user flow.
+- `ghdp access status` shows the current actor, base persona, active mode, team context, token scope/state, effective capabilities, release channel, and release-policy source.
+- `ghdp commands` now annotates command discovery output with access metadata so users can see whether a command is `end-user`, `admin`, `admin-prerelease`, or team-scoped.
+
+Release-1 personas and command buckets:
+
+- End-user commands remain available in both `stable` and `prerelease`, including:
+  - `tools *`
+  - `team *`
+  - `aws *`
+  - `schedule *`
+  - `tf-*`
+  - `sync *`
+  - `usage`
+  - `doctor`
+  - `commands`
+  - `access status`
+  - `access token`
+  - `access clear`
+  - `config telemetry`
+  - `config updates`
+  - `config precommit`
+  - `config jenkins-okta-email`
+  - `config jenkins-api-token`
+  - `version change`
+  - `codex`
+  - `claude`
+  - `hello`
+- Admin-only commands are:
+  - `admin *`
+  - `release *`
+  - `create-branch`
+  - `crbr`
+  - `publish`
+  - `repo fix`
+  - `repo accept`
+- Admin + prerelease only commands are:
+  - `scaffold`
+  - `ci *`
+  - `build`
+  - `deploy`
+  - `repo ready`
+  - `repo report`
+  - `repo verify`
+  - `repo-info`
+  - `access inspect`
+  - `access reset`
+  - `config git-strict-clean`
+  - `config branch-jira-check`
+  - `config branch-ai-provider`
+  - `config branch-intent`
+  - `config branch-intent-prompt`
+- Team-only commands are:
+  - `tableau init`
+  - `tableau login`
+  - currently granted only to the `data_analyst` team through team policy
+
+Token and signer behavior:
+
+- Org-specific support/access contact text can live in the synced admin-policy payload and is used in denied-command guidance.
+- Token signing uses asymmetric signer metadata in `access_policy.json`. Public verification keys are policy-driven, while admin-only private signer material stays under `~/.ghdp/admin/signer/`.
+- `ghdp admin signer status` and `ghdp admin signer setup` inspect or provision admin-local signer material without AWS.
+- `ghdp admin token [--for-user <login>] [--team <team>] --capability <capability>` is the primary token mint flow and prompts interactively when required inputs are missing.
+- Token scopes are:
+  - `user`
+  - `team`
+  - `user_team`
+- `ghdp access token` prompts for a token, validates it immediately, stores it locally, and shows scope/expiry/team/capabilities.
+- `ghdp access token status` and `ghdp access token clear` remain hidden compatibility aliases while `ghdp access clear` is the primary clear command.
+- `ghdp admin assume --team <name>` and `ghdp admin return` still provide assumed-team testing for admins, and `admin assume` remains blocked in `stable`.
+
+Release-1 policy notes:
+
+- Non-admin users now keep `tools.uninstall` as an end-user capability.
+- `publish.execute` is available to normal end-user teams, while team policy can still deny it for restricted teams such as `data_analyst`.
+- `sync update`, `sync repair`, and `sync run` still require `sync.mutate`, but the release-1 policy grants `sync.mutate` to both personas so scheduler/setup flows can continue to self-heal.
+- Team-scoped sync restrictions still apply underneath sync mutation when a team policy configures them.
+- Contributor/internal surfaces are blocked in `stable` even for admins. Those commands require both:
+  - the `platform.internal` capability
+  - a `prerelease` build/runtime channel
+
+### 4.3 Telemetry & logs
+
+**Usage telemetry:**
+
+Stored at `~/.ghdp/usage.log` (one JSON line per command).
+
+Captures:
+
+- timestamp
+- command
+- service/env (where applicable)
+- status (ok / error)
+- error_code
+- reason
+- version + platform + user
+
+**Error telemetry:**
+
+Stored at `~/.ghdp/errors.log`:
+
+- timestamp
+- code
+- reason
+- error message
+
+**Env flag override:**
+
+```bash
+export GHDP_TELEMETRY=0   # or off / false
+```
+
+When off → no new entries are logged.
+
+**Usage viewer:**
+
+```bash
+ghdp usage             # show recent entries from usage.log
+ghdp usage --limit 50  # show last 50
+```
+
+### 4.4 Update checks
+
+We have two paths:
+
+**Implicit:** When you run `ghdp`:
+
+- A best-effort GitHub check (`maybe_check_for_update`) can run once per day.
+- It never blocks or breaks the CLI; failures are swallowed.
+
+**Explicit:** `ghdp doctor`
+
+- Runs a more explicit environment diagnostic.
+- Can also check the current GHDP version against the latest release.
+- Can emit structured output (e.g. with `--json`) for automation.
+
+For this beta there is no user-facing "config updates" toggle; update checks are wired into CLI behaviour.
+
+### 4.5 Errors & safety
+
+**Central error type:** `PlatformError(message, code, reason, alert=False)`
+
+- `code` → machine-friendly error code (e.g. `E_GIT_DIRTY`).
+- `reason` → short reason token.
+- `alert` → reserved for future Slack/PagerDuty hooks.
+
+**Error rendering:**
+
+Pretty Rich panel via `print_error`.
+
+**Exit codes:**
+
+- 1 for `PlatformError`.
+- Typer's own exit codes for CLI parsing issues, etc.
+
+**Decorators:**
+
+- `@tracked_command("name")` → auto logs usage success/error.
+- `@requires_clean_git()` → optionally blocks if `git status --porcelain` is not clean.
+- `@dangerous_command("name")` → for destructive operations (requires explicit confirmation; reserved for future).
+- `@feature_flag("some.key")` → guard a command/behaviour behind a config flag.
+- `@command_meta(...)` → attaches metadata (description, category, tags, feature flags) for `ghdp commands`.
+
+### 4.6 Command discovery
+
+```bash
+ghdp commands
+ghdp commands --category tools
+ghdp commands --tag aws
+```
+
+Shows a table of all registered commands with:
+
+- command name
+- category
+- tags
+- description
+
+Categories + tags are driven by `@command_meta`.
+
+Helps new users see what exists without digging into docs.
+
+### 4.7 Welcome panel & global header
+
+Running just `ghdp`:
+
+Prints a small header with version.
+
+Then shows a big Rich panel describing:
+
+- What GHDP is.
+- Key commands to try (hello, tools, config, usage, etc.).
+- Behaviour & safety notes (prod blocks, telemetry, tool ownership).
+- Placeholders for:
+  - Internal docs link.
+  - Onboarding checklist.
+  - Jira label to use.
+
+---
+
+## 5. Tool registry & team toolset (how the tools engine works)
+
+Two key files (shipped in the repo, overridable via `~/.ghdp` if needed):
+
+### 5.1 tool_registry.json (the "how")
+
+Describes how to install/detect/uninstall each tool.
+
+For each tool:
+
+- `display_name`
+- `bin` (e.g. git, gh, code)
+- `manager` (brew / winget / other)
+
+Manager-specific IDs:
+
+- `brew.formula` / `brew.cask`
+- `winget.id`
+
+Detect and version commands:
+
+- `detect_cmd` / `version_cmd` → how we detect installation + version (manager-aware).
+
+Platform-specific commands:
+
+- `platforms.darwin` / `platforms.windows`:
+  - `install` commands (array for subprocess).
+  - `upgrade` commands.
+  - `uninstall` commands.
+
+### 5.2 Team-toolset manifest shape (`toolset.json` schema)
+
+`teams.<team>.tools` maps to tool constraints:
+
+```json
+{
+  "teams": {
+    "platform": {
+      "tools": {
+        "git":   { "op": ">=", "version": "2.51.0" },
+        "gh":    { "op": ">=", "version": "2.40.0" },
+        "vscode":{ "op": ">=", "version": "1.80.0" }
+      }
+    },
+    "inform": {
+      "tools": {
+        "git":     { "op": ">=", "version": "2.51.0" },
+        "gh":      { "op": ">=", "version": "2.40.0" },
+        "vscode":  { "op": ">=", "version": "1.80.0" },
+        "docker":  { "op": ">=", "version": "X.Y.Z" },
+        "uv":      { "op": ">=", "version": "X.Y.Z" },
+        "maven":   { "op": ">=", "version": "X.Y.Z" },
+        "awscli":  { "op": ">=", "version": "X.Y.Z" },
+        "terraform": { "op": ">=", "version": "X.Y.Z" },
+        "mysql-workbench": { "op": ">=", "version": "X.Y.Z" }
+      }
+    },
+    "rwe_adjacent": {
+      "tools": {
+        "git":    { "op": ">=", "version": "2.51.0" },
+        "gh":     { "op": ">=", "version": "2.40.0" },
+        "vscode": { "op": ">=", "version": "1.80.0" },
+        "uv":     { "op": ">=", "version": "X.Y.Z" },
+        "docker": { "op": ">=", "version": "X.Y.Z" }
+      }
+    }
+  }
+}
+```
+
+GHDP now prefers a managed synced team-toolset file at `~/.ghdp/policies/team-toolset.managed.json` when present. That managed file keeps the same JSON shape as `toolset.json`; the packaged `toolset.json` is the fallback schema shape / bootstrap copy. The synced capability is the policy source of truth, and the packaged fallback exists only so fresh installs can bootstrap before sync completes.
+
+(Versions here are placeholders – actual ones live in the repo.)
+
+### 5.3 State & ownership
+
+Each run of `ghdp tools status` / `install` / `uninstall` writes a state file under `~/.ghdp`, e.g.:
+
+```
+~/.ghdp/state/tools/<team>.json
+```
+
+That state tracks:
+
+- Tools present.
+- Manager version vs PATH version.
+
+**Ownership:**
+
+- `user-managed` vs `ghdp-managed`.
+
+Install / upgrade / uninstall logic uses this state to decide what's safe.
+
+In a future release we can add clash detection that:
+
+- Notices when detection failed but manager install errors.
+- Marks such tools explicitly as user-managed and records that detection needs improvement.
+
+---
+
+## 6. Personas – how different people should read this
+
+The commands & capabilities are defined above. This section is about how each persona uses them.
+
+### Persona A – Everyday developer (consumer)
+
+You mostly want to set up your laptop and ship features.
+
+**Typical flow:**
+
+1. Install GHDP from Releases (Section 1.1).
+2. Once per laptop:
+   - `ghdp tools validate`
+   - `ghdp team use --team <team>`
+   - `ghdp tools status --refresh`
+   - `ghdp tools install`
+
+3. When GHDP updates or the team bumps tool versions:
+   - `ghdp tools status --refresh`
+   - `ghdp tools install --upgrade`
+
+4. To see what GHDP is doing:
+   - `ghdp commands`
+   - `ghdp usage`
+   - `ghdp config list`
+
+You do not need to touch manifests or decorators – they're abstracted away.
+If your org enables phase-0 access, everyday developers usually set their team once, use `ghdp access status` for visibility, and ask an admin for a temporary token only when they need a privileged repair or publish action. They then activate that token with `ghdp access token`, which stores the session locally in GHDP state.
+
+### Persona B – Command authors (feature owners inside the repo)
+
+You want to add new commands (e.g. a new AWS helper, a new tools operation) without breaking consistency.
+
+**Your main tools:**
+
+**Scaffold new commands:**
+
+```bash
+ghdp scaffold command <cli-name> \
+  [--dangerous/--safe] \
+  [--git-clean/--no-git-clean] \
+  [--feature-flag feature.some_key]
+```
+
+Generates a new module under `src/platform_cli/commands/<name>.py`.
+
+Includes:
+
+- `@tracked_command`
+- Optional `@dangerous_command`, `@requires_clean_git`, `@feature_flag`.
+- `@command_meta` stub with TODOs for:
+  - description
+  - category
+  - tags
+  - feature_flags
+
+**No manual wiring in `cli.py`:**
+
+The CLI auto-discovers commands:
+
+- Scans `platform_cli.commands` for modules.
+- For each module, if it has `register(app)` → it's auto-registered.
+- Anything under `commands/` that starts with `_` is treated as helper-only.
+
+**Decorators handle cross-cutting concerns:**
+
+- Telemetry (`@tracked_command`).
+- Git cleanliness (`@requires_clean_git`).
+- Dangerous confirmation (`@dangerous_command`).
+- Feature flags (`@feature_flag`).
+- Metadata for discovery (`@command_meta`).
+
+So as a command author, you:
+
+- Work only inside `commands/` + tests.
+- Use the scaffold template.
+- Let decorators handle the rest.
+
+### Persona C – Core platform maintainers
+
+You care about:
+
+- Governance (who can do what).
+- DX at scale (multiple teams, multiple OSes).
+- Future-proofing the CLI.
+
+**Your main knobs:**
+
+**Manifests:**
+
+- `tool_registry.json`:
+  - Add new tools.
+  - Refine detection/installation/uninstallation commands.
+- team-toolset manifest shape (`toolset.json` schema):
+  - Add or adjust teams.
+  - Tighten or relax version constraints.
+
+**Config defaults:**
+
+Decide org-wide defaults for:
+
+- `telemetry.enabled`
+- `git.strict_clean`
+- `precommit.mode`
+- `updates.enabled` (even if not user-exposed yet).
+
+**GA workflows:**
+
+Own the reusable-create-branch workflow + release/tag workflows.
+
+Define:
+
+- Branch naming conventions.
+- Jira validation / commenting rules.
+- Release tagging logic.
+
+**Roadmap levers:**
+
+Decide when to:
+
+- Turn pre-commit integration on (`precommit.mode = enforce`).
+- Introduce clash-based adoption for tools (user-managed detection failures).
+- Add stricter controls for prod via GA only.
+- Extend GHDP to non-tools use cases (AWS, Terraform orchestration, etc.).
+
+
+---
+
+
+## Tools management (`ghdp tools`)
+
+Manage and validate developer tools required by teams using manifest-driven toolsets and registries.
+
+- Commands:
+  - `ghdp tools validate [--team <team>]` — validate the resolved toolset + tool registry for the team/OS
+  - `ghdp tools list [--team <team>]` — list tools and version requirements for the resolved team
+  - `ghdp tools status [--team <team>] [--refresh]` — detect manager-installed vs active binaries (use `--refresh` to probe)
+  - `ghdp tools install [--team <team>] [--tool <name>] [--all] [--dry-run] [--upgrade] [--adopt-existing]` — install/upgrade tools; all-team install is default when `--tool` is omitted
+  - `ghdp tools uninstall [--team <team>] [--tool <name>] [--all] [--dry-run] [--force]` — uninstall tools
+  - `ghdp tools setup-agent-config [--tool claude|codex] [--all]` — create or refresh the GHDP-managed global Claude/Codex instructions
+  - `ghdp claude [<args>...]` — passthrough wrapper to run Claude Code CLI through GHDP
+  - `ghdp codex [<args>...]` — passthrough wrapper to run Codex CLI through GHDP
+
+- Key behaviors & edge cases solved:
+  - **Post-install verification**: after install/upgrade the CLI re-detects the installed binary and enforces manifest policy; a failure raises `E_VERSION_NOT_SATISFIED`.
+  - **Manager-aware detection**: distinguishes `managed_version` (package manager truth) vs `active_version` (what's on PATH) and records `managed_by` (user | ghdp).
+  - **PATH shadowing**: detects common cases (e.g., Apple `/usr/bin/git` shadowing Homebrew `git`) and surfaces `PATH_SHADOWED` hints.
+  - **Adopt existing**: interactive prompt or `--adopt-existing` to mark user-installed tools as GHDP-managed so upgrades/uninstalls are permitted.
+  - **Safe global agent-config adoption**: Claude and Codex global instruction files keep user-authored content outside the GHDP-managed block during install/setup refresh.
+  - **Non-interactive / CI**: uses `--non-interactive` or `GHDP_NON_INTERACTIVE=1` to skip prompts and fail safely in CI.
+  - **Windows support**: tool registry includes `windows` entries and `winget` IDs; installs use `winget` (requires App Installer / elevation).
+  - **Claude Code one-step bootstrap**: after Claude install, GHDP validates AWS readiness, resolves the Athena workgroup from env, AWS identity, saved config, or a prompt fallback, writes Bedrock env config, syncs Claude skill files, and offers same-session launch on Windows. Prompted values persist to GHDP config; env-derived and AWS-derived values stay ephemeral.
+  - **Codex one-step auth**: after Codex install on Windows, GHDP resolves the executable from WinGet paths (without requiring a new terminal), verifies version, and runs `codex login` when needed.
+  - **Dry-run mode**: `--dry-run` records planned commands without executing them.
+  - **Managed synced toolset**: GHDP prefers `~/.ghdp/policies/team-toolset.managed.json` when a synced managed team-toolset capability is installed.
+  - **User overrides**: users can still supply `~/.ghdp/manifests/tool-registry.json`, `~/.ghdp/tool-registry.json`, `~/.ghdp/manifests/toolset.json`, or `~/.ghdp/toolset.json` for local customization/debugging.
+  - **Stale saved team handling**: if the saved team no longer exists in the current resolved toolset, `ghdp team` flows now surface that explicitly and guide the user to reselect.
+
+Examples:
+
+```bash
+# Validate manifests
+ghdp tools validate
+
+# Dry-run install all tools for default team
+ghdp tools install --dry-run
+
+# Install git for default team (may require elevation on Windows)
+ghdp tools install --tool git
+
+# Install Claude Code and run Claude bootstrap
+ghdp tools install --tool claude
+
+# Install Codex and trigger browser login automatically if needed
+ghdp tools install --tool codex
+
+# Check status and re-detect installed binaries
+ghdp tools status --refresh
+
+# Pass-through Claude commands via GHDP
+ghdp claude
+
+# Pass-through Codex commands via GHDP
+ghdp codex --version
+ghdp codex login status
+```
+
+Troubleshooting tips:
+
+- If a Windows install fails, ensure `winget` is available and run PowerShell as Administrator.
+- If the installed version does not satisfy policy, re-run with `--upgrade` or adjust the manifest.
+- Claude currently relies on the effective AWS profile used in the shell; if a non-default profile is required, ensure `AWS_PROFILE` is set appropriately before launching Claude.
+- If `ANTHROPIC_MODEL` is not set, Claude uses its default resolved model rather than prompting during install.
+
+---
+
+## 5. Uninstalling the CLI
+
+If you ever want to remove the CLI installed via pipx:
+
+```bash
+pipx uninstall ghdp
+```
+
+This removes the isolated virtual environment and the global `ghdp` entrypoint.
+
+---
+
+## 6. Global CLI flags & behaviour (quick reference)
+
+These flags work for all commands (via shared CLI context):
+
+- `--verbose` / `-v`  
+  Show more details / underlying steps where supported.
+
+- `--quiet`  
+  Suppress non-essential output (good for scripting).
+
+- `--json`  
+  Ask for JSON output when supported (e.g. `ghdp doctor --json`).
+
+- `--non-interactive` (or `GHDP_NON_INTERACTIVE=1`)  
+  CI mode: no prompts; commands fail instead of asking questions.
+
+---
+
+## 7. Config & telemetry
+
+Config lives in: `~/.ghdp/config.json` and is managed via `ghdp config ...`.
+
+### 7.1 Config commands
+
+- `ghdp config list`  
+  Show merged config (defaults + user overrides).
+
+- `ghdp config telemetry --on/--off`  
+  Toggle telemetry on/off → updates `telemetry.enabled`.
+
+- `ghdp config updates --on/--off`  
+  Toggle update checks → updates `updates.enabled`.
+
+- `ghdp config precommit --mode off|warn|enforce`  
+  Records desired pre-commit policy mode. In phase 0, non-admins can set `warn` or `enforce`; `off` requires `config.admin_write` directly or through a valid token.
+
+- `ghdp config git-strict-clean --enabled/--disabled`  
+  Guard for blocking commands when git working tree is dirty. In phase 0, disabling it requires `config.admin_write` directly or through a valid token.
+
+- `ghdp access status`
+  Show actor identity, actor source, base persona, active mode, effective team, token scope/state, release channel, and effective capabilities.
+
+- `ghdp admin token [--for-user <login>] [--team <team>] --capability <capability> [--capability <capability> ...] [--ttl-minutes <minutes>]`
+  Admin-only. Mint a signed temporary token for a user, a team, or both. Missing inputs trigger interactive prompts, capabilities come from the policy-derived catalog, and the token is copied to clipboard when possible.
+
+- `ghdp admin signer status`
+  Show whether local signer material is present and whether the current verifier policy knows that signer key.
+
+- `ghdp admin signer setup [--key-id <id>] [--overwrite]`
+  Create admin-local signer material under `~/.ghdp/admin/signer/` and refresh the local access-policy override with the generated public verification key.
+
+- `ghdp access token`
+  Prompt for a token, validate it immediately, and persist it in local GHDP state for the current machine session. Output shows token scope, actor restriction, team restriction, expiry, and granted capabilities.
+
+- `ghdp access token status`
+  Hidden compatibility alias for token-only status output.
+
+- `ghdp access clear`
+  Remove the locally stored token so future commands fall back to base access rules.
+
+- `ghdp access inspect`
+  Inspect remembered actor, active token presence, assumed team, and resolved access context. In phase 1 this is preview-gated in `stable` unless normal admin mode or a preview token grants access.
+
+- `ghdp access reset`
+  Clear remembered actor, active token, and assumed-team state locally. In phase 1 this is preview-gated in `stable` unless normal admin mode or a preview token grants access.
+
+- `ghdp admin assume --team <name>`
+  Admin-only. Enter a temporary team persona for testing; admin-only capabilities are suppressed until you return. In phase 1 this remains blocked in `stable` unless you are already in normal admin mode.
+
+- `ghdp admin return`
+  Exit assumed-team mode and restore full admin behavior.
+
+- `ghdp team use --team <name>`
+  Select the working team. In phase 0 a non-admin can set the first team, but switching to a different team later requires admin capability or a valid token with `team.switch`.
+
+- `ghdp tools uninstall ...`
+  Admin-only in phase 0 unless a valid token grants `tools.uninstall`.
+
+- `ghdp repo fix` and `ghdp repo accept`
+  Require `repo.fix` / `repo.accept` capability directly or through a valid token in phase 0.
+
+- `ghdp sync update`, `ghdp sync repair`, and `ghdp sync run`
+  Require `sync.mutate`. The current synced and packaged policy grants that capability to both `admin` and `non_admin` as a temporary bootstrap-recovery concession while sync remains coarse-grained.
+
+- `ghdp publish`
+  Requires `publish.execute`; release-1 policy grants it to normal end-user teams, while team policy can still deny it for restricted teams such as `data_analyst`.
+
+### 7.2 Telemetry details
+
+- Usage logs: `~/.ghdp/usage.log`
+  - One JSON line per command:
+    - `ts, command, service, env, status, error_code, reason, user, version, platform`.
+
+- Error logs: `~/.ghdp/errors.log`
+  - One JSON line per `PlatformError`:
+    - `ts, code, reason, message`.
+
+- Environment override:
+  - `GHDP_TELEMETRY=0` → hard disable logging (wins over config).
+
+---
+
+## 8. Safety & guardrails
+
+- **Central error type:** `PlatformError(message, code, reason, alert)`  
+  → consistent errors + rich panels via `print_error`.
+
+- **Prod safety:**
+  - `tf-deploy` blocks local `prod` deploys with `E_PERMISSION_DENIED`.
+
+- **Git safety:**
+  - `@requires_clean_git()` decorator:
+    - checks `git status --porcelain`
+    - if `git.strict_clean = true` and working tree is dirty → `E_GIT_DIRTY` and command blocked.
+    - Applied to `tf-plan` and `tf-deploy` (can be reused on future commands).
+
+- **Feature flags:**
+  - `@feature_flag("config.key")` decorator:
+    - blocks a command when that config key evaluates to false.
+
+- **Dangerous commands (future usage):**
+  - `@dangerous_command("name")` standardises:
+    - interactive confirmation locally,
+    - safe behaviour when `--non-interactive` or in CI.
+
+---
+
+## 9. Command discovery & DX for contributors
+
+### 9.1 Auto-registration of commands
+
+- Any file under `src/platform_cli/commands` with:
+  - `register(app: typer.Typer) -> None`
+- Is **auto-discovered** and registered by `cli.py`.
+- Files starting with `_` (e.g. `_helpers.py`) are ignored (helpers only).
+
+You don’t have to touch `cli.py` to add a new command.
+
+### 9.2 Command metadata & catalogue
+
+- Each command can declare metadata via:
+
+  ```python
+  @command_meta(
+      name="tf-plan",
+      category="terraform",
+      description="Show Terraform plan / drift for a service/env (PoC).",
+      tags=["terraform", "plan"],
+      # optional: features={"terraform_local": True}
+  )
+  ```
+
+- List commands with:
+
+  ```bash
+  ghdp commands
+  ghdp commands --category terraform
+  ghdp commands --tag terraform
+  ```
+
+  This shows: `Command`, `Category`, `Tags`, `Description`.
+
+### 9.3 Decorator-based behaviours
+
+Common decorators available to command authors:
+
+- `@tracked_command("name")`  
+  → automatic telemetry (ok/error, error_code, reason).
+
+- `@requires_clean_git()`  
+  → enforce clean git working tree when `git.strict_clean` is enabled.
+
+- `@feature_flag("config.key")`  
+  → gate whole command (or parts) behind a feature flag.
+
+- `@dangerous_command("name")`  
+  → standard confirmation pattern for risky flows.
+
+- `@command_meta(...)`  
+  → description, category, tags, feature hints for UIs like `ghdp commands`.
+
+You can compose these on any new command without touching the framework.
+
+### 9.4 Scaffolding new commands
+
+Use:
+
+```bash
+ghdp scaffold command <name> [options]
+```
+
+This generates:
+
+- `src/platform_cli/commands/<name>.py` with:
+  - `register(app)` in place.
+  - Default decorators:
+    - `@tracked_command("<name>")`
+    - Optional `@dangerous_command("<name>")`
+    - Optional `@requires_clean_git()`
+    - Optional `@feature_flag("<feature-flag-key>")`
+    - `@command_meta(...)` with TODOs for category/tags/description.
+  - TODO comments explaining how to use / tweak each decorator.
+
+Net effect: new command authors mostly fill TODOs and implement body.
+
+---
+
+## 10. Environment diagnostics & usage inspection
+
+- `ghdp doctor`  
+  - Check basic environment: python, pipx, relevant tools, etc.
+- `ghdp doctor --json`  
+  - Machine-friendly diagnostics (for logs / CI).
+
+- `ghdp usage [-n N]`  
+  - Shows recent local GHDP command usage from `~/.ghdp/usage.log`.
+
+---
+
+## 11. Welcome banner & first-run experience
+
+Running just:
+
+```bash
+ghdp
+```
+
+Shows a Rich welcome panel:
+
+- Version badge.
+- “You are now inside GHDP Dev Platform CLI” banner.
+- Short “about” block:
+  - Terraform helper, shared flows, respects who-can-deploy-what, logs usage.
+- Quick commands to try (`hello`, `tf-init`, `tf-plan`, `tf-deploy`, `usage`).
+- Behaviour & safety notes.
+- Placeholders for:
+  - Internal docs URL.
+  - Onboarding checklist link.
+  - Jira label/tag conventions.
+
+This is the main entry-point for new devs and for your live demo.
+
+---
+
+## 12. GHDP Platform CLI – Capabilities by Persona (v0.0.1 PoC)
+
+> **Tagline:** One CLI for Terraform + platform workflows – same UX locally and in GitHub Actions.  
+> **North Star:** *Time-to-first-correct `tf-plan` < 10 minutes for any dev, with zero unsafe local prod deploys.*
+
+---
+
+### Persona 1 – Platform / Core Owners (Framework & Guardrails)
+
+**What you care about:** safety, policy enforcement, observability, and future-proof DX.
+
+#### A. Guardrails & Policy
+
+- **Central error model**
+  - `PlatformError(message, code, reason, alert)` used across commands.
+  - Rich error panel with `code` + `reason` (e.g. `E_PERMISSION_DENIED`, `SERVICE_ENV_NOT_ALLOWED`).
+
+- **Prod safety for Terraform**
+  - `ghdp tf-deploy` blocks **local `prod`** deploys:
+    - clear error + hint to use GitHub Actions instead.
+
+- **Git safety**
+  - Decorator `@requires_clean_git()`:
+    - checks `git status --porcelain`
+    - if `git.strict_clean = true` and working tree is dirty → `E_GIT_DIRTY` and command blocked.
+    - Applied to `tf-plan` and `tf-deploy` (can be reused on future commands).
+
+- **Feature flagging of commands**
+  - Decorator `@feature_flag("telemetry.enabled")` / `@feature_flag("features.<something>.enabled")`.
+  - If flag is off, command returns `E_FEATURE_DISABLED`.
+
+- **Future “dangerous” flows**
+  - Decorator `@dangerous_command("cmd-name")` ready for real destructive commands:
+    - Local: confirmation prompt.
+    - CI / non-interactive: safe by design (no prompt-based footguns).
+
+#### B. Observability & Telemetry
+
+- **Usage telemetry (command-level)**
+  - Decorator `@tracked_command("tf-plan")` wraps commands.
+  - Writes JSON lines to `~/.ghdp/usage.log` with:
+    - `ts, command, service, env, status(ok/error), error_code, reason, user, version, platform`.
+
+- **Error telemetry**
+  - `~/.ghdp/errors.log` captures:
+    - `ts, code, reason, message` for all `PlatformError` instances.
+
+- **Local usage explorer**
+  - `ghdp usage -n <limit>`  
+    - Shows recent invocations (time, command, service, env) from the usage log.
+
+- **Telemetry controls**
+  - Config: `ghdp config telemetry --on/--off` → `telemetry.enabled`.
+  - Env override: `GHDP_TELEMETRY=0` → hard off, wins over config.
+
+- **Alert hook stub**
+  - `send_alert(err)` called when `alert=True`; currently prints a dim hint.
+  - Ready to wire into Slack/PagerDuty.
+
+#### C. Behaviour Toggles & Global Flags
+
+- **Central config (`~/.ghdp/config.json`)**
+  - Defaults + overrides merged for:
+    - `telemetry.enabled`
+    - `git.strict_clean`
+    - `precommit.mode` (`off|warn|enforce`) – future policy for pre-commit
+    - `updates.enabled`
+    - Any future `features.*` flags.
+
+- **Config CLI (no JSON hand-editing)**
+  - `ghdp config list`  
+  - `ghdp config telemetry --on/--off`  
+  - `ghdp config updates --on/--off`  
+  - `ghdp config precommit --mode off|warn|enforce`  
+  - `ghdp config git-strict-clean --enabled/--disabled`
+
+- **Global run-time flags (shared context)**
+  - `--verbose` / `-v` → more detail.
+  - `--quiet` → suppress non-essential noise.
+  - `--json` → JSON-friendly output for supported commands (`doctor`, future others).
+  - `--non-interactive` or `GHDP_NON_INTERACTIVE=1` → CI mode (no prompts).
+
+- **Update checks**
+  - `maybe_check_for_update()` runs on startup (best-effort, never breaks CLI).
+  - Controlled via `updates.enabled` and respects quiet/CI modes.
+
+---
+
+### Persona 2 – Command Authors / Platform Contributors
+
+**What you care about:** “How painful is it to add/maintain commands?”
+
+#### A. Zero-friction command registration
+
+- **Auto-discovery**
+  - Any `src/platform_cli/commands/<name>.py` with `register(app)` is auto-registered in `cli.py`.
+  - No manual wiring; helpers can be `_foo.py` and are ignored.
+
+- **Command metadata**
+  - Decorator `@command_meta(...)` on the command function:
+    ```python
+    @command_meta(
+        name="tf-plan",
+        category="terraform",
+        description="Show Terraform plan / drift for a service/env (PoC).",
+        tags=["terraform", "plan"],
+        # optional: features={"terraform_local": True}
+    )
+    ```
+  - Feeds into `ghdp commands` listing & future UX.
+
+- **Command catalogue**
+  - `ghdp commands`  
+    - Lists command, category, tags, description.
+    - Filters: `--category`, `--tag`.
+
+#### B. Decorator-based behaviours (plug-and-play)
+
+For new commands, you mostly “compose behaviours” via decorators:
+
+- `@tracked_command("name")`  
+  → automatic telemetry (ok/error, error_code, reason).
+
+- `@requires_clean_git()`  
+  → optional clean-git enforcement for this command.
+
+- `@feature_flag("config.key")`  
+  → gate whole command (or behaviour) behind config.
+
+- `@dangerous_command("name")`  
+  → standard confirmation pattern for risky flows.
+
+- `@command_meta(...)`  
+  → description, category, tags, future per-command feature hints.
+
+You can add/remove these without touching the framework.
+
+#### C. Scaffolding new commands
+
+- **`ghdp scaffold command <name> [options]`**
+  - Generates `src/platform_cli/commands/<name>.py` with:
+    - `register(app)` wiring.
+    - Default decorators already in place:
+      - `@tracked_command(...)`
+      - optional `@dangerous_command`
+      - optional `@requires_clean_git()`
+      - optional `@feature_flag(...)`
+      - `@command_meta(...)` with TODOs for category/tags.
+    - Friendly TODO comments explaining each decorator and how to configure.
+
+- **DX goals**
+  - New command author should:
+    - run `ghdp scaffold command xyz`,
+    - fill in category/tags/description + body,
+    - decide which decorators to keep/remove,
+    - and be done – no framework work needed.
+
+#### D. Supporting tools
+
+- **Environment diagnostics**
+  - `ghdp doctor [--json]` to validate Python/pipx/gh/Terraform etc.  
+  - Share output when debugging dev machines.
+
+- **Local dev loop**
+  - `pipx install --force .` from `platform-cli` folder.
+  - Edit → reinstall → run `ghdp <command>`.
+
+---
+
+### Persona 3 – Consumers / Application Developers
+
+**What you care about:** “How do I install it? What can I run? How safe is it?”
+
+#### A. Install / Upgrade / Uninstall
+
+- **Recommended install (pipx + GitHub URL)**  
+  ```bash
+  pipx install     "git+https://github.com/gh-org-data-platform/dp-tools-local-setup.git@feature/EPPE-6092-ENHANCEMENT-cli-v0.1-dryrun#subdirectory=platform-cli"     && ghdp
+  ```
+
+- **Upgrade to latest**
+  ```bash
+  pipx upgrade ghdp
+  ```
+
+- **Uninstall**
+  ```bash
+  pipx uninstall ghdp
+  ```
+
+- **Other options (for power users)**
+  - Clone repo + `./scripts/install_ghdp.sh`
+  - Clone repo + `pipx install --force .` (for CLI devs).
+
+#### B. Everyday commands (current PoC set)
+
+- **Welcome & help**
+  - `ghdp` → rich welcome panel with:
+    - what this CLI is,
+    - examples,
+    - where docs/checklists will live.
+  - `ghdp commands` → see all available commands by category.
+
+- **Terraform flows**
+  - `ghdp tf-init  --env <dev|uat>`
+  - `ghdp tf-plan  --env <dev|uat|prod>`
+  - `ghdp tf-deploy --env <dev|uat|prod>` (prod blocked locally)
+
+- **Config & behaviour**
+  - `ghdp config list`
+  - `ghdp config telemetry --on/--off`
+  - `ghdp config git-strict-clean --enabled/--disabled`
+  - `ghdp config updates --on/--off`
+  - (pre-commit mode is recorded now; wiring comes later)
+
+- **Troubleshooting & introspection**
+  - `ghdp doctor` / `ghdp doctor --json` – check environment.
+  - `ghdp usage` – see your recent GHDP commands (for “what did I just do?” moments).
+
+#### C. What’s in it for an app dev?
+
+- One consistent CLI to run platform-blessed Terraform workflows.
+- Clear error messages with codes & reasons instead of raw stack traces.
+- Protection against:
+  - local prod deploys,
+  - accidentally deploying from a dirty git state (when guardrail is enabled).
+- No need to understand the internals:
+  - config is tweakable via `ghdp config ...`,
+  - telemetry is transparent & can be turned off,
+  - update checks are built in.
+---
+
+## 13. Architecture & Implementation Details
+
+This section covers the internal architecture for framework builders and advanced developers.
+
+### 13.1 Error Handling Model (core/errors.py)
+
+Central error class: `PlatformError`
+
+```python
+class PlatformError(Exception):
+    def __init__(
+        self,
+        message: str,
+        code: str | None = None,
+        reason: str | None = None,
+        alert: bool = False,
+    ) -> None:
+        self.message = message      # human-friendly text
+        self.code = code            # error code like E_PERMISSION_DENIED
+        self.reason = reason        # additional context for logging
+        self.alert = alert          # flag for sending alerts (Slack/PagerDuty)
+```
+
+**Error flow:**
+1. Command raises `PlatformError`
+2. `@tracked_command` decorator catches it, logs telemetry + error
+3. `cli._run()` catches in main exception handler
+4. `log_error()` writes to `~/.ghdp/errors.log` with ts, code, reason, message
+5. `send_alert()` called if `alert=True` (stub, ready for Slack/PagerDuty)
+6. `print_error()` renders rich panel with error code + reason + message
+
+---
+
+### 13.2 Decorator System (core/decorators.py)
+
+Four main decorators compose CLI behavior:
+
+**A) @command_meta(name, category, description, tags, config_overrides)**
+- Registers command in `COMMAND_REGISTRY` for `ghdp commands` listing
+- Stores per-command config overrides
+- Config resolution order:
+  1. `@command_meta` config_overrides parameter
+  2. config.json key `"key.command_name"` (e.g., `"git.strict_clean.tf-plan"`)
+  3. config.json global key `"key"`
+  4. hardcoded default
+
+**B) @tracked_command(command_name)**
+- Sets `cli_ctx.current_command_name` for other decorators
+- On success: logs to `~/.ghdp/usage.log` with `status="ok"`
+- On `PlatformError`: logs with `status="error"`, error_code, reason
+- Extracts service/env from kwargs for telemetry
+
+**C) @requires_clean_git()**
+- Checks config: `"git.strict_clean"` (global) or `"git.strict_clean.{command_name}"` (per-command)
+- If enabled and git working tree is dirty: raises `E_GIT_DIRTY`
+- If git missing or status fails: does NOT block (fail-open safety)
+
+**D) @feature_flag(config_key)**
+- Checks if config_key evaluates to truthy
+- If False: raises `E_FEATURE_DISABLED`
+- Used to gate entire commands or behaviors
+
+**Decorator composition (typical pattern):**
+```python
+@app.command("tf-plan")
+@command_meta(
+    name="tf-plan",
+    category="terraform",
+    description="...",
+    tags=["terraform"],
+    config_overrides={"git.strict_clean": True},
+)
+@feature_flag("features.terraform_local")
+@tracked_command("tf-plan")
+@requires_clean_git()
+def tf_plan(service: str, env: str) -> None:
+    # Function body
+```
+
+---
+
+### 13.3 Global Context (core/context.py)
+
+Simple dataclass shared across the CLI process:
+
+```python
+@dataclass
+class CLIContext:
+    verbose: bool = False        # -v/--verbose flag
+    quiet: bool = False          # --quiet flag
+    json: bool = False           # --json flag
+    non_interactive: bool = False  # --non-interactive or GHDP_NON_INTERACTIVE=1
+
+ctx = CLIContext()  # single shared instance
+```
+
+Used by decorators and commands to check flags, adjust behavior based on output format, and skip prompts in CI.
+
+---
+
+### 13.4 Config Management (core/config.py)
+
+**Storage:**
+- File: `~/.ghdp/config.json`
+- Format: flat dict with dotted keys (e.g., `"git.strict_clean"`, `"telemetry.enabled"`)
+
+**Default config:**
+```json
+{
+    "telemetry.enabled": true,
+    "updates.enabled": true,
+    "git.strict_clean": true,
+    "precommit.mode": "off",
+    "features.terraform_local": true,
+    "confirm.dangerous": true
+}
+```
+
+**API:**
+- `get_value(key, default=None)` → fetches value, overlayed on defaults
+- `set_value(key, value)` → writes to disk immediately
+- `get_bool(key, default=False)` → intelligent coercion (string `"true"` → `True`, etc.)
+- `get_config_snapshot()` → returns merged defaults + overrides
+
+**Config loading logic:**
+1. If `~/.ghdp/config.json` doesn't exist: use defaults
+2. If file exists but broken JSON: use defaults
+3. Merge: defaults + file contents (file wins on key overlap)
+4. Return merged dict
+
+---
+
+### 13.5 Telemetry (core/telemetry.py)
+
+**Two logs:**
+
+**A) Usage log: ~/.ghdp/usage.log**
+- One JSON line per command invocation
+- Fields: ts, command, service, env, status, error_code, reason, user, version, platform
+- Appended, not overwritten
+- Queried with `ghdp usage [-n <limit>]`
+
+**B) Error log: ~/.ghdp/errors.log**
+- One JSON line per `PlatformError`
+- Fields: ts, code, reason, message
+
+**Telemetry controls:**
+- Config key: `telemetry.enabled` (default: True)
+- Env override: `GHDP_TELEMETRY=0` (disables, wins over config)
+- Never throws; silently fails if logging fails (fail-open design)
+
+**Alert hook:**
+```python
+def send_alert(err: PlatformError) -> None:
+    # Currently: prints a stub
+    # Ready to wire: Slack, PagerDuty, etc.
+```
+
+If `err.alert=True`, `send_alert()` is called in `cli._run()` after catching `PlatformError`.
+
+---
+
+### 13.6 State Storage (state/store.py)
+
+**Purpose:** Store tools installation state and metadata locally.
+
+**Storage:**
+- Root: `~/.ghdp/state/`
+- Main file: `~/.ghdp/state/state.json`
+- Lock file: `~/.ghdp/state/.state.lock` (for atomic updates)
+
+**State schema example:**
+```json
+{
+  "schema_version": "1.0",
+  "updated_at": "2026-01-23T15:45:30",
+  "tools": {
+    "git": {
+      "managed_version": "2.43.0",
+      "managed_by": "ghdp",
+      "active_path": "/usr/local/bin/git",
+      "active_version": "2.43.0",
+      "path_shadowed": false,
+      "last_checked_at": "2026-01-23T15:45:30"
+    }
+  }
+}
+```
+
+**API:**
+- `load_state(paths=None)` → load state.json, return empty template if missing
+- `save_state(state, paths=None)` → atomically write state.json (write to .tmp first, then rename)
+- `update_tool_state(tool_name, patch, paths=None)` → atomically update state.tools[tool_name] with FileLock
+
+**FileLock (cross-platform):**
+```python
+with FileLock(lock_path):
+    state = load_state()
+    state["tools"]["git"]["managed_version"] = "2.44.0"
+    save_state(state)
+    # Lock is released on exit
+```
+
+---
+
+### 13.7 Tools Management (tools/service.py)
+
+**Purpose:** Detect, install, upgrade, and manage developer tools per team.
+
+**Data model: ToolRuntimeSpec**
+- name, display_name, detect_cmd, version_cmd, install_cmd, upgrade_cmd, uninstall_cmd, version_req
+- bin_name, manager, brew_formula, brew_cask, winget_id, choco_package, darwin_app_path
+
+**Key functions:**
+- `resolve_team_tools(team, toolset, registry)` → List[ToolRuntimeSpec] for all tools in a team
+- `_active_path_and_version(spec)` → (path, version) of what shell will execute
+- `_darwin_app_present(spec)` → bool check for macOS app bundles
+- `_policy_check(version_str, req)` → bool check if version satisfies requirement
+
+**Key fields tracked per tool (in state):**
+- managed_version: what package manager reports
+- managed_by: "ghdp" or "user"
+- active_path: what PATH resolves to
+- active_version: version of active binary
+- path_shadowed: true if managed != active
+- last_checked_at: when we last probed the system
+
+---
+
+### 13.8 Manifest Loading (manifests/load.py)
+
+**Two manifests:**
+
+**A) team-toolset manifest** — Same schema as `toolset.json`; defines teams and tool requirements per team
+```json
+{
+  "teams": {
+    "platform": {
+      "tools": {
+        "git": {"op": ">=", "version": "2.40.0"},
+        "terraform": {"op": ">=", "version": "1.5.0"}
+      }
+    }
+  }
+}
+```
+
+**B) tool-registry.json** — Defines all available tools with platform-specific install commands
+```json
+{
+  "tools": {
+    "git": {
+      "display_name": "Git",
+      "detect_cmd": ["git", "--version"],
+      "bin": "git",
+      "manager": "homebrew",
+      "platforms": {
+        "darwin": {
+          "install": ["brew", "install", "git"],
+          "upgrade": ["brew", "upgrade", "git"],
+          "uninstall": ["brew", "uninstall", "git"]
+        }
+      }
+    }
+  }
+}
+```
+
+**Loading priority order (load_manifests()):**
+1. `~/.ghdp/manifests/toolset.json` (user custom)
+2. legacy `~/.ghdp/toolset.json` (user custom)
+3. `GHDP_TOOLSET_JSON_PATH` env var (CI override)
+4. `~/.ghdp/policies/team-toolset.managed.json` (managed synced source)
+5. `platform_cli/resources/manifests/toolset.json` (packaged fallback)
+6. Adjacent to source file (editable installs)
+7. `./resources/toolset.json` (cwd dev fallback)
+
+**Platform detection (current_platform_key()):**
+- sys.platform startswith "darwin" → "darwin"
+- sys.platform startswith "linux" → "linux"
+- sys.platform startswith "win" → "windows"
+- else → "unknown"
+
+---
+
+### 13.9 Command Auto-Discovery (cli.py)
+
+**Mechanism:**
+```python
+def _register_all_commands(app: typer.Typer) -> None:
+    for module_info in pkgutil.iter_modules(commands_pkg.__path__):
+        name = module_info.name
+        if name.startswith("_"):  # skip helpers
+            continue
+        
+        module = importlib.import_module(f"platform_cli.commands.{name}")
+        register = getattr(module, "register", None)
+        if callable(register):
+            register(app)  # command registers itself
+```
+
+**Pattern each command follows:**
+```python
+# src/platform_cli/commands/tf_plan.py
+
+def register(app: typer.Typer) -> None:
+    @app.command("tf-plan")
+    @command_meta(...)
+    @tracked_command(...)
+    def tf_plan(service: str, env: str) -> None:
+        # implementation
+```
+
+**Key:** No manual wiring in `cli.py`. Just add a file to `commands/` with `register()` function. Helpers (files starting with `_`) are ignored.
+
+---
+
+### 13.10 Main Entry Point (cli.py _run())
+
+**Flow:**
+1. `app(standalone_mode=False)` executes Typer app
+2. `@root` callback sets up `cli_ctx` (verbose, quiet, json, non_interactive)
+3. `maybe_check_for_update()` runs (silent if fails)
+4. User command runs (wrapped in decorators)
+5. If no subcommand: print welcome banner
+
+**Exception handling:**
+```python
+def _run() -> int:
+    try:
+        app(standalone_mode=False)
+        return 0
+    except (PlatformError, ManifestPlatformError) as e:
+        log_error(e)                    # write to errors.log
+        if getattr(e, "alert", False):
+            send_alert(e)               # call alert hook
+        
+        print_error(msg, code=code, reason=reason)  # rich panel
+        return 1
+```
+
+---
+
+### 13.11 Best Practices for Adding Features
+
+**✅ Adding a new command:**
+1. Create `src/platform_cli/commands/feature_name.py`
+2. Implement `register(app)` function
+3. Add decorators in order:
+   - `@app.command("name")`
+   - `@command_meta(...)`
+   - `@feature_flag(...)` if gated
+   - `@tracked_command(...)`
+   - `@requires_clean_git()` if needed
+   - Function def
+
+**✅ Adding config option:**
+1. Add key to `_DEFAULT_CONFIG` in `core/config.py`
+2. Reference via: `get_value("key.name")` or `get_bool("key.name")`
+3. Create `ghdp config <option> --<flag>` command in `commands/config_cli.py`
+4. Document in README
+
+**✅ Storing tool state:**
+1. Load state: `state = load_state()`
+2. Update: `state["tools"]["toolname"]["field"] = value`
+3. Save atomically: `save_state(state)` or `update_tool_state("toolname", {"field": value})`
+
+**✅ Adding a tool to manifest:**
+1. Edit `tool-registry.json`: add entry under `"tools"`
+   - Include: display_name, detect_cmd, version_cmd, bin, manager, install/upgrade/uninstall per platform
+2. Edit the team-toolset manifest shape (`toolset.json` schema): add to `"teams.{team}.tools"`
+   - Include: version requirement like `{"op": ">=", "version": "x.y.z"}`
+3. Test: `ghdp tools validate [--team <team>]`
+
+For centrally managed rollout team changes, do not rely on editing the packaged fallback alone. Publish/update the synced `ghdp-team-toolset` capability and its content-index entry so `ghdp sync` can refresh `~/.ghdp/policies/team-toolset.managed.json`.
+
+**✅ Safe error handling:**
+- Always raise `PlatformError` with code + reason
+- Set `alert=True` for urgent issues
+- Let decorators catch and log; don't catch `PlatformError` in commands
+
+---
+
+## Release Notes Source
+
+Manual binary release workflow reads summary content from:
+- `.github/release-notes/notes.md`
+
+Reference template:
+- `.github/release-notes/template.md`
+
+Before running `.github/workflows/manual-build-binaries.yml`:
+- Copy/update `notes.md` from `template.md` structure.
+- Replace all `TODO` placeholders with release-specific content.
+- Keep markdown headings and bullets (this file preserves native formatting).
+- Do not add an outer `## Summary` heading in `notes.md`; workflow injects this content under `## Summary` automatically.
+- For feature-branch builds, ensure `notes.md` is updated on the branch and included in one of the latest 4 commits.
+
+## Local Terraform Deploy (Phase 1)
+
+GHDP now supports local Terraform commands for development workflows:
+- `ghdp tf-init`
+- `ghdp tf-validate`
+- `ghdp tf-fmt`
+- `ghdp tf-plan`
+- `ghdp tf-apply`
+- `ghdp tf-deploy`
+
+Prerequisites:
+- `terraform` installed and on PATH
+- `git` installed and on PATH
+- `aws` CLI installed and on PATH
+- AWS SSO login completed (example: `aws sso login --profile dpnp-dev`)
+
+Example:
+
+```bash
+ghdp tf-init --env dev --backend-bucket <bucket> --backend-key <key> --aws-profile dpnp-dev
+ghdp tf-plan --env dev --account dpnp --backend-bucket <bucket> --backend-key <key>
+ghdp tf-deploy --env dev --account dpnp --backend-bucket <bucket> --backend-key <key>
+```
+
+Guardrails enforced in Phase 1:
+- Local execution is restricted to `dev` environment.
+- Service allowlist checks are not enforced in the local guardrail flow.
+- Apply always requires inspected plan JSON.
+- Delete-only actions are blocked.
+- Replace actions are allowed but printed with a warning.

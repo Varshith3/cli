@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0",
+  "id": "stage17_packaged_artifact_validation",
+  "title": "Stage 17 Packaged Artifact Validation",
+  "owner_agent": "binary-validation",
+  "messages": {
+    "completed": "Stage 17 packaged artifact validation completed with a repo-backed pipx install-and-smoke result."
+  },
+  "next_actions": {
+    "completed": "Proceed into Stage 18 release readiness review using the execution and artifact validation evidence."
+  },
+  "handoff_summaries": {
+    "completed": "Stage 17 packaged artifact validation completed with an installed CLI smoke path and recorded install evidence."
+  },
+  "validation_posture": [
+    "Validate the packaged CLI path in isolation instead of relying only on source-mode commands.",
+    "Serialize pipx operations so other sessions cannot corrupt the validation install.",
+    "Record the exact smoke commands and observed outputs for later release confidence."
+  ],
+  "summary_ready_inputs": [
+    "binary_validation_prompt.md",
+    "binary_validation_bindings.json",
+    "artifact_validation_result.md",
+    "artifact_validation_summary.md"
+  ],
+  "summary_expected_next_step": "Use the install-and-smoke evidence while deciding whether the branch is release-ready.",
+  "resume_note_templates": [
+    "Validation agent: {validation_agent}.",
+    "Allowed skills: {allowed_skill_count}.",
+    "Allowed plugins: {allowed_plugin_count}.",
+    "Package root: {package_root}.",
+    "Installed CLI version: {installed_cli_version}.",
+    "Smoke commands recorded: {smoke_command_count}."
+  ]
+}

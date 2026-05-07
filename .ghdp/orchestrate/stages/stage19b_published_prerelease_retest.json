@@ -1,0 +1,32 @@
+{
+  "schema_version": "1.0",
+  "id": "stage19b_published_prerelease_retest",
+  "title": "Stage 19B Published Prerelease Retest",
+  "owner_agent": "published-prerelease-validation",
+  "messages": {
+    "completed": "Stage 19B validated the actual published prerelease artifact for this host."
+  },
+  "next_actions": {
+    "completed": "Proceed into Stage 21 PR and external integration using the validated published prerelease evidence."
+  },
+  "handoff_summaries": {
+    "completed": "Stage 19B downloaded the released artifact and validated it directly before PR progression."
+  },
+  "delivery_posture": [
+    "Validate the published artifact instead of assuming local package-root validation is enough.",
+    "Use the actual release asset selected for the current host.",
+    "Keep the commands and downloaded artifact path visible in repo-backed evidence."
+  ],
+  "summary_ready_inputs": [
+    "published_prerelease_validation_prompt.md",
+    "published_prerelease_validation_bindings.json",
+    "published_prerelease_validation_result.md"
+  ],
+  "summary_expected_next_step": "Carry the validated prerelease link and artifact evidence into PR progression.",
+  "resume_note_templates": [
+    "Validation agent: {validation_agent}.",
+    "Downloaded asset: {downloaded_asset}.",
+    "Asset name: {asset_name}.",
+    "Prerelease URL: {prerelease_url}."
+  ]
+}

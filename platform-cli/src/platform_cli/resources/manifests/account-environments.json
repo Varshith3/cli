@@ -1,0 +1,47 @@
+{
+  "local_allowed_envs": ["dev"],
+  "aws_region": "us-west-2",
+  "infra_templates_repo": "gh-org-data-platform/terraform-aws-gh-dp-infra-templates",
+  "accounts": {
+    "dpnp": {
+      "account_id": "617336469044",
+      "description": "Non-production account",
+      "environments": ["dev", "sqa", "val"],
+      "version_mode": "snapshot",
+      "state_bucket": "gh-dp-non-production-terraform-state-modules"
+    },
+    "dpp": {
+      "account_id": "626645654318",
+      "description": "Production account",
+      "environments": ["analytics", "prod"],
+      "version_mode": "release",
+      "state_bucket": "gh-dp-production-terraform-state-modules"
+    }
+  },
+  "codeartifact": {
+    "domain": "dpp-dp-tools-repositories-domain",
+    "domain_owner": "626645654318",
+    "repositories": {
+      "python": {
+        "snapshot": "dpnp-tools-python-snapshot-local",
+        "release": "dpp-tools-python-release-local"
+      },
+      "scala": {
+        "snapshot": "dpnp-tools-maven-snapshot-local",
+        "release": "dpp-tools-maven-release-local"
+      }
+    }
+  },
+  "version_modes": {
+    "snapshot": {
+      "python": "{base}.dev{date}",
+      "scala": "{base}-SNAPSHOT",
+      "codeartifact": "snapshot"
+    },
+    "release": {
+      "python": "{base}",
+      "scala": "{base}",
+      "codeartifact": "release"
+    }
+  }
+}

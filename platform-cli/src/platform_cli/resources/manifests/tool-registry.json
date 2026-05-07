@@ -1,0 +1,1323 @@
+{
+  "schema_version": "1.0",
+  "tools": {
+    "git": {
+      "display_name": "Git",
+      "bin": "git",
+      "manager": "brew",
+      "brew": {
+        "formula": "git"
+      },
+      "winget": {
+        "id": "Git.Git"
+      },
+      "detect_cmd": [
+        "bash",
+        "-lc",
+        "brew list --versions git >/dev/null 2>&1"
+      ],
+      "version_cmd": [
+        "bash",
+        "-lc",
+        "brew list --versions git | awk '{print $2}' | sed 's/_.*//'"
+      ],
+      "platforms": {
+        "darwin": {
+          "install": [
+            "bash",
+            "-lc",
+            "brew install git"
+          ],
+          "upgrade": [
+            "bash",
+            "-lc",
+            "brew upgrade git"
+          ],
+          "uninstall": [
+            "bash",
+            "-lc",
+            "brew uninstall git"
+          ]
+        },
+        "linux": {
+          "detect_cmd": [
+            "bash",
+            "-c",
+            "command -v git >/dev/null 2>&1"
+          ],
+          "version_cmd": [
+            "bash",
+            "-c",
+            "git --version | awk '{print $3}'"
+          ],
+          "install": [
+            "bash",
+            "-c",
+            "sudo apt-get update && sudo apt-get install -y git"
+          ],
+          "upgrade": [
+            "bash",
+            "-c",
+            "sudo apt-get update && sudo apt-get install -y --only-upgrade git"
+          ],
+          "uninstall": [
+            "bash",
+            "-c",
+            "sudo apt-get remove -y git"
+          ]
+        },
+        "windows": {
+          "install": [
+            "winget",
+            "install",
+            "--id",
+            "Git.Git",
+            "-e",
+            "--silent",
+            "--accept-package-agreements",
+            "--accept-source-agreements",
+            "--disable-interactivity"
+          ],
+          "upgrade": [
+            "winget",
+            "upgrade",
+            "--id",
+            "Git.Git",
+            "-e",
+            "--silent",
+            "--accept-package-agreements",
+            "--accept-source-agreements",
+            "--disable-interactivity"
+          ],
+          "uninstall": [
+            "winget",
+            "uninstall",
+            "--id",
+            "Git.Git",
+            "-e",
+            "--silent",
+            "--source",
+            "winget",
+            "--accept-source-agreements",
+            "--disable-interactivity"
+          ],
+          "detect_cmd": [
+            "powershell",
+            "-NoProfile",
+            "-Command",
+            "$cmd = Get-Command git -ErrorAction SilentlyContinue; if ($cmd) { exit 0 }; $wg = winget list -e --id Git.Git --accept-source-agreements --disable-interactivity 2>$null; if ($LASTEXITCODE -eq 0 -and $wg) { exit 0 }; exit 1"
+          ],
+          "version_cmd": [
+            "powershell",
+            "-NoProfile",
+            "-Command",
+            "$cmd = Get-Command git -ErrorAction SilentlyContinue; if ($cmd) { try { $out = & $cmd.Source --version 2>$null; if ($LASTEXITCODE -eq 0) { $out | Select-Object -First 1; exit 0 } } catch { } }; $row = winget list -e --id Git.Git --accept-source-agreements --disable-interactivity 2>$null | Select-String -Pattern 'Git.Git' | Select-Object -First 1; if ($row) { ($row.ToString() -split '\\s+')[-2]; exit 0 }; exit 1"
+          ]
+        }
+      }
+    },
+    "gh": {
+      "display_name": "GitHub CLI",
+      "bin": "gh",
+      "manager": "brew",
+      "brew": {
+        "formula": "gh"
+      },
+      "winget": {
+        "id": "GitHub.cli"
+      },
+      "detect_cmd": [
+        "bash",
+        "-lc",
+        "brew list --versions gh >/dev/null 2>&1"
+      ],
+      "version_cmd": [
+        "bash",
+        "-lc",
+        "brew list --versions gh | awk '{print $2}' | sed 's/_.*//'"
+      ],
+      "platforms": {
+        "darwin": {
+          "install": [
+            "bash",
+            "-lc",
+            "brew install gh"
+          ],
+          "upgrade": [
+            "bash",
+            "-lc",
+            "brew upgrade gh"
+          ],
+          "uninstall": [
+            "bash",
+            "-lc",
+            "brew uninstall gh"
+          ]
+        },
+        "linux": {
+          "detect_cmd": [
+            "bash",
+            "-c",
+            "command -v gh >/dev/null 2>&1"
+          ],
+          "version_cmd": [
+            "bash",
+            "-c",
+            "gh --version | head -1 | awk '{print $3}'"
+          ],
+          "install": [
+            "bash",
+            "-c",
+            "curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg && echo 'deb [arch=amd64 signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main' | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null && sudo apt-get update && sudo apt-get install -y gh"
+          ],
+          "upgrade": [
+            "bash",
+            "-c",
+            "sudo apt-get update && sudo apt-get install -y --only-upgrade gh"
+          ],
+          "uninstall": [
+            "bash",
+            "-c",
+            "sudo apt-get remove -y gh"
+          ]
+        },
+        "windows": {
+          "install": [
+            "winget",
+            "install",
+            "--id",
+            "GitHub.cli",
+            "-e",
+            "--silent",
+            "--accept-package-agreements",
+            "--accept-source-agreements",
+            "--disable-interactivity"
+          ],
+          "upgrade": [
+            "winget",
+            "upgrade",
+            "--id",
+            "GitHub.cli",
+            "-e",
+            "--silent",
+            "--accept-package-agreements",
+            "--accept-source-agreements",
+            "--disable-interactivity"
+          ],
+          "uninstall": [
+            "winget",
+            "uninstall",
+            "--id",
+            "GitHub.cli",
+            "-e",
+            "--silent",
+            "--source",
+            "winget",
+            "--accept-source-agreements",
+            "--disable-interactivity"
+          ],
+          "detect_cmd": [
+            "powershell",
+            "-NoProfile",
+            "-Command",
+            "$cmd = Get-Command gh -ErrorAction SilentlyContinue; if ($cmd) { exit 0 }; $wg = winget list -e --id GitHub.cli --accept-source-agreements --disable-interactivity 2>$null; if ($LASTEXITCODE -eq 0 -and $wg) { exit 0 }; exit 1"
+          ],
+          "version_cmd": [
+            "powershell",
+            "-NoProfile",
+            "-Command",
+            "$cmd = Get-Command gh -ErrorAction SilentlyContinue; if ($cmd) { try { $out = & $cmd.Source --version 2>$null; if ($LASTEXITCODE -eq 0) { $out | Select-Object -First 1; exit 0 } } catch { } }; $row = winget list -e --id GitHub.cli --accept-source-agreements --disable-interactivity 2>$null | Select-String -Pattern 'GitHub.cli' | Select-Object -First 1; if ($row) { ($row.ToString() -split '\\s+')[-2]; exit 0 }; exit 1"
+          ]
+        }
+      }
+    },
+    "vscode": {
+      "display_name": "Visual Studio Code",
+      "bin": "code",
+      "manager": "brew",
+      "brew": {
+        "cask": "visual-studio-code"
+      },
+      "winget": {
+        "id": "Microsoft.VisualStudioCode"
+      },
+      "darwin_app_path": "/Applications/Visual Studio Code.app",
+      "detect_cmd": [
+        "bash",
+        "-lc",
+        "brew list --cask --versions visual-studio-code >/dev/null 2>&1"
+      ],
+      "version_cmd": [
+        "bash",
+        "-lc",
+        "brew list --cask --versions visual-studio-code | awk '{print $2}'"
+      ],
+      "platforms": {
+        "darwin": {
+          "install": [
+            "bash",
+            "-lc",
+            "brew install --cask visual-studio-code"
+          ],
+          "upgrade": [
+            "bash",
+            "-lc",
+            "brew upgrade --cask visual-studio-code"
+          ],
+          "uninstall": [
+            "bash",
+            "-lc",
+            "brew uninstall --cask visual-studio-code"
+          ]
+        },
+        "linux": {
+          "detect_cmd": [
+            "bash",
+            "-c",
+            "command -v code >/dev/null 2>&1"
+          ],
+          "version_cmd": [
+            "bash",
+            "-c",
+            "code --version 2>/dev/null | head -1"
+          ],
+          "install": [
+            "bash",
+            "-c",
+            "curl -fsSL https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > /tmp/microsoft.gpg && sudo install -o root -g root -m 644 /tmp/microsoft.gpg /usr/share/keyrings/microsoft-archive-keyring.gpg && echo 'deb [arch=amd64 signed-by=/usr/share/keyrings/microsoft-archive-keyring.gpg] https://packages.microsoft.com/repos/code stable main' | sudo tee /etc/apt/sources.list.d/vscode.list > /dev/null && sudo apt-get update && sudo apt-get install -y code"
+          ],
+          "upgrade": [
+            "bash",
+            "-c",
+            "sudo apt-get update && sudo apt-get install -y --only-upgrade code"
+          ],
+          "uninstall": [
+            "bash",
+            "-c",
+            "sudo apt-get remove -y code"
+          ]
+        },
+        "windows": {
+          "install": [
+            "winget",
+            "install",
+            "--id",
+            "Microsoft.VisualStudioCode",
+            "-e",
+            "--silent",
+            "--override",
+            "/VERYSILENT /SP- /NORESTART /MERGETASKS=!runcode",
+            "--accept-package-agreements",
+            "--accept-source-agreements",
+            "--disable-interactivity"
+          ],
+          "upgrade": [
+            "winget",
+            "upgrade",
+            "--id",
+            "Microsoft.VisualStudioCode",
+            "-e",
+            "--silent",
+            "--override",
+            "/VERYSILENT /SP- /NORESTART /MERGETASKS=!runcode",
+            "--accept-package-agreements",
+            "--accept-source-agreements",
+            "--disable-interactivity"
+          ],
+          "uninstall": [
+            "winget",
+            "uninstall",
+            "--id",
+            "Microsoft.VisualStudioCode",
+            "-e",
+            "--silent",
+            "--source",
+            "winget",
+            "--accept-source-agreements",
+            "--disable-interactivity"
+          ],
+          "detect_cmd": [
+            "powershell",
+            "-NoProfile",
+            "-Command",
+            "$cmd = Get-Command code -ErrorAction SilentlyContinue; if ($cmd) { exit 0 }; $wg = winget list -e --id Microsoft.VisualStudioCode --accept-source-agreements --disable-interactivity 2>$null; if ($LASTEXITCODE -eq 0 -and $wg) { exit 0 }; exit 1"
+          ],
+          "version_cmd": [
+            "powershell",
+            "-NoProfile",
+            "-Command",
+            "$cmd = Get-Command code -ErrorAction SilentlyContinue; if ($cmd) { try { $out = & $cmd.Source --version 2>$null; if ($LASTEXITCODE -eq 0) { $out | Select-Object -First 1; exit 0 } } catch { } }; $row = winget list -e --id Microsoft.VisualStudioCode --accept-source-agreements --disable-interactivity 2>$null | Select-String -Pattern 'Microsoft.VisualStudioCode' | Select-Object -First 1; if ($row) { ($row.ToString() -split '\\s+')[-2]; exit 0 }; exit 1"
+          ]
+        }
+      }
+    },
+    "awscli": {
+      "display_name": "AWS CLI v2",
+      "bin": "aws",
+      "manager": "brew",
+      "brew": {
+        "formula": "awscli"
+      },
+      "winget": {
+        "id": "Amazon.AWSCLI"
+      },
+      "detect_cmd": [
+        "bash",
+        "-lc",
+        "brew list --versions awscli >/dev/null 2>&1"
+      ],
+      "version_cmd": [
+        "bash",
+        "-lc",
+        "brew list --versions awscli | awk '{print $2}' | sed 's/_.*//'"
+      ],
+      "platforms": {
+        "darwin": {
+          "install": [
+            "bash",
+            "-lc",
+            "brew install awscli"
+          ],
+          "upgrade": [
+            "bash",
+            "-lc",
+            "brew upgrade awscli"
+          ],
+          "uninstall": [
+            "bash",
+            "-lc",
+            "brew uninstall awscli"
+          ]
+        },
+        "linux": {
+          "detect_cmd": [
+            "bash",
+            "-c",
+            "command -v aws >/dev/null 2>&1"
+          ],
+          "version_cmd": [
+            "bash",
+            "-c",
+            "aws --version 2>&1 | awk '{print $1}' | cut -d/ -f2"
+          ],
+          "install": [
+            "bash",
+            "-c",
+            "curl -fsSL 'https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip' -o /tmp/awscliv2.zip && cd /tmp && unzip -qo awscliv2.zip && sudo ./aws/install && rm -rf /tmp/aws /tmp/awscliv2.zip"
+          ],
+          "upgrade": [
+            "bash",
+            "-c",
+            "curl -fsSL 'https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip' -o /tmp/awscliv2.zip && cd /tmp && unzip -qo awscliv2.zip && sudo ./aws/install --update && rm -rf /tmp/aws /tmp/awscliv2.zip"
+          ],
+          "uninstall": [
+            "bash",
+            "-c",
+            "sudo rm -rf /usr/local/aws-cli && sudo rm -f /usr/local/bin/aws /usr/local/bin/aws_completer"
+          ]
+        },
+        "windows": {
+          "install": [
+            "winget",
+            "install",
+            "--id",
+            "Amazon.AWSCLI",
+            "-e",
+            "--silent",
+            "--accept-package-agreements",
+            "--accept-source-agreements",
+            "--disable-interactivity"
+          ],
+          "upgrade": [
+            "winget",
+            "upgrade",
+            "--id",
+            "Amazon.AWSCLI",
+            "-e",
+            "--silent",
+            "--accept-package-agreements",
+            "--accept-source-agreements",
+            "--disable-interactivity"
+          ],
+          "uninstall": [
+            "winget",
+            "uninstall",
+            "--id",
+            "Amazon.AWSCLI",
+            "-e",
+            "--silent",
+            "--source",
+            "winget",
+            "--accept-source-agreements",
+            "--disable-interactivity"
+          ],
+          "detect_cmd": [
+            "powershell",
+            "-NoProfile",
+            "-Command",
+            "$cmd = Get-Command aws -ErrorAction SilentlyContinue; if ($cmd) { exit 0 }; $wg = winget list -e --id Amazon.AWSCLI --accept-source-agreements --disable-interactivity 2>$null; if ($LASTEXITCODE -eq 0 -and $wg) { exit 0 }; exit 1"
+          ],
+          "version_cmd": [
+            "powershell",
+            "-NoProfile",
+            "-Command",
+            "$cmd = Get-Command aws -ErrorAction SilentlyContinue; if ($cmd) { try { $out = & $cmd.Source --version 2>$null; if ($LASTEXITCODE -eq 0) { $out | Select-Object -First 1; exit 0 } } catch { } }; $row = winget list -e --id Amazon.AWSCLI --accept-source-agreements --disable-interactivity 2>$null | Select-String -Pattern 'Amazon.AWSCLI' | Select-Object -First 1; if ($row) { ($row.ToString() -split '\\s+')[-2]; exit 0 }; exit 1"
+          ]
+        }
+      }
+    },
+    "terraform": {
+      "display_name": "Terraform",
+      "bin": "terraform",
+      "manager": "brew",
+      "brew": {
+        "formula": "terraform"
+      },
+      "winget": {
+        "id": "Hashicorp.Terraform"
+      },
+      "detect_cmd": [
+        "bash",
+        "-lc",
+        "brew list --versions terraform >/dev/null 2>&1"
+      ],
+      "version_cmd": [
+        "bash",
+        "-lc",
+        "brew list --versions terraform | awk '{print $2}' | sed 's/_.*//'"
+      ],
+      "platforms": {
+        "darwin": {
+          "install": [
+            "bash",
+            "-lc",
+            "brew tap hashicorp/tap && brew install hashicorp/tap/terraform"
+          ],
+          "upgrade": [
+            "bash",
+            "-lc",
+            "brew tap hashicorp/tap && brew upgrade hashicorp/tap/terraform"
+          ],
+          "uninstall": [
+            "bash",
+            "-lc",
+            "brew uninstall hashicorp/tap/terraform"
+          ]
+        },
+        "linux": {
+          "detect_cmd": [
+            "bash",
+            "-c",
+            "command -v terraform >/dev/null 2>&1"
+          ],
+          "version_cmd": [
+            "bash",
+            "-c",
+            "terraform version -json 2>/dev/null | python3 -c \"import sys,json;print(json.load(sys.stdin)['terraform_version'])\" 2>/dev/null || terraform version | head -1 | awk '{print $2}' | sed 's/^v//'"
+          ],
+          "install": [
+            "bash",
+            "-c",
+            "curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg && echo \"deb [arch=amd64 signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main\" | sudo tee /etc/apt/sources.list.d/hashicorp.list > /dev/null && sudo apt-get update && sudo apt-get install -y terraform"
+          ],
+          "upgrade": [
+            "bash",
+            "-c",
+            "sudo apt-get update && sudo apt-get install -y --only-upgrade terraform"
+          ],
+          "uninstall": [
+            "bash",
+            "-c",
+            "sudo apt-get remove -y terraform"
+          ]
+        },
+        "windows": {
+          "install": [
+            "winget",
+            "install",
+            "--id",
+            "Hashicorp.Terraform",
+            "--exact",
+            "--source",
+            "winget",
+            "--silent",
+            "--accept-package-agreements",
+            "--accept-source-agreements",
+            "--disable-interactivity"
+          ],
+          "upgrade": [
+            "winget",
+            "upgrade",
+            "--id",
+            "Hashicorp.Terraform",
+            "-e",
+            "--silent",
+            "--accept-package-agreements",
+            "--accept-source-agreements",
+            "--disable-interactivity"
+          ],
+          "uninstall": [
+            "winget",
+            "uninstall",
+            "--id",
+            "Hashicorp.Terraform",
+            "-e",
+            "--silent",
+            "--source",
+            "winget",
+            "--accept-source-agreements",
+            "--disable-interactivity"
+          ],
+          "detect_cmd": [
+            "powershell",
+            "-NoProfile",
+            "-Command",
+            "$cmd = Get-Command terraform -ErrorAction SilentlyContinue; if ($cmd) { exit 0 }; $wg = winget list -e --id Hashicorp.Terraform --accept-source-agreements --disable-interactivity 2>$null; if ($LASTEXITCODE -eq 0 -and $wg) { exit 0 }; exit 1"
+          ],
+          "version_cmd": [
+            "powershell",
+            "-NoProfile",
+            "-Command",
+            "$cmd = Get-Command terraform -ErrorAction SilentlyContinue; if ($cmd) { try { $out = & $cmd.Source --version 2>$null; if ($LASTEXITCODE -eq 0) { $out | Select-Object -First 1; exit 0 } } catch { } }; $row = winget list -e --id Hashicorp.Terraform --accept-source-agreements --disable-interactivity 2>$null | Select-String -Pattern 'Hashicorp.Terraform' | Select-Object -First 1; if ($row) { ($row.ToString() -split '\\s+')[-2]; exit 0 }; exit 1"
+          ]
+        }
+      }
+    },
+    "maven": {
+      "display_name": "Apache Maven",
+      "bin": "mvn",
+      "manager": "brew",
+      "brew": {
+        "formula": "maven"
+      },
+      "detect_cmd": [
+        "bash",
+        "-lc",
+        "brew list --versions maven >/dev/null 2>&1"
+      ],
+      "version_cmd": [
+        "bash",
+        "-lc",
+        "brew list --versions maven | awk '{print $2}' | sed 's/_.*//'"
+      ],
+      "platforms": {
+        "darwin": {
+          "install": [
+            "bash",
+            "-lc",
+            "brew install maven"
+          ],
+          "upgrade": [
+            "bash",
+            "-lc",
+            "brew upgrade maven"
+          ],
+          "uninstall": [
+            "bash",
+            "-lc",
+            "brew uninstall maven"
+          ]
+        },
+        "linux": {
+          "detect_cmd": [
+            "bash",
+            "-c",
+            "command -v mvn >/dev/null 2>&1"
+          ],
+          "version_cmd": [
+            "bash",
+            "-c",
+            "mvn --version 2>/dev/null | head -1 | awk '{print $3}'"
+          ],
+          "install": [
+            "bash",
+            "-c",
+            "sudo apt-get update && sudo apt-get install -y maven"
+          ],
+          "upgrade": [
+            "bash",
+            "-c",
+            "sudo apt-get update && sudo apt-get install -y --only-upgrade maven"
+          ],
+          "uninstall": [
+            "bash",
+            "-c",
+            "sudo apt-get remove -y maven"
+          ]
+        },
+        "windows": {
+          "detect_cmd": [
+            "powershell",
+            "-NoProfile",
+            "-Command",
+            "$mvn = Get-Command mvn -ErrorAction SilentlyContinue; if ($mvn) { exit 0 }; $managed = Join-Path $env:LOCALAPPDATA 'GHDP\\tools\\apache-maven\\bin\\mvn.cmd'; if (Test-Path $managed) { exit 0 }; exit 1"
+          ],
+          "version_cmd": [
+            "powershell",
+            "-NoProfile",
+            "-Command",
+            "$mvn = Get-Command mvn -ErrorAction SilentlyContinue; if ($mvn) { & $mvn.Source --version | Select-Object -First 1; exit $LASTEXITCODE }; $managed = Join-Path $env:LOCALAPPDATA 'GHDP\\tools\\apache-maven\\bin\\mvn.cmd'; if (Test-Path $managed) { & $managed --version | Select-Object -First 1; exit $LASTEXITCODE }; exit 1"
+          ],
+          "install": [
+            "powershell",
+            "-NoProfile",
+            "-ExecutionPolicy",
+            "Bypass",
+            "-Command",
+            "$ErrorActionPreference='Stop'; if (-not (Get-Command java -ErrorAction SilentlyContinue)) { throw 'Apache Maven requires Java on PATH. Install a JDK first.' }; $version='3.9.14'; $toolsRoot=Join-Path $env:LOCALAPPDATA 'GHDP\\tools'; $target=Join-Path $toolsRoot 'apache-maven'; $archive=Join-Path $env:TEMP ('apache-maven-' + $version + '-bin.zip'); $expanded=Join-Path $toolsRoot ('apache-maven-' + $version); New-Item -ItemType Directory -Force -Path $toolsRoot | Out-Null; Invoke-WebRequest -Uri ('https://archive.apache.org/dist/maven/maven-3/' + $version + '/binaries/apache-maven-' + $version + '-bin.zip') -OutFile $archive; if (Test-Path $target) { Remove-Item -LiteralPath $target -Recurse -Force }; if (Test-Path $expanded) { Remove-Item -LiteralPath $expanded -Recurse -Force }; Expand-Archive -LiteralPath $archive -DestinationPath $toolsRoot -Force; Rename-Item -LiteralPath $expanded -NewName 'apache-maven' -Force; Remove-Item -LiteralPath $archive -Force; $bin=Join-Path $target 'bin'; [Environment]::SetEnvironmentVariable('MAVEN_HOME',$target,'User'); $userPath=[Environment]::GetEnvironmentVariable('Path','User'); $segments=@(); if ($userPath) { $segments = $userPath -split ';' | Where-Object { $_ } }; $segments = $segments | Where-Object { $_ -notmatch 'apache-maven(\\\\|$)' }; if ($segments -notcontains $bin) { $segments += $bin }; [Environment]::SetEnvironmentVariable('Path',($segments -join ';'),'User'); $env:MAVEN_HOME=$target; if (($env:Path -split ';') -notcontains $bin) { $env:Path = $bin + ';' + $env:Path }; & (Join-Path $bin 'mvn.cmd') --version"
+          ],
+          "upgrade": [
+            "powershell",
+            "-NoProfile",
+            "-ExecutionPolicy",
+            "Bypass",
+            "-Command",
+            "$ErrorActionPreference='Stop'; if (-not (Get-Command java -ErrorAction SilentlyContinue)) { throw 'Apache Maven requires Java on PATH. Install a JDK first.' }; $version='3.9.14'; $toolsRoot=Join-Path $env:LOCALAPPDATA 'GHDP\\tools'; $target=Join-Path $toolsRoot 'apache-maven'; $archive=Join-Path $env:TEMP ('apache-maven-' + $version + '-bin.zip'); $expanded=Join-Path $toolsRoot ('apache-maven-' + $version); New-Item -ItemType Directory -Force -Path $toolsRoot | Out-Null; Invoke-WebRequest -Uri ('https://archive.apache.org/dist/maven/maven-3/' + $version + '/binaries/apache-maven-' + $version + '-bin.zip') -OutFile $archive; if (Test-Path $target) { Remove-Item -LiteralPath $target -Recurse -Force }; if (Test-Path $expanded) { Remove-Item -LiteralPath $expanded -Recurse -Force }; Expand-Archive -LiteralPath $archive -DestinationPath $toolsRoot -Force; Rename-Item -LiteralPath $expanded -NewName 'apache-maven' -Force; Remove-Item -LiteralPath $archive -Force; $bin=Join-Path $target 'bin'; [Environment]::SetEnvironmentVariable('MAVEN_HOME',$target,'User'); $userPath=[Environment]::GetEnvironmentVariable('Path','User'); $segments=@(); if ($userPath) { $segments = $userPath -split ';' | Where-Object { $_ } }; $segments = $segments | Where-Object { $_ -notmatch 'apache-maven(\\\\|$)' }; if ($segments -notcontains $bin) { $segments += $bin }; [Environment]::SetEnvironmentVariable('Path',($segments -join ';'),'User'); $env:MAVEN_HOME=$target; if (($env:Path -split ';') -notcontains $bin) { $env:Path = $bin + ';' + $env:Path }; & (Join-Path $bin 'mvn.cmd') --version"
+          ],
+          "uninstall": [
+            "powershell",
+            "-NoProfile",
+            "-ExecutionPolicy",
+            "Bypass",
+            "-Command",
+            "$ErrorActionPreference='Stop'; $target=Join-Path $env:LOCALAPPDATA 'GHDP\\tools\\apache-maven'; $bin=Join-Path $target 'bin'; if (Test-Path $target) { Remove-Item -LiteralPath $target -Recurse -Force }; [Environment]::SetEnvironmentVariable('MAVEN_HOME',$null,'User'); $userPath=[Environment]::GetEnvironmentVariable('Path','User'); $segments=@(); if ($userPath) { $segments = $userPath -split ';' | Where-Object { $_ } }; $segments = $segments | Where-Object { $_ -ne $bin -and $_ -notmatch 'apache-maven(\\\\|$)' }; [Environment]::SetEnvironmentVariable('Path',($segments -join ';'),'User')"
+          ]
+        }
+      }
+    },
+    "docker": {
+      "display_name": "Docker",
+      "bin": "docker",
+      "manager": "brew",
+      "brew": {
+        "cask": "docker-desktop"
+      },
+      "winget": {
+        "id": "Docker.DockerDesktop"
+      },
+      "detect_cmd": [
+        "bash",
+        "-lc",
+        "brew list --cask --versions docker-desktop >/dev/null 2>&1"
+      ],
+      "version_cmd": [
+        "bash",
+        "-lc",
+        "brew list --cask --versions docker-desktop | awk '{print $2}'"
+      ],
+      "platforms": {
+        "darwin": {
+          "install": [
+            "bash",
+            "-lc",
+            "brew install --cask docker-desktop"
+          ],
+          "upgrade": [
+            "bash",
+            "-lc",
+            "brew upgrade --cask docker-desktop"
+          ],
+          "uninstall": [
+            "bash",
+            "-lc",
+            "brew uninstall --cask docker-desktop"
+          ]
+        },
+        "linux": {
+          "detect_cmd": [
+            "bash",
+            "-c",
+            "command -v docker >/dev/null 2>&1"
+          ],
+          "version_cmd": [
+            "bash",
+            "-c",
+            "docker --version 2>/dev/null | awk '{print $3}' | sed 's/,$//'"
+          ],
+          "install": [
+            "bash",
+            "-c",
+            "curl -fsSL https://get.docker.com | sudo sh"
+          ],
+          "upgrade": [
+            "bash",
+            "-c",
+            "curl -fsSL https://get.docker.com | sudo sh"
+          ],
+          "uninstall": [
+            "bash",
+            "-c",
+            "sudo apt-get remove -y docker-ce docker-ce-cli containerd.io"
+          ]
+        },
+        "windows": {
+          "install": [
+            "winget",
+            "install",
+            "--id",
+            "Docker.DockerDesktop",
+            "-e",
+            "--silent",
+            "--accept-package-agreements",
+            "--accept-source-agreements",
+            "--disable-interactivity"
+          ],
+          "upgrade": [
+            "winget",
+            "upgrade",
+            "--id",
+            "Docker.DockerDesktop",
+            "-e",
+            "--silent",
+            "--accept-package-agreements",
+            "--accept-source-agreements",
+            "--disable-interactivity"
+          ],
+          "uninstall": [
+            "winget",
+            "uninstall",
+            "--id",
+            "Docker.DockerDesktop",
+            "-e",
+            "--silent",
+            "--source",
+            "winget",
+            "--accept-source-agreements",
+            "--disable-interactivity"
+          ],
+          "detect_cmd": [
+            "powershell",
+            "-NoProfile",
+            "-Command",
+            "$cmd = Get-Command docker -ErrorAction SilentlyContinue; if ($cmd) { exit 0 }; $wg = winget list -e --id Docker.DockerDesktop --accept-source-agreements --disable-interactivity 2>$null; if ($LASTEXITCODE -eq 0 -and $wg) { exit 0 }; exit 1"
+          ],
+          "version_cmd": [
+            "powershell",
+            "-NoProfile",
+            "-Command",
+            "$cmd = Get-Command docker -ErrorAction SilentlyContinue; if ($cmd) { try { $out = & $cmd.Source --version 2>$null; if ($LASTEXITCODE -eq 0) { $out | Select-Object -First 1; exit 0 } } catch { } }; $row = winget list -e --id Docker.DockerDesktop --accept-source-agreements --disable-interactivity 2>$null | Select-String -Pattern 'Docker.DockerDesktop' | Select-Object -First 1; if ($row) { ($row.ToString() -split '\\s+')[-2]; exit 0 }; exit 1"
+          ]
+        }
+      }
+    },
+    "uv": {
+      "display_name": "uv (Python toolchain)",
+      "bin": "uv",
+      "manager": "brew",
+      "brew": {
+        "formula": "uv"
+      },
+      "detect_cmd": [
+        "bash",
+        "-lc",
+        "command -v uv >/dev/null 2>&1"
+      ],
+      "version_cmd": [
+        "bash",
+        "-lc",
+        "uv --version | awk '{print $2}'"
+      ],
+      "platforms": {
+        "darwin": {
+          "install": [
+            "bash",
+            "-lc",
+            "brew install uv"
+          ],
+          "upgrade": [
+            "bash",
+            "-lc",
+            "uv self update || brew upgrade uv"
+          ],
+          "uninstall": [
+            "bash",
+            "-lc",
+            "uv self uninstall || brew uninstall uv"
+          ]
+        },
+        "linux": {
+          "detect_cmd": [
+            "bash",
+            "-c",
+            "command -v uv >/dev/null 2>&1"
+          ],
+          "version_cmd": [
+            "bash",
+            "-c",
+            "uv --version 2>/dev/null | awk '{print $2}'"
+          ],
+          "install": [
+            "bash",
+            "-c",
+            "curl -LsSf https://astral.sh/uv/install.sh | sh"
+          ],
+          "upgrade": [
+            "bash",
+            "-c",
+            "uv self update || curl -LsSf https://astral.sh/uv/install.sh | sh"
+          ],
+          "uninstall": [
+            "bash",
+            "-c",
+            "uv self uninstall 2>/dev/null; rm -f ~/.local/bin/uv ~/.local/bin/uvx"
+          ]
+        },
+        "windows": {
+          "install": [
+            "powershell",
+            "-NoProfile",
+            "-Command",
+            "Write-Host 'uv is not supported on Windows in GHDP (use Python+pip/venv).'; exit 1"
+          ],
+          "upgrade": [
+            "powershell",
+            "-NoProfile",
+            "-Command",
+            "Write-Host 'uv is not supported on Windows in GHDP.'; exit 1"
+          ],
+          "uninstall": [
+            "powershell",
+            "-NoProfile",
+            "-Command",
+            "Write-Host 'uv is not supported on Windows in GHDP.'; exit 1"
+          ],
+          "detect_cmd": [
+            "powershell",
+            "-NoProfile",
+            "-Command",
+            "$cmd = Get-Command uv -ErrorAction SilentlyContinue; if ($cmd) { exit 0 }; exit 1"
+          ],
+          "version_cmd": [
+            "powershell",
+            "-NoProfile",
+            "-Command",
+            "$cmd = Get-Command uv -ErrorAction SilentlyContinue; if ($cmd) { & $cmd.Source --version | Select-Object -First 1; exit $LASTEXITCODE }; exit 1"
+          ]
+        }
+      }
+    },
+    "rstudio": {
+      "display_name": "RStudio Desktop",
+      "bin": "rstudio",
+      "manager": "brew",
+      "brew": {
+        "cask": "rstudio"
+      },
+      "winget": {
+        "id": "Posit.RStudio"
+      },
+      "detect_cmd": [
+        "bash",
+        "-lc",
+        "brew list --cask --versions rstudio >/dev/null 2>&1"
+      ],
+      "version_cmd": [
+        "bash",
+        "-lc",
+        "brew list --cask --versions rstudio | awk '{print $2}'"
+      ],
+      "platforms": {
+        "darwin": {
+          "install": [
+            "bash",
+            "-lc",
+            "brew install --cask rstudio"
+          ],
+          "upgrade": [
+            "bash",
+            "-lc",
+            "brew upgrade --cask rstudio"
+          ],
+          "uninstall": [
+            "bash",
+            "-lc",
+            "brew uninstall --cask rstudio"
+          ]
+        },
+        "linux": {
+          "detect_cmd": [
+            "bash",
+            "-c",
+            "command -v rstudio >/dev/null 2>&1"
+          ],
+          "version_cmd": [
+            "bash",
+            "-c",
+            "rstudio --version 2>/dev/null || echo unknown"
+          ],
+          "install": [
+            "bash",
+            "-c",
+            "echo 'RStudio Desktop must be installed manually on Linux. Download from https://posit.co/download/rstudio-desktop/' && exit 1"
+          ],
+          "upgrade": [
+            "bash",
+            "-c",
+            "echo 'RStudio Desktop must be upgraded manually on Linux.' && exit 1"
+          ],
+          "uninstall": [
+            "bash",
+            "-c",
+            "sudo apt-get remove -y rstudio 2>/dev/null || echo 'RStudio not found'"
+          ]
+        },
+        "windows": {
+          "install": [
+            "winget",
+            "install",
+            "--id",
+            "Posit.RStudio",
+            "-e",
+            "--source",
+            "winget",
+            "--silent",
+            "--accept-package-agreements",
+            "--accept-source-agreements",
+            "--disable-interactivity"
+          ],
+          "upgrade": [
+            "winget",
+            "upgrade",
+            "--id",
+            "Posit.RStudio",
+            "-e",
+            "--source",
+            "winget",
+            "--silent",
+            "--accept-package-agreements",
+            "--accept-source-agreements",
+            "--disable-interactivity"
+          ],
+          "uninstall": [
+            "winget",
+            "uninstall",
+            "--id",
+            "Posit.RStudio",
+            "-e",
+            "--source",
+            "winget",
+            "--accept-source-agreements",
+            "--disable-interactivity"
+          ],
+          "detect_cmd": [
+            "powershell",
+            "-NoProfile",
+            "-Command",
+            "$cmd = Get-Command rstudio -ErrorAction SilentlyContinue; if ($cmd) { exit 0 }; $wg = winget list -e --id Posit.RStudio --accept-source-agreements --disable-interactivity 2>$null; if ($LASTEXITCODE -eq 0 -and $wg) { exit 0 }; exit 1"
+          ],
+          "version_cmd": [
+            "powershell",
+            "-NoProfile",
+            "-Command",
+            "$cmd = Get-Command rstudio -ErrorAction SilentlyContinue; if ($cmd) { try { $out = & $cmd.Source --version 2>$null; if ($LASTEXITCODE -eq 0) { $out | Select-Object -First 1; exit 0 } } catch { } }; $row = winget list -e --id Posit.RStudio --accept-source-agreements --disable-interactivity 2>$null | Select-String -Pattern 'Posit.RStudio' | Select-Object -First 1; if ($row) { ($row.ToString() -split '\\s+')[-2]; exit 0 }; exit 1"
+          ]
+        }
+      }
+    },
+    "acli": {
+      "display_name": "Atlassian CLI (ACLI)",
+      "bin": "acli",
+      "manager": "brew",
+      "brew": {
+        "formula": "acli"
+      },
+      "winget": {
+        "id": "Atlassian.AtlassianCLI"
+      },
+      "detect_cmd": [
+        "bash",
+        "-lc",
+        "command -v acli >/dev/null 2>&1 || exit 1"
+      ],
+      "version_cmd": [
+        "bash",
+        "-lc",
+        "acli --version 2>/dev/null | grep -Eo '[0-9]+\\.[0-9]+\\.[0-9]+' | head -n 1"
+      ],
+      "platforms": {
+        "darwin": {
+          "install": [
+            "bash",
+            "-lc",
+            "brew tap atlassian/homebrew-acli && brew install acli"
+          ],
+          "upgrade": [
+            "bash",
+            "-lc",
+            "brew upgrade acli || (brew tap atlassian/homebrew-acli && brew upgrade acli)"
+          ],
+          "uninstall": [
+            "bash",
+            "-lc",
+            "brew uninstall acli"
+          ]
+        },
+        "linux": {
+          "detect_cmd": [
+            "bash",
+            "-c",
+            "command -v acli >/dev/null 2>&1"
+          ],
+          "version_cmd": [
+            "bash",
+            "-c",
+            "acli --version 2>/dev/null | grep -Eo '[0-9]+\\.[0-9]+\\.[0-9]+' | head -n 1"
+          ],
+          "install": [
+            "bash",
+            "-c",
+            "echo 'Atlassian CLI must be installed manually on Linux. See https://bobswift.atlassian.net/wiki/spaces/ACLI' && exit 1"
+          ],
+          "upgrade": [
+            "bash",
+            "-c",
+            "echo 'Atlassian CLI must be upgraded manually on Linux.' && exit 1"
+          ],
+          "uninstall": [
+            "bash",
+            "-c",
+            "echo 'Atlassian CLI must be removed manually on Linux.' && exit 1"
+          ]
+        },
+        "windows": {
+          "install": [
+            "winget",
+            "install",
+            "--id",
+            "Atlassian.AtlassianCLI",
+            "-e",
+            "--silent",
+            "--accept-package-agreements",
+            "--accept-source-agreements",
+            "--disable-interactivity"
+          ],
+          "upgrade": [
+            "winget",
+            "upgrade",
+            "--id",
+            "Atlassian.AtlassianCLI",
+            "-e",
+            "--silent",
+            "--accept-package-agreements",
+            "--accept-source-agreements",
+            "--disable-interactivity"
+          ],
+          "uninstall": [
+            "winget",
+            "uninstall",
+            "--id",
+            "Atlassian.AtlassianCLI",
+            "-e",
+            "--silent",
+            "--source",
+            "winget",
+            "--accept-source-agreements",
+            "--disable-interactivity"
+          ],
+          "detect_cmd": [
+            "powershell",
+            "-NoProfile",
+            "-Command",
+            "$cmd = Get-Command acli -ErrorAction SilentlyContinue; if ($cmd) { exit 0 }; $wg = winget list -e --id Atlassian.AtlassianCLI --accept-source-agreements --disable-interactivity 2>$null; if ($LASTEXITCODE -eq 0 -and $wg) { exit 0 }; exit 1"
+          ],
+          "version_cmd": [
+            "powershell",
+            "-NoProfile",
+            "-Command",
+            "$cmd = Get-Command acli -ErrorAction SilentlyContinue; if ($cmd) { try { $out = & $cmd.Source --version 2>$null; if ($LASTEXITCODE -eq 0) { $out | Select-Object -First 1; exit 0 } } catch { } }; $row = winget list -e --id Atlassian.AtlassianCLI --accept-source-agreements --disable-interactivity 2>$null | Select-String -Pattern 'Atlassian.AtlassianCLI' | Select-Object -First 1; if ($row) { ($row.ToString() -split '\\s+')[-2]; exit 0 }; exit 1"
+          ]
+        }
+      }
+    },
+    "codex": {
+      "display_name": "Codex CLI",
+      "bin": "codex",
+      "manager": "brew",
+      "brew": {
+        "cask": "codex"
+      },
+      "winget": {
+        "id": "OpenAI.Codex"
+      },
+      "detect_cmd": [
+        "bash",
+        "-lc",
+        "brew list --cask --versions codex >/dev/null 2>&1"
+      ],
+      "version_cmd": [
+        "bash",
+        "-lc",
+        "brew list --cask --versions codex | awk '{print $2}'"
+      ],
+      "platforms": {
+        "darwin": {
+          "install": [
+            "bash",
+            "-lc",
+            "brew install --cask codex"
+          ],
+          "upgrade": [
+            "bash",
+            "-lc",
+            "brew upgrade --cask codex"
+          ],
+          "uninstall": [
+            "bash",
+            "-lc",
+            "brew uninstall --cask codex"
+          ]
+        },
+        "linux": {
+          "detect_cmd": [
+            "bash",
+            "-c",
+            "command -v codex >/dev/null 2>&1"
+          ],
+          "version_cmd": [
+            "bash",
+            "-c",
+            "codex --version 2>/dev/null | head -1"
+          ],
+          "install": [
+            "bash",
+            "-c",
+            "npm install -g @openai/codex 2>/dev/null || echo 'Install Codex CLI via npm: npm install -g @openai/codex' && exit 1"
+          ],
+          "upgrade": [
+            "bash",
+            "-c",
+            "npm update -g @openai/codex"
+          ],
+          "uninstall": [
+            "bash",
+            "-c",
+            "npm uninstall -g @openai/codex"
+          ]
+        },
+        "windows": {
+          "install": [
+            "winget",
+            "install",
+            "--id",
+            "OpenAI.Codex",
+            "-e",
+            "--silent",
+            "--accept-package-agreements",
+            "--accept-source-agreements",
+            "--disable-interactivity"
+          ],
+          "upgrade": [
+            "winget",
+            "upgrade",
+            "--id",
+            "OpenAI.Codex",
+            "-e",
+            "--silent",
+            "--accept-package-agreements",
+            "--accept-source-agreements",
+            "--disable-interactivity"
+          ],
+          "uninstall": [
+            "winget",
+            "uninstall",
+            "--id",
+            "OpenAI.Codex",
+            "-e",
+            "--silent",
+            "--source",
+            "winget",
+            "--accept-source-agreements",
+            "--disable-interactivity"
+          ],
+          "detect_cmd": [
+            "powershell",
+            "-NoProfile",
+            "-Command",
+            "$cmd = Get-Command codex -ErrorAction SilentlyContinue; if ($cmd) { exit 0 }; $wg = winget list -e --id OpenAI.Codex --accept-source-agreements --disable-interactivity 2>$null; if ($LASTEXITCODE -eq 0 -and $wg) { exit 0 }; exit 1"
+          ],
+          "version_cmd": [
+            "powershell",
+            "-NoProfile",
+            "-Command",
+            "$cmd = Get-Command codex -ErrorAction SilentlyContinue; if ($cmd) { try { $out = & $cmd.Source --version 2>$null; if ($LASTEXITCODE -eq 0) { $out | Select-Object -First 1; exit 0 } } catch { } }; $row = winget list -e --id OpenAI.Codex --accept-source-agreements --disable-interactivity 2>$null | Select-String -Pattern 'OpenAI.Codex' | Select-Object -First 1; if ($row) { ($row.ToString() -split '\\s+')[-2]; exit 0 }; exit 1"
+          ]
+        }
+      }
+    },
+    "claude": {
+      "display_name": "Claude Code",
+      "bin": "claude",
+      "manager": "script",
+      "detect_cmd": [
+        "python",
+        "-c",
+        "from pathlib import Path; import shutil, sys; home = Path.home(); candidates = [shutil.which('claude') or '', str(home / '.local' / 'bin' / ('claude.exe' if sys.platform.startswith('win') else 'claude')), str(home / '.claude' / 'local' / ('claude.exe' if sys.platform.startswith('win') else 'claude'))]; found = next((p for p in candidates if p and Path(p).exists()), ''); raise SystemExit(0 if found else 1)"
+      ],
+      "version_cmd": [
+        "python",
+        "-c",
+        "from pathlib import Path; import subprocess, shutil, sys; home = Path.home(); candidates = [shutil.which('claude') or '', str(home / '.local' / 'bin' / ('claude.exe' if sys.platform.startswith('win') else 'claude')), str(home / '.claude' / 'local' / ('claude.exe' if sys.platform.startswith('win') else 'claude'))]; found = next((p for p in candidates if p and Path(p).exists()), ''); import sys as _sys; _sys.exit(1) if not found else None; proc = subprocess.run([found, '--version'], capture_output=True, text=True); out = (proc.stdout or proc.stderr or '').strip(); print(out.splitlines()[0] if out else '')"
+      ],
+      "platforms": {
+        "darwin": {
+          "install": [
+            "bash",
+            "-lc",
+            "curl -fsSL https://claude.ai/install.sh | bash"
+          ],
+          "upgrade": [
+            "bash",
+            "-lc",
+            "curl -fsSL https://claude.ai/install.sh | bash"
+          ],
+          "uninstall": [
+            "bash",
+            "-lc",
+            "claude uninstall -y 2>/dev/null || true; npm uninstall -g @anthropic-ai/claude-code 2>/dev/null || true; rm -f \"$HOME/.local/bin/claude\"; rm -rf \"$HOME/.claude/local\"; exit 0"
+          ]
+        },
+        "linux": {
+          "install": [
+            "bash",
+            "-c",
+            "curl -fsSL https://claude.ai/install.sh | bash"
+          ],
+          "upgrade": [
+            "bash",
+            "-c",
+            "curl -fsSL https://claude.ai/install.sh | bash"
+          ],
+          "uninstall": [
+            "bash",
+            "-c",
+            "claude uninstall -y 2>/dev/null || true; npm uninstall -g @anthropic-ai/claude-code 2>/dev/null || true; rm -f \"$HOME/.local/bin/claude\"; rm -rf \"$HOME/.claude/local\"; exit 0"
+          ]
+        },
+        "windows": {
+          "install": [
+            "powershell",
+            "-NoProfile",
+            "-ExecutionPolicy",
+            "Bypass",
+            "-Command",
+            "irm https://claude.ai/install.ps1 | iex"
+          ],
+          "upgrade": [
+            "powershell",
+            "-NoProfile",
+            "-ExecutionPolicy",
+            "Bypass",
+            "-Command",
+            "irm https://claude.ai/install.ps1 | iex"
+          ],
+          "uninstall": [
+            "powershell",
+            "-NoProfile",
+            "-Command",
+            "$ErrorActionPreference='SilentlyContinue'; if (Get-Command claude -ErrorAction SilentlyContinue) { claude uninstall -y | Out-Null }; if (Get-Command npm -ErrorAction SilentlyContinue) { npm uninstall -g @anthropic-ai/claude-code | Out-Null }; Remove-Item -Recurse -Force \"$HOME\\.claude\\local\" -ErrorAction SilentlyContinue; Remove-Item -Force \"$HOME\\.local\\bin\\claude.exe\" -ErrorAction SilentlyContinue; exit 0"
+          ]
+        }
+      }
+    }
+  }
+}

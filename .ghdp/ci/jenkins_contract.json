@@ -1,0 +1,220 @@
+{
+  "auth": {
+    "config_keys": {
+      "email": "jenkins.okta_email",
+      "jenkins_token": "jenkins.api_token"
+    },
+    "env_keys": {
+      "email": [
+        "OKTA_USER_EMAIL",
+        "GHDP_JENKINS_EMAIL"
+      ],
+      "github_token": [
+        "GITHUB_API_TOKEN",
+        "GHDP_GITHUB_API_TOKEN"
+      ],
+      "jenkins_token": [
+        "JENKINS_API_TOKEN",
+        "GHDP_JENKINS_API_TOKEN",
+        "GHDP_JENKINS_TOKEN"
+      ]
+    },
+    "local_user_config_secret_storage": true,
+    "non_interactive": {
+      "invalid_auth_code": "E_RELEASE_JENKINS_TOKEN_INVALID",
+      "missing_auth_code": "E_RELEASE_JENKINS_TOKEN_MISSING"
+    },
+    "resolution_order": [
+      "cli",
+      "env",
+      "config",
+      "prompt"
+    ],
+    "reviewable_secret_storage": false,
+    "supports_saved_jenkins_token": true
+  },
+  "comparison": {
+    "fixture_root": "platform-cli/tests/fixtures/release_migration/v1",
+    "ignore_fields": [
+      "message",
+      "build_url",
+      "console_url",
+      "timestamp",
+      "queue_url"
+    ],
+    "local_diagnostics_root": "~/.ghdp/release/diagnostics",
+    "normalized_fields": [
+      "flow",
+      "status",
+      "build_number",
+      "pull_request_url",
+      "diagnostic_reason"
+    ]
+  },
+  "flows": {
+    "develop_build": {
+      "confirm_gate_supported": true,
+      "default_branch": "develop",
+      "display_label": "develop-build",
+      "execution_backend": "contract_only",
+      "mode": "repo_local_pipeline",
+      "selectable": false,
+      "supported": true
+    },
+    "feature_to_dev": {
+      "artifact_expectations": [],
+      "build_timeout_s": 900,
+      "default_branch_prefix": "feature/",
+      "display_label": "feature-to-dev",
+      "execution_backend": "jenkins_api",
+      "expected_terminal_states": [
+        "SUCCESS",
+        "FAILURE",
+        "ABORTED"
+      ],
+      "index": 1,
+      "job_branch": "1-promote-feature-to-dev",
+      "job_path": "job/UDP/job/github-tools/job/dp-tools-release-management/job/1-promote-feature-to-dev",
+      "job_repository": "dp-tools-release-management",
+      "mode": "shared_release_management",
+      "parameter_names": [
+        "GITHUB_TOKEN",
+        "REPOSITORY",
+        "FEATURE_BRANCH_NAME",
+        "DEPLOY_ON_SQA"
+      ],
+      "poll_interval_s": 2,
+      "queue_timeout_s": 180,
+      "result_strategy": "github_cli_then_console",
+      "supported": true,
+      "trigger_endpoint": "buildWithParameters"
+    },
+    "make_release": {
+      "artifact_expectations": [],
+      "build_timeout_s": 900,
+      "display_label": "make-release",
+      "dynamic_params_from_jenkinsfile": true,
+      "execution_backend": "jenkins_api",
+      "expected_terminal_states": [
+        "SUCCESS",
+        "FAILURE",
+        "ABORTED"
+      ],
+      "index": 2,
+      "job_branch": "2-make-release",
+      "job_path": "job/UDP/job/github-tools/job/dp-tools-release-management/job/2-make-release",
+      "job_repository": "dp-tools-release-management",
+      "mode": "shared_release_management",
+      "parameter_names": [
+        "PARENT",
+        "RELEASE_TYPE",
+        "REPOSITORY",
+        "SOURCE_BRANCH",
+        "APPLY",
+        "TESTED_OK_ON_UAT"
+      ],
+      "poll_interval_s": 2,
+      "queue_timeout_s": 180,
+      "result_strategy": "build_url_only",
+      "supported": true,
+      "trigger_endpoint": "buildWithParameters"
+    }
+  },
+  "generated_at": "2026-04-17T17:39:26.580004+00:00",
+  "generated_by": "ghdp",
+  "parameter_schema": [
+    {
+      "choices": [],
+      "choices_source": "getEnvironmentList(account:account_name)",
+      "default": null,
+      "default_source": "",
+      "description": "Infra deployment workspace",
+      "kind": "choice",
+      "name": "TARGET_WORKSPACE",
+      "required": true,
+      "source_call": "choice"
+    },
+    {
+      "choices": [],
+      "choices_source": "",
+      "default": false,
+      "default_source": "",
+      "description": "The code base will be maven compile, run tests and package",
+      "kind": "boolean",
+      "name": "MAVEN_BUILD",
+      "required": false,
+      "source_call": "booleanParam"
+    },
+    {
+      "choices": [],
+      "choices_source": "",
+      "default": false,
+      "default_source": "",
+      "description": "The infra will be applied to the chosen workspace.",
+      "kind": "boolean",
+      "name": "APPLY",
+      "required": false,
+      "source_call": "booleanParam"
+    }
+  ],
+  "pipeline": {
+    "helper_calls": [
+      "downloadDependencies",
+      "initWorkspace",
+      "mavenBuild",
+      "pushLogsAndMetadata",
+      "terraformApply",
+      "validateAndPlan"
+    ],
+    "stage_names": [
+      "Initialize Workspace",
+      "Validate & Plan",
+      "Maven Test & Build",
+      "Apply"
+    ],
+    "style": "repo_local_pipeline",
+    "uses_ghdp_commands": false
+  },
+  "policy_version": "2026-04-16",
+  "redaction": {
+    "sensitive_fields": [
+      "JENKINS_API_TOKEN",
+      "GHDP_JENKINS_API_TOKEN",
+      "GHDP_JENKINS_TOKEN",
+      "GITHUB_API_TOKEN",
+      "GHDP_GITHUB_API_TOKEN",
+      "crumb",
+      "Authorization"
+    ]
+  },
+  "release_surface": {
+    "indexed_choices": [
+      {
+        "flow": "feature_to_dev",
+        "index": 1,
+        "label": "feature-to-dev",
+        "selectable": true
+      },
+      {
+        "flow": "make_release",
+        "index": 2,
+        "label": "make-release",
+        "selectable": true
+      }
+    ],
+    "selection_style": "indexed"
+  },
+  "repo_name": "dp-tools-local-setup",
+  "routing": {
+    "develop_build_tool": "deploy",
+    "feature_to_dev_tool": "create_pull_request",
+    "make_release_tool": "create_release",
+    "mcp_server": "dpe-jenkins"
+  },
+  "schema_version": "2.0",
+  "source": {
+    "branch_name": "feature/EPPE-7205-ENHANCEMENT-update-install-tool-command",
+    "jenkinsfile_hash": "fc1f501f5659435013c29db46d85313379223657dd333e22a14a9a541da649aa",
+    "jenkinsfile_path": "Jenkinsfile"
+  }
+}

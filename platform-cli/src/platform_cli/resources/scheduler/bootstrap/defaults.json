@@ -1,0 +1,44 @@
+{
+  "schema_version": "1.0",
+  "generated_by": "ghdp",
+  "capability_id": "background-scheduler",
+  "defaults": {
+    "enabled": true,
+    "required": false,
+    "platforms": [
+      "windows",
+      "darwin",
+      "linux"
+    ],
+    "command": {
+      "type": "ghdp"
+    },
+    "trigger": {
+      "type": "interval",
+      "minutes": 60,
+      "random_delay_minutes": 5
+    },
+    "execution": {
+      "timeout_minutes": 15,
+      "overlap_policy": "skip",
+      "catch_up_after_missed_run": true,
+      "retry_on_failure": {
+        "enabled": true,
+        "minutes": 15,
+        "max_attempts": 3
+      }
+    },
+    "conditions": {
+      "require_network": false,
+      "allow_on_battery": true,
+      "stop_on_battery": false,
+      "idle_only": false,
+      "wake_machine": false
+    },
+    "run_context": {
+      "mode": "user_session",
+      "elevated": false,
+      "hidden": false
+    }
+  }
+}

@@ -1,0 +1,246 @@
+{
+  "schema_version": "1.0",
+  "personas": {
+    "non_admin": {
+      "capabilities": [
+        "admin.view",
+        "team.initial_select",
+        "config.user_safe_write",
+        "tools.install",
+        "tools.uninstall",
+        "tools.read",
+        "usage.read",
+        "repo.read",
+        "sync.read",
+        "sync.mutate",
+        "publish.execute",
+        "team.switch",
+        "local.lifecycle"
+      ]
+    },
+    "admin": {
+      "capabilities": [
+        "admin.view",
+        "team.initial_select",
+        "config.user_safe_write",
+        "tools.install",
+        "tools.read",
+        "usage.read",
+        "repo.read",
+        "sync.read",
+        "team.switch",
+        "config.admin_write",
+        "tools.uninstall",
+        "repo.fix",
+        "repo.accept",
+        "sync.mutate",
+        "publish.execute",
+        "release.manage",
+        "branch.create",
+        "local.lifecycle",
+        "platform.internal",
+        "admin.token.issue"
+      ]
+    }
+  },
+  "token": {
+    "format_version": 2,
+    "allowed_capabilities": [
+      "config.user_safe_write",
+      "tools.install",
+      "team.switch",
+      "config.admin_write",
+      "tools.uninstall",
+      "repo.fix",
+      "repo.accept",
+      "sync.mutate",
+      "publish.execute",
+      "usage.read"
+    ],
+    "allowed_capabilities_by_scope": {
+      "user": [
+        "config.user_safe_write",
+        "tools.install",
+        "team.switch",
+        "config.admin_write",
+        "tools.uninstall",
+        "repo.fix",
+        "repo.accept",
+        "sync.mutate",
+        "publish.execute",
+        "usage.read"
+      ],
+      "team": [
+        "usage.read",
+        "tools.install",
+        "config.user_safe_write"
+      ],
+      "user_team": [
+        "config.user_safe_write",
+        "tools.install",
+        "team.switch",
+        "config.admin_write",
+        "tools.uninstall",
+        "repo.fix",
+        "repo.accept",
+        "sync.mutate",
+        "publish.execute",
+        "usage.read"
+      ]
+    },
+    "default_ttl_minutes": 60,
+    "max_ttl_minutes": 480,
+    "default_team_only_ttl_minutes": 15,
+    "max_team_only_ttl_minutes": 30,
+    "signing": {
+      "format": "ghdp.sig.v2",
+      "algorithm": "ed25519",
+      "active_key_id": "",
+      "verification_keys": []
+    },
+    "capability_catalog": {
+      "config.user_safe_write": {
+        "key": "config_user_safe_write",
+        "label": "User-safe config write",
+        "description": "Allow safe GHDP config changes such as precommit warn or enforce.",
+        "group": "Config",
+        "selectable_by_scope": ["user", "team", "user_team"],
+        "order": 10
+      },
+      "tools.install": {
+        "key": "tools_install",
+        "label": "Install tools",
+        "description": "Allow GHDP-managed tool installation flows.",
+        "group": "Tools",
+        "selectable_by_scope": ["user", "team", "user_team"],
+        "order": 20
+      },
+      "team.switch": {
+        "key": "team_switch",
+        "label": "Switch team",
+        "description": "Allow changing the selected GHDP team.",
+        "group": "Team",
+        "selectable_by_scope": ["user", "user_team"],
+        "order": 30
+      },
+      "config.admin_write": {
+        "key": "config_admin_write",
+        "label": "Admin config write",
+        "description": "Allow privileged GHDP config changes.",
+        "group": "Config",
+        "selectable_by_scope": ["user", "user_team"],
+        "order": 40
+      },
+      "tools.uninstall": {
+        "key": "tools_uninstall",
+        "label": "Uninstall tools",
+        "description": "Allow GHDP-managed tool uninstall flows.",
+        "group": "Tools",
+        "selectable_by_scope": ["user", "user_team"],
+        "order": 50
+      },
+      "repo.fix": {
+        "key": "repo_fix",
+        "label": "Repo fix",
+        "description": "Allow privileged GHDP repo fix actions.",
+        "group": "Repo",
+        "selectable_by_scope": ["user", "user_team"],
+        "order": 60
+      },
+      "repo.accept": {
+        "key": "repo_accept",
+        "label": "Repo accept",
+        "description": "Allow privileged GHDP repo acceptance actions.",
+        "group": "Repo",
+        "selectable_by_scope": ["user", "user_team"],
+        "order": 70
+      },
+      "sync.mutate": {
+        "key": "sync_mutate",
+        "label": "Sync mutate",
+        "description": "Allow GHDP sync update and repair flows.",
+        "group": "Sync",
+        "selectable_by_scope": ["user", "user_team"],
+        "order": 80
+      },
+      "publish.execute": {
+        "key": "publish_execute",
+        "label": "Publish execute",
+        "description": "Allow privileged GHDP publish execution.",
+        "group": "Publish",
+        "selectable_by_scope": ["user", "user_team"],
+        "order": 90
+      },
+      "release.manage": {
+        "key": "release_manage",
+        "label": "Release manage",
+        "description": "Allow privileged GHDP release management commands.",
+        "group": "Release",
+        "selectable_by_scope": [],
+        "order": 95
+      },
+      "local.lifecycle": {
+        "key": "local_lifecycle",
+        "label": "Local lifecycle",
+        "description": "Allow local init, build, and Terraform deployment helper flows for data-product repositories.",
+        "group": "Local",
+        "selectable_by_scope": [],
+        "order": 100
+      },
+      "usage.read": {
+        "key": "usage_read",
+        "label": "Usage history",
+        "description": "Allow reading GHDP local usage history.",
+        "group": "Usage",
+        "selectable_by_scope": ["user", "team", "user_team"],
+        "order": 105
+      },
+      "branch.create": {
+        "key": "branch_create",
+        "label": "Branch create",
+        "description": "Allow GHDP branch creation and FRBR intent flows.",
+        "group": "Git",
+        "selectable_by_scope": [],
+        "order": 110
+      },
+      "platform.internal": {
+        "key": "platform_internal",
+        "label": "Platform internal",
+        "description": "Allow contributor and internal-only GHDP command surfaces.",
+        "group": "Platform",
+        "selectable_by_scope": [],
+        "order": 115
+      },
+      "tableau.use": {
+        "key": "tableau_use",
+        "label": "Tableau use",
+        "description": "Allow Tableau-specific GHDP helper commands.",
+        "group": "Tableau",
+        "selectable_by_scope": [],
+        "order": 120
+      }
+    }
+  },
+  "config_rules": {
+    "precommit.mode": {
+      "user_safe_values": [
+        "warn",
+        "enforce"
+      ],
+      "admin_only_values": [
+        "off"
+      ]
+    },
+    "git.strict_clean": {
+      "user_safe_values": [
+        true
+      ],
+      "admin_only_values": [
+        false
+      ]
+    }
+  },
+  "help": {
+    "support_contact": "platform team"
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "schema_version": "1.0",
+  "id": "phase1_phase_regroup_policy",
+  "single_phase_default": true,
+  "max_impacted_areas_per_phase": 5,
+  "max_capabilities_per_phase": 4,
+  "force_multi_phase_keywords": [
+    "phase",
+    "phases",
+    "rollout",
+    "migration",
+    "multi-step",
+    "multi phase"
+  ],
+  "restart_triggers": {
+    "blocked_review_findings": true,
+    "blocked_test_execution": true,
+    "blocked_release_readiness": true,
+    "too_many_impacted_areas": true,
+    "too_many_asset_targets": true
+  },
+  "restart_destinations": {
+    "blocked_review_findings": "stage_c_front_door_gates",
+    "blocked_test_execution": "stage11_implementation",
+    "blocked_release_readiness": "stage13_qa_scenario_design",
+    "too_many_impacted_areas": "stage_c_front_door_gates",
+    "too_many_asset_targets": "independent_asset_lifecycle"
+  }
+}

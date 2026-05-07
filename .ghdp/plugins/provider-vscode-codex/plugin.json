@@ -1,0 +1,16 @@
+{
+  "schema_version": "1.0",
+  "id": "provider-vscode-codex",
+  "login_required": false,
+  "executor": "codex_cli",
+  "model": "gpt-5.4",
+  "host_mode": "vscode_codex",
+  "headless_compatibility": "codex_cli",
+  "prompt_source": ".ghdp/agents + .ghdp/skills + .ghdp/plugins + .ghdp/orchestrate/topology.json",
+  "setup_contract": [
+    "Resolve repo-level agents, skills, plugins, and topology before host-specific prompting.",
+    "When the VS Code host is unavailable, fall back to the Codex CLI-compatible execution contract without changing repo semantics.",
+    "Preserve sequential and parallel scheduling decisions from .ghdp/orchestrate/topology.json.",
+    "Honor the repo-selected compatibility model for headless Codex CLI execution so the same sub-agent contract can still run outside the VS Code host."
+  ]
+}

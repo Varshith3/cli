@@ -1,0 +1,17 @@
+{
+  "schema_version": "1.0",
+  "id": "test-coverage-authoring",
+  "role": "coverage_expander",
+  "summary": "Designs and authors new tests reflecting changed or newly introduced behavior.",
+  "stages_owned": ["stage15_new_test_coverage"],
+  "allowed_skills": ["test-coverage-authoring"],
+  "allowed_plugins": ["provider-codex", "provider-claude", "provider-vscode-codex", "provider-vscode-claude"],
+  "produces_artifacts": ["coverage_plan", "new_test_files"],
+  "approval_mode": "policy_driven",
+  "can_block": true,
+  "can_retry": true,
+  "prompt_contract": [
+    "Add tests where behavior changed instead of broad test churn.",
+    "Keep coverage additions understandable and proportional to the change."
+  ]
+}

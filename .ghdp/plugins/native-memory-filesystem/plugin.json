@@ -1,0 +1,14 @@
+{
+  "schema_version": "1.0",
+  "id": "native-memory-filesystem",
+  "login_required": false,
+  "executor": "filesystem",
+  "setup_contract": [
+    "Repo-local shared state lives under .ghdp/orchestrate.",
+    "User-global runtime state lives under ~/.ghdp."
+  ],
+  "prompt_contract": [
+    "Never store noisy machine-local logs in repo-local orchestration history."
+  ]
+}
+

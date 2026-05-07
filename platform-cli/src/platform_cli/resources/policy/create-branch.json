@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0",
+  "branch_prefix": "feature",
+  "intent_repo_path": ".ghdp/frbr/intent.json",
+  "branch_types": [
+    {
+      "canonical": "TECHNICAL",
+      "aliases": ["t", "tech", "technical"]
+    },
+    {
+      "canonical": "ENHANCEMENT",
+      "aliases": ["e", "enh", "enhancement"]
+    },
+    {
+      "canonical": "BUGFIX",
+      "aliases": ["b", "bug", "bugfix"]
+    }
+  ],
+  "jira": {
+    "comment_template": "Branch created: {branch_name}\nBy: @{actor}\nLink: {branch_url}\nRequestId: {request_id}"
+  }
+}

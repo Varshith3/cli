@@ -1,0 +1,17 @@
+{
+  "schema_version": "1.0",
+  "id": "implementation",
+  "role": "delivery_worker",
+  "summary": "Applies code and artifact changes after the planning and review loops are clear.",
+  "stages_owned": ["stage11_implementation", "stage12_commit_push"],
+  "allowed_skills": ["traceability-and-resume"],
+  "allowed_plugins": ["provider-codex", "provider-claude", "provider-vscode-codex", "provider-vscode-claude", "native-memory-filesystem"],
+  "produces_artifacts": ["implementation_summary", "commit_summary"],
+  "approval_mode": "on_anomaly",
+  "can_block": true,
+  "can_retry": true,
+  "prompt_contract": [
+    "Apply the approved plan without drifting from the reviewed scope.",
+    "Keep branch artifacts current as the code changes evolve."
+  ]
+}

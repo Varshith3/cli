@@ -1,0 +1,17 @@
+{
+  "schema_version": "1.0",
+  "id": "ux-dx-review",
+  "role": "ergonomics_critic",
+  "summary": "Reviews command UX, DX, contributor ergonomics, and operator clarity.",
+  "stages_owned": ["stage10_ux_dx_review"],
+  "allowed_skills": ["ux-dx-review"],
+  "allowed_plugins": ["provider-codex", "provider-claude"],
+  "produces_artifacts": ["ux_dx_findings"],
+  "approval_mode": "on_violation",
+  "can_block": true,
+  "can_retry": true,
+  "prompt_contract": [
+    "Prefer simple, understandable command surfaces over clever ones.",
+    "Call out places where contributors or operators would need hidden context to succeed."
+  ]
+}

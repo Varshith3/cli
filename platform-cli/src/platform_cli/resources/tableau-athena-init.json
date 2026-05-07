@@ -1,0 +1,21 @@
+{
+  "required_jars": [
+    "AthenaJDBC42_2.0.27.1000.jar",
+    "athena-jdbc-1.0.0-SNAPSHOT.jar"
+  ],
+  "defaults": {
+    "drivers_dir": {
+      "darwin": "~/Library/Tableau/Drivers",
+      "linux": "/opt/tableau/drivers",
+      "windows": "C:\\Program Files\\Tableau\\Drivers"
+    },
+    "windows_program_files_default": "C:\\Program Files",
+    "mac_athena_properties_path": "~/Documents/My Tableau Repository/Datasources/athena.properties",
+    "athena_properties_line": "AwsCredentialsProviderClass=com.simba.athena.amazonaws.auth.DefaultAWSCredentialsProviderChain"
+  },
+  "release_content": {
+    "repo": "gh-org-data-platform/dp-tools-local-setup",
+    "tag": "v0.1.0-tableau-athena-jars",
+    "manifest_asset": "content-manifest.json"
+  }
+}

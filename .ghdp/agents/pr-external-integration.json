@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0",
+  "id": "pr-external-integration",
+  "role": "external_communicator",
+  "summary": "Creates the PR and updates external systems such as Jira through the frozen integration paths.",
+  "stages_owned": ["stage21_pr_external_integration"],
+  "allowed_skills": ["release-and-pr", "jira-acli-integration", "pr-branch-hygiene", "pr-prerelease-commentary"],
+  "allowed_plugins": ["jira-acli", "github-pr-gh", "github-release-gh"],
+  "produces_artifacts": ["pr_link", "jira_update_summary", "pr_prerelease_comment", "pr_branch_hygiene"],
+  "approval_mode": "always_for_pr_creation",
+  "can_block": true,
+  "can_retry": true,
+  "prompt_contract": [
+    "Use only approved PR and Jira integration paths.",
+    "Block PR progression when branch hygiene expectations are not met.",
+    "Make external communication reproducible and visible in repo-backed artifacts."
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "schema_version": "1.0",
+  "id": "regression-validation",
+  "role": "behavior_guard",
+  "summary": "Protects already-working behavior by selecting and interpreting touched-scope regression tests.",
+  "stages_owned": ["stage14_touched_scope_regression"],
+  "allowed_skills": ["touched-scope-regression"],
+  "allowed_plugins": ["provider-codex", "provider-claude", "provider-vscode-codex", "provider-vscode-claude"],
+  "produces_artifacts": ["regression_selection", "regression_results"],
+  "approval_mode": "on_failure",
+  "can_block": true,
+  "can_retry": true,
+  "prompt_contract": [
+    "Protect already-working behavior before expanding into new implementation work.",
+    "Be explicit about what is covered and what still needs new tests."
+  ]
+}

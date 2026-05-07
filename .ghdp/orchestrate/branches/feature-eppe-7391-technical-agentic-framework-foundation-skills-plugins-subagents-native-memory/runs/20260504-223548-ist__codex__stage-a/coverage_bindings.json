@@ -1,0 +1,45 @@
+{
+  "agent_id": "test-coverage-authoring",
+  "allowed_plugins": [
+    {
+      "id": "provider-codex",
+      "path": ".ghdp/plugins/provider-codex/plugin.json"
+    },
+    {
+      "id": "provider-claude",
+      "path": ".ghdp/plugins/provider-claude/plugin.json"
+    }
+  ],
+  "allowed_skills": [
+    {
+      "id": "test-coverage-authoring",
+      "path": ".ghdp/skills/test-coverage-authoring/SKILL.md"
+    }
+  ],
+  "authored_tests": [
+    "platform-cli/tests/test_orchestrate_execution.py",
+    "platform-cli/tests/test_orchestrate_coverage.py",
+    "platform-cli/tests/test_orchestrate_regression.py",
+    "platform-cli/tests/test_orchestrate_contract.py",
+    "platform-cli/tests/test_orchestrate_manifests.py"
+  ],
+  "coverage_goals": [
+    "Add or extend tests for any new Stage E command surface and runtime artifact writer.",
+    "Ensure branch runtime artifact mutations remain deterministic in repo-backed runs.",
+    "Protect the manifest/tool layering assumptions introduced in earlier stages."
+  ],
+  "required_assertions": [
+    "Execution-prep command writes all expected Stage E artifacts.",
+    "Skill/plugin binding files exist for the execution-layer contract.",
+    "Stage status advances into `stage_e_execution_prep` with a clear next action."
+  ],
+  "schema_version": "1.0",
+  "selected_tests": [
+    "platform-cli/tests/test_orchestrate_contract.py",
+    "platform-cli/tests/test_orchestrate_runtime.py",
+    "platform-cli/tests/test_orchestrate_front_door.py",
+    "platform-cli/tests/test_orchestrate_review.py",
+    "platform-cli/tests/test_orchestrate_manifests.py",
+    "platform-cli/tests/test_orchestrate_qa.py"
+  ]
+}

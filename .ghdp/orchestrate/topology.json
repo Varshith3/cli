@@ -1,0 +1,112 @@
+{
+  "schema_version": "1.0",
+  "id": "phase1_orchestrator_topology",
+  "default_execution_mode": "sequential",
+  "parallel_groups": [
+    {
+      "id": "front_door_analysis",
+      "mode": "parallel",
+      "agents": [
+        "ticket-intake",
+        "work-type-classifier",
+        "autonomy-assessor",
+        "context-capability-discovery",
+        "parallel-work-awareness"
+      ]
+    },
+    {
+      "id": "review_dual_pass",
+      "mode": "parallel",
+      "agents": ["architecture-review", "ux-dx-review"]
+    },
+    {
+      "id": "quality_design",
+      "mode": "parallel",
+      "agents": ["qa-scenario-design", "regression-validation", "test-coverage-authoring"]
+    }
+  ],
+  "sequential_groups": [
+    {
+      "id": "delivery_backbone",
+      "mode": "sequential",
+      "agents": [
+        "orchestrator",
+        "blueprint-planner",
+        "implementation",
+        "developer-test-execution",
+        "binary-validation",
+        "release-readiness",
+        "release-prerelease",
+        "published-prerelease-validation",
+        "pr-external-integration",
+        "traceability-historian"
+      ]
+    }
+  ],
+  "execution_waves": [
+    {
+      "id": "front_door_analysis",
+      "mode": "parallel",
+      "agents": [
+        "ticket-intake",
+        "work-type-classifier",
+        "autonomy-assessor",
+        "context-capability-discovery",
+        "parallel-work-awareness"
+      ]
+    },
+    {
+      "id": "planning_backbone",
+      "mode": "sequential",
+      "agents": [
+        "blueprint-planner"
+      ]
+    },
+    {
+      "id": "review_dual_pass",
+      "mode": "parallel",
+      "agents": [
+        "architecture-review",
+        "ux-dx-review"
+      ]
+    },
+    {
+      "id": "quality_design",
+      "mode": "parallel",
+      "agents": [
+        "qa-scenario-design",
+        "regression-validation",
+        "test-coverage-authoring"
+      ]
+    },
+    {
+      "id": "delivery_backbone",
+      "mode": "sequential",
+      "agents": [
+        "implementation",
+        "developer-test-execution",
+        "binary-validation",
+        "release-readiness",
+        "release-prerelease",
+        "published-prerelease-validation",
+        "pr-external-integration",
+        "traceability-historian"
+      ]
+    }
+  ],
+  "dependencies": [
+    {"before": "implementation", "after": "developer-test-execution"},
+    {"before": "developer-test-execution", "after": "binary-validation"},
+    {"before": "binary-validation", "after": "release-readiness"},
+    {"before": "release-readiness", "after": "release-prerelease"},
+    {"before": "release-prerelease", "after": "published-prerelease-validation"},
+    {"before": "published-prerelease-validation", "after": "pr-external-integration"},
+    {"before": "pr-external-integration", "after": "traceability-historian"}
+  ],
+  "host_preferences": {
+    "provider-codex": ["codex"],
+    "provider-claude": ["claude"],
+    "provider-vscode-codex": ["vscode_codex", "codex"],
+    "provider-vscode-claude": ["vscode_claude", "claude"]
+  }
+}

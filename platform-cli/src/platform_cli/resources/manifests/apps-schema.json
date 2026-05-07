@@ -1,0 +1,53 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Apps Configuration",
+  "type": "object",
+  "required": ["apps"],
+  "properties": {
+    "apps": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["path", "tools"],
+        "properties": {
+          "path": {
+            "type": "string",
+            "description": "Relative path to app folder under apps/. Also used as app identifier."
+          },
+          "tools": {
+            "type": "array",
+            "items": {"type": "string"},
+            "description": "Build tools: uv (Python), maven (Scala/Java), docker (Docker image). Type is inferred from tools."
+          },
+          "docker_details": {
+            "type": "object",
+            "description": "Docker build/push config. Required when docker is in tools.",
+            "required": ["ecr_repository", "component"],
+            "properties": {
+              "ecr_repository": {
+                "type": "string",
+                "minLength": 1,
+                "description": "ECR repository template. Use {account} for account-based prefix."
+              },
+              "component": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Docker tag prefix matching Jenkins component variable (e.g., historical-load)."
+              }
+            }
+          }
+        },
+        "if": {
+          "properties": {
+            "tools": {
+              "contains": {"const": "docker"}
+            }
+          }
+        },
+        "then": {
+          "required": ["path", "tools", "docker_details"]
+        }
+      }
+    }
+  }
+}

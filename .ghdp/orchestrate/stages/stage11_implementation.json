@@ -1,0 +1,32 @@
+{
+  "schema_version": "1.0",
+  "id": "stage11_implementation",
+  "title": "Stage 11 Implementation",
+  "owner_agent": "implementation",
+  "messages": {
+    "active": "Stage 11 implementation is active and the branch has a repo-backed implementation packet."
+  },
+  "next_actions": {
+    "active": "Execute the implementation work using implementation_prompt.md, then update implementation_summary.md before commit/push."
+  },
+  "handoff_summaries": {
+    "active": "Stage 11 implementation was activated with explicit agent bindings and a runnable implementation prompt."
+  },
+  "delivery_posture": [
+    "Apply the approved plan without drifting from the reviewed scope.",
+    "Keep repo-backed branch artifacts current as code and docs evolve.",
+    "Be ready to hand off cleanly into commit/push and validation stages."
+  ],
+  "summary_ready_inputs": [
+    "implementation_plan.md",
+    "implementation_prompt.md",
+    "implementation_bindings.json"
+  ],
+  "summary_expected_next_step": "Apply the planned code and artifact changes, then update this summary with observed work completed.",
+  "resume_note_templates": [
+    "Implementation agent: {implementation_agent}.",
+    "Allowed skills: {allowed_skill_count}.",
+    "Allowed plugins: {allowed_plugin_count}.",
+    "Implementation targets: {implementation_target_count}."
+  ]
+}

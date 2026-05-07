@@ -1,0 +1,38 @@
+{
+  "schema_version": "1.0",
+  "id": "stage21_pr_external_integration",
+  "title": "Stage 21 PR and External Integration",
+  "owner_agent": "pr-external-integration",
+  "messages": {
+    "completed": "Stage 21 created or updated the PR path and recorded Jira communication results.",
+    "blocked": "Stage 21 could not complete PR or Jira integration and recorded the blocker."
+  },
+  "next_actions": {
+    "completed": "Proceed into Stage 22 traceability capture and final run closeout.",
+    "blocked": "Resolve the PR or Jira integration blocker, then rerun Stage 21."
+  },
+  "handoff_summaries": {
+    "completed": "Stage 21 completed the external integration path with repo-backed evidence for PR and Jira progression.",
+    "blocked": "Stage 21 recorded an external integration blocker that needs follow-up before closeout."
+  },
+  "delivery_posture": [
+    "Prefer portable GitHub CLI integration for PR creation and updates.",
+    "Use Jira communication through approved GHDP paths only.",
+    "Block PR progression until the branch is rebased onto origin/develop and merge-commit free.",
+    "Write external links and comment outcomes back into repo-backed artifacts."
+  ],
+  "summary_ready_inputs": [
+    "pr_integration_summary.md",
+    "pr_integration_bindings.json",
+    "pr_branch_hygiene.md",
+    "pr_prerelease_comment.md",
+    "jira_update_summary.md"
+  ],
+  "summary_expected_next_step": "Finalize traceability, resume state, and scenario evidence in Stage 22.",
+  "resume_note_templates": [
+    "PR integration agent: {integration_agent}.",
+    "PR link: {pr_link}.",
+    "Jira ticket: {ticket_key}.",
+    "Blocked reason: {blocked_reason}."
+  ]
+}

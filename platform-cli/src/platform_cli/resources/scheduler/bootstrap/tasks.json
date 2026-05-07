@@ -1,0 +1,68 @@
+{
+  "schema_version": "1.0",
+  "generated_by": "ghdp",
+  "capability_id": "background-scheduler",
+  "tasks": [
+    {
+      "schema_version": "1.0",
+      "id": "sync-run-background",
+      "description": "Background sync",
+      "required": true,
+      "trigger": {
+        "minutes": 1440
+      },
+      "conditions": {
+        "require_network": true
+      },
+      "command": {
+        "args": [
+          "sync",
+          "run",
+          "--auto-approve"
+        ]
+      }
+    },
+    {
+      "schema_version": "1.0",
+      "id": "version-change-latest-stable",
+      "description": "Auto-update GHDP to the latest stable release",
+      "required": true,
+      "trigger": {
+        "minutes": 1440
+      },
+      "conditions": {
+        "require_network": true
+      },
+      "command": {
+        "args": [
+          "version",
+          "change",
+          "--latest-stable",
+          "--method",
+          "auto"
+        ]
+      }
+    },
+    {
+      "schema_version": "1.0",
+      "id": "schedule-apply-background",
+      "description": "Reconcile local scheduler jobs from GHDP scheduler definitions",
+      "required": true,
+      "trigger": {
+        "minutes": 1440
+      },
+      "execution": {
+        "pre_run_delay_minutes": 60,
+        "overlap_policy": "skip"
+      },
+      "conditions": {
+        "require_network": false
+      },
+      "command": {
+        "args": [
+          "_schedule-apply-background"
+        ]
+      }
+    }
+  ]
+}

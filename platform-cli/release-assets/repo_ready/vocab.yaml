@@ -1,0 +1,31 @@
+schema_version: "1.0"
+repo_types:
+  - unknown
+  - backend
+  - frontend
+  - data
+  - service
+  - library
+  - infrastructure
+traits:
+  - api
+  - batch
+  - cli
+  - docs
+  - ml
+  - shared-lib
+  - streaming
+  - terraform
+  - terraform-module
+  - ui
+risk_tiers:
+  - low
+  - medium
+  - high
+execution_modes:
+  - local-ok
+  - sandbox-only
+  - ci-only
+tools:
+  - claude
+  - codex

@@ -1,0 +1,28 @@
+{
+  "agent_id": "regression-validation",
+  "allowed_plugins": [
+    {
+      "id": "provider-codex",
+      "path": ".ghdp/plugins/provider-codex/plugin.json"
+    },
+    {
+      "id": "provider-claude",
+      "path": ".ghdp/plugins/provider-claude/plugin.json"
+    }
+  ],
+  "allowed_skills": [
+    {
+      "id": "touched-scope-regression",
+      "path": ".ghdp/skills/touched-scope-regression/SKILL.md"
+    }
+  ],
+  "schema_version": "1.0",
+  "selected_tests": [
+    "platform-cli/tests/test_orchestrate_contract.py",
+    "platform-cli/tests/test_orchestrate_runtime.py",
+    "platform-cli/tests/test_orchestrate_front_door.py",
+    "platform-cli/tests/test_orchestrate_review.py",
+    "platform-cli/tests/test_orchestrate_manifests.py",
+    "platform-cli/tests/test_orchestrate_qa.py"
+  ]
+}

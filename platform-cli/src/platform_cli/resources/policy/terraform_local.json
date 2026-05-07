@@ -1,0 +1,48 @@
+{
+  "allowed_envs": ["dev"],
+  "allowed_actions": ["create", "update", "replace"],
+  "default_backend_account": "dpnp",
+  "default_tf_root": "./",
+  "default_region": "us-west-2",
+  "dependencies": [
+    {
+      "name": "terraform-aws-gh-dp-infra-templates",
+      "git_url": "https://github.com/gh-org-data-platform/terraform-aws-gh-dp-infra-templates.git",
+      "ref": "v1.91.0"
+    }
+  ],
+  "backend_templates": {
+    "accounts": {
+      "dpnp": {
+        "module_bucket": "gh-dp-non-production-terraform-state-modules",
+        "standard_bucket": "gh-dp-non-production-terraform-state"
+      },
+      "dpenp": {
+        "module_bucket": "gh-dp-external-non-prod-terraform-state-modules",
+        "standard_bucket": "gh-dp-external-non-prod-terraform-state"
+      },
+      "dpep": {
+        "module_bucket": "gh-dp-external-prod-terraform-state-modules",
+        "standard_bucket": "gh-dp-external-prod-terraform-state"
+      },
+      "dpp": {
+        "module_bucket": "gh-dp-production-terraform-state-modules",
+        "standard_bucket": "gh-dp-production-terraform-state"
+      }
+    }
+  },
+  "backend": {
+    "default_mode": "module",
+    "use_lockfile": true
+  },
+  "codeartifact": {
+    "domain": "dpp-dp-tools-repositories-domain",
+    "domain_owner": "626645654318",
+    "region": "us-west-2",
+    "naming_convention": "{env}-{data_product}-codeartifact",
+    "description": "Single repository per env per data product. Dev builds and releases use package versioning (e.g., 0.1.0.dev20260316 vs 1.0.0)"
+  },
+  "ecr": {
+    "region": "us-west-2"
+  }
+}

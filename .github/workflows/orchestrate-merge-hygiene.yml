@@ -1,0 +1,56 @@
+name: Orchestrate - Verify Merge Hygiene
+
+on:
+  pull_request:
+    branches:
+      - develop
+
+permissions:
+  contents: read
+
+concurrency:
+  group: orchestrate-merge-hygiene-${{ github.event.pull_request.head.repo.full_name }}-${{ github.event.pull_request.head.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify-merge-hygiene:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout PR branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Install GHDP from source
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -f "platform-cli/ghdp.spec" && -f "platform-cli/pyproject.toml" ]]; then
+            pkg_dir="platform-cli"
+          else
+            mapfile -t candidates < <(find . -mindepth 1 -maxdepth 1 -type d \
+              -exec test -f "{}/ghdp.spec" \; \
+              -exec test -f "{}/pyproject.toml" \; \
+              -printf '%P\n')
+            if [[ "${#candidates[@]}" -ne 1 ]]; then
+              echo "Could not auto-detect the GHDP package directory for merge-hygiene verification." >&2
+              exit 1
+            fi
+            pkg_dir="${candidates[0]}"
+          fi
+          python -m pip install -U pip
+          pushd "${pkg_dir}"
+          python -m pip install .
+          popd
+
+      - name: Verify merge hygiene through GHDP CLI
+        shell: bash
+        run: |
+          set -euo pipefail
+          ghdp orchestrate verify-merge-hygiene

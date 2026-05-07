@@ -1,0 +1,12 @@
+{
+  "schema_version": "1.0",
+  "id": "provider-claude",
+  "login_required": false,
+  "executor": "claude_cli",
+  "prompt_source": ".ghdp/agents + .ghdp/skills + .ghdp/plugins + .ghdp/orchestrate/topology.json",
+  "setup_contract": [
+    "Resolve repo-level skills and agents before provider-specific prompting.",
+    "Preserve sequential and parallel scheduling decisions from .ghdp/orchestrate/topology.json.",
+    "Use Claude when policy or user choice selects claude or mixed routing."
+  ]
+}

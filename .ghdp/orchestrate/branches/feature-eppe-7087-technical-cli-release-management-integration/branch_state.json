@@ -1,0 +1,11 @@
+{
+  "branch_name": "feature/EPPE-7087-TECHNICAL-cli-release-management-integration",
+  "branch_slug": "feature-eppe-7087-technical-cli-release-management-integration",
+  "ticket_key": "EPPE-7087",
+  "intent_ref": ".ghdp/frbr/intent.json",
+  "status": "implementation_in_progress",
+  "current_stage": "implementation_validation",
+  "provider_mode": "codex",
+  "next_action": "Finish implementation review, commit and push, then run guarded pipx install and release testing.",
+  "anomaly_flag": false
+}

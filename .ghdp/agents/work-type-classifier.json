@@ -1,0 +1,17 @@
+{
+  "schema_version": "1.0",
+  "id": "work-type-classifier",
+  "role": "lifecycle_router",
+  "summary": "Classifies work into feature, enhancement, bug fix, or maintenance flows.",
+  "stages_owned": ["stage3_work_type"],
+  "allowed_skills": ["work-type-classification"],
+  "allowed_plugins": ["provider-codex", "provider-claude"],
+  "produces_artifacts": ["work_type_decision"],
+  "approval_mode": "policy_driven",
+  "can_block": true,
+  "can_retry": true,
+  "prompt_contract": [
+    "Choose the simplest correct lifecycle for the request.",
+    "Avoid forcing all work into new-feature behavior when enhancement or maintenance fits better."
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "schema_version": "1.0",
+  "generated_by": "ghdp",
+  "capability_id": "background-scheduler",
+  "display_name": "Background Scheduler Bootstrap Fallback",
+  "description": "Emergency packaged bootstrap scheduler assets for first-stable GHDP tasks.",
+  "tasks_file": "tasks.json",
+  "defaults_file": "defaults.json"
+}

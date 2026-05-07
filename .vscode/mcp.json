@@ -1,0 +1,21 @@
+{
+  "servers": {
+    "dpe-terraform-templates": {
+      "type": "http",
+      "url": "https://ai.npdata.guardanthealth.com/tool/dpetf/mcp/"
+    },
+    "dpe-jenkins": {
+      "type": "http",
+      "url": "https://ai.npdata.guardanthealth.com/tool/jenkins/mcp/",
+      "env": {
+        "OKTA_USER_EMAIL": "${env:OKTA_USER_EMAIL}",
+        "JENKINS_API_TOKEN": "${env:JENKINS_API_TOKEN}",
+        "GITHUB_API_TOKEN": "${env:GITHUB_API_TOKEN}",
+      }
+    },
+    "atlassian": {
+      "type": "http",
+      "url": "https://mcp.atlassian.com/v1/sse"
+    }
+  }
+}

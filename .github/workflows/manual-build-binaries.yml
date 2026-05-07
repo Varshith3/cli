@@ -1,0 +1,328 @@
+name: Manual - Build & Upload GHDP Binaries
+
+on:
+  workflow_dispatch:
+    inputs:
+      source_ref:
+        description: "Branch / tag / SHA to build from (i.e, mention which place u want the binaries to be built from)"
+        required: true
+        default: "main"
+        type: string
+      release_visibility:
+        description: "Release visibility"
+        required: true
+        default: "auto"
+        type: choice
+        options:
+          - auto
+          - draft
+          - published
+      release_channel:
+        description: "Release channel (auto = stable->ga, non-stable->prerelease)"
+        required: true
+        default: "auto"
+        type: choice
+        options:
+          - auto
+          - prerelease
+          - ga
+      version_override:
+        description: "Optional stable release tag override for stable branches only (for example v0.2.3). Leave blank to auto-increment from GitHub Latest."
+        required: false
+        default: ""
+        type: string
+      install_flavor:
+        description: "Install flavor to build (standard or managed)"
+        required: true
+        default: "standard"
+        type: choice
+        options:
+          - standard
+          - managed
+      python_version:
+        description: "Python version to build with"
+        required: true
+        default: "3.10"
+        type: string
+      release_notes_mode:
+        description: "Release notes mode (manual for now; copilot later)"
+        required: true
+        default: "manual"
+        type: choice
+        options:
+          - manual
+          - copilot
+
+permissions:
+  id-token: write
+  contents: write
+
+concurrency:
+  group: manual-build-binaries-${{ github.repository }}-${{ inputs.source_ref || github.run_id }}
+  cancel-in-progress: false
+
+jobs:
+  prepare-release:
+    name: Prepare Release + Notes (single-run)
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.prepare.outputs.tag }}
+      script_ref: ${{ steps.prepare.outputs.script_ref }}
+      install_flavor: ${{ steps.prepare.outputs.install_flavor }}
+      is_main: ${{ steps.prepare.outputs.is_main }}
+      is_stable: ${{ steps.prepare.outputs.is_stable }}
+      draft: ${{ steps.prepare.outputs.draft }}
+      prerelease: ${{ steps.prepare.outputs.prerelease }}
+    steps:
+      - name: Checkout source_ref
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.source_ref }}
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Validate release notes mode
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "${{ inputs.release_notes_mode }}" != "manual" ]]; then
+            echo "release_notes_mode='${{ inputs.release_notes_mode }}' is not supported yet. Use 'manual'." >&2
+            exit 1
+          fi
+
+      - name: Install GHDP from source_ref
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -f "platform-cli/ghdp.spec" && -f "platform-cli/pyproject.toml" ]]; then
+            pkg_dir="platform-cli"
+          else
+            mapfile -t candidates < <(find . -mindepth 1 -maxdepth 1 -type d \
+              -exec test -f "{}/ghdp.spec" \; \
+              -exec test -f "{}/pyproject.toml" \; \
+              -printf '%P\n')
+            if [[ "${#candidates[@]}" -eq 1 ]]; then
+              pkg_dir="${candidates[0]}"
+            elif [[ "${#candidates[@]}" -eq 0 ]]; then
+              echo "Could not auto-detect the GHDP package directory for installation." >&2
+              exit 1
+            else
+              echo "Multiple GHDP package directory candidates found: ${candidates[*]}" >&2
+              echo "This workflow no longer accepts a workdir override, so update the repo layout or workflow package detection before retrying." >&2
+              exit 1
+            fi
+          fi
+          python -m pip install -U pip
+          pushd "${pkg_dir}"
+          python -m pip install .
+          popd
+
+      - name: Show inputs + execution context
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "Workflow definition branch (Use workflow from) : ${{ github.ref_name }}"
+          echo "Build source_ref (inputs.source_ref)         : ${{ inputs.source_ref }}"
+          echo "Release visibility                           : ${{ inputs.release_visibility }}"
+          echo "Release channel                              : ${{ inputs.release_channel }}"
+          echo "Install flavor                               : ${{ inputs.install_flavor }}"
+          echo "Python version                               : ${{ inputs.python_version }}"
+          echo "Release notes mode                           : ${{ inputs.release_notes_mode }}"
+
+      - name: Ensure GitHub Release exists via GHDP CLI
+        id: prepare
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          ghdp release prepare-binaries-release \
+            --source-ref "${{ inputs.source_ref }}" \
+            --install-flavor "${{ inputs.install_flavor }}" \
+            --release-visibility "${{ inputs.release_visibility }}" \
+            --release-channel "${{ inputs.release_channel }}" \
+            --python-version "${{ inputs.python_version }}" \
+            --version-override "${{ inputs.version_override }}"
+
+  build:
+    name: Build + Upload Binaries
+    needs: prepare-release
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: macos-15-intel
+          - runner: macos-15
+          - runner: ubuntu-latest
+          - runner: windows-latest
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - name: Show context (workflow ref vs build ref)
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "Workflow definition branch (Use workflow from) : ${{ github.ref_name }}"
+          echo "Build source_ref (inputs.source_ref)         : ${{ inputs.source_ref }}"
+          echo "Release tag                                  : ${{ needs.prepare-release.outputs.tag }}"
+          echo "Installer script ref (for notes)             : ${{ needs.prepare-release.outputs.script_ref }}"
+          echo "Install flavor                               : ${{ needs.prepare-release.outputs.install_flavor }}"
+          echo "Release flags                                : draft=${{ needs.prepare-release.outputs.draft }}, prerelease=${{ needs.prepare-release.outputs.prerelease }}"
+
+      - name: Checkout source_ref (the code being packaged)
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.source_ref }}
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Configure AWS credentials for managed build
+        if: ${{ inputs.install_flavor == 'managed' }}
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.GHDP_AWS_ROLE_ARN || secrets.GHDP_AWS_ROLE_ARN }}
+          aws-region: ${{ vars.GHDP_GITHUB_SECRET_REGION || secrets.GHDP_GITHUB_SECRET_REGION || vars.GHDP_AWS_REGION || secrets.GHDP_AWS_REGION || 'us-west-2' }}
+
+      - name: Fetch managed GitHub token from AWS Secrets Manager
+        if: ${{ inputs.install_flavor == 'managed' }}
+        shell: bash
+        env:
+          GHDP_TOKEN_SECRET_ID_VAR: ${{ vars.GHDP_TOKEN_SECRET_ID || '' }}
+          GHDP_TOKEN_SECRET_ID_SECRET: ${{ secrets.GHDP_TOKEN_SECRET_ID || '' }}
+          GHDP_GITHUB_SECRET_ID_VAR: ${{ vars.GHDP_GITHUB_SECRET_ID || '' }}
+          GHDP_GITHUB_SECRET_ID_SECRET: ${{ secrets.GHDP_GITHUB_SECRET_ID || '' }}
+          GHDP_GITHUB_SECRET_REGION_VAR: ${{ vars.GHDP_GITHUB_SECRET_REGION || '' }}
+          GHDP_GITHUB_SECRET_REGION_SECRET: ${{ secrets.GHDP_GITHUB_SECRET_REGION || '' }}
+          GHDP_AWS_REGION_VAR: ${{ vars.GHDP_AWS_REGION || '' }}
+          GHDP_AWS_REGION_SECRET: ${{ secrets.GHDP_AWS_REGION || '' }}
+        run: |
+          set -euo pipefail
+          DEFAULT_SECRET_ID="/dpnp/security/git-read-only-token/token"
+          pick() {
+            local primary="$1"
+            local fallback="$2"
+            if [[ -n "$primary" ]]; then
+              printf "%s" "$primary"
+            else
+              printf "%s" "$fallback"
+            fi
+          }
+
+          SECRET_ID="$(pick "${GHDP_GITHUB_SECRET_ID_VAR}" "${GHDP_GITHUB_SECRET_ID_SECRET}")"
+          if [[ -z "${SECRET_ID}" ]]; then
+            SECRET_ID="$(pick "${GHDP_TOKEN_SECRET_ID_VAR}" "${GHDP_TOKEN_SECRET_ID_SECRET}")"
+          fi
+          if [[ -z "${SECRET_ID}" ]]; then
+            SECRET_ID="${DEFAULT_SECRET_ID}"
+          fi
+          REGION="$(pick "${GHDP_GITHUB_SECRET_REGION_VAR}" "${GHDP_GITHUB_SECRET_REGION_SECRET}")"
+          if [[ -z "${REGION}" ]]; then
+            REGION="$(pick "${GHDP_AWS_REGION_VAR}" "${GHDP_AWS_REGION_SECRET}")"
+          fi
+          if [[ -z "${REGION}" ]]; then
+            REGION="us-west-2"
+          fi
+
+          if [[ -z "${{ vars.GHDP_AWS_ROLE_ARN || secrets.GHDP_AWS_ROLE_ARN || '' }}" ]]; then
+            echo "Managed builds require GHDP_AWS_ROLE_ARN repo configuration." >&2
+            exit 1
+          fi
+
+          SECRET_STRING="$(MSYS_NO_PATHCONV=1 aws secretsmanager get-secret-value \
+            --secret-id "${SECRET_ID}" \
+            --query SecretString \
+            --output text \
+            --region "${REGION}")"
+          if [[ "${SECRET_STRING}" == "None" || -z "${SECRET_STRING}" ]]; then
+            echo "Managed GitHub token secret was empty." >&2
+            exit 1
+          fi
+
+          export SECRET_STRING
+          TOKEN="$(python - <<'PY'
+          import json
+          import os
+          import sys
+
+          raw = os.environ.get("SECRET_STRING", "").strip()
+          if not raw:
+              sys.exit(1)
+          token = raw
+          if raw.startswith("{"):
+              payload = json.loads(raw)
+              for key in ("token", "github_token", "github_pat", "pat", "GHDP_TOKEN", "GITHUB_TOKEN"):
+                  value = str(payload.get(key, "") or "").strip()
+                  if value:
+                      token = value
+                      break
+          print(token)
+          PY
+          )"
+          if [[ -z "${TOKEN}" ]]; then
+            echo "Managed GitHub token could not be resolved from AWS secret payload." >&2
+            exit 1
+          fi
+          echo "::add-mask::${TOKEN}"
+          printf "GHDP_MANAGED_GITHUB_TOKEN=%s\n" "${TOKEN}" >> "${GITHUB_ENV}"
+
+      - name: Install GHDP from source_ref
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -f "platform-cli/ghdp.spec" && -f "platform-cli/pyproject.toml" ]]; then
+            pkg_dir="platform-cli"
+          else
+            mapfile -t candidates < <(find . -mindepth 1 -maxdepth 1 -type d \
+              -exec test -f "{}/ghdp.spec" \; \
+              -exec test -f "{}/pyproject.toml" \; \
+              -printf '%P\n')
+            if [[ "${#candidates[@]}" -eq 1 ]]; then
+              pkg_dir="${candidates[0]}"
+            elif [[ "${#candidates[@]}" -eq 0 ]]; then
+              echo "Could not auto-detect the GHDP package directory for installation." >&2
+              exit 1
+            else
+              echo "Multiple GHDP package directory candidates found: ${candidates[*]}" >&2
+              echo "This workflow no longer accepts a workdir override, so update the repo layout or workflow package detection before retrying." >&2
+              exit 1
+            fi
+          fi
+          python -m pip install -U pip
+          pushd "${pkg_dir}"
+          python -m pip install .
+          popd
+
+      - name: Build + Upload current-platform binary via GHDP CLI
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GHDP_DEFAULT_REPO: ${{ vars.GHDP_DEFAULT_REPO || secrets.GHDP_DEFAULT_REPO || '' }}
+          GHDP_AWS_REGION: ${{ vars.GHDP_AWS_REGION || secrets.GHDP_AWS_REGION || '' }}
+          GHDP_AWS_SSO_SESSION_NAME: ${{ vars.GHDP_AWS_SSO_SESSION_NAME || secrets.GHDP_AWS_SSO_SESSION_NAME || '' }}
+          GHDP_AWS_SSO_START_URL: ${{ vars.GHDP_AWS_SSO_START_URL || secrets.GHDP_AWS_SSO_START_URL || '' }}
+          GHDP_AWS_SSO_REGION: ${{ vars.GHDP_AWS_SSO_REGION || secrets.GHDP_AWS_SSO_REGION || '' }}
+          GHDP_AWS_DEFAULT_REGION: ${{ vars.GHDP_AWS_DEFAULT_REGION || secrets.GHDP_AWS_DEFAULT_REGION || '' }}
+          GHDP_TABLEAU_RELEASE_BASE_URL: ${{ vars.GHDP_TABLEAU_RELEASE_BASE_URL || secrets.GHDP_TABLEAU_RELEASE_BASE_URL || '' }}
+          GHDP_INSTALL_FLAVOR: ${{ inputs.install_flavor }}
+        run: |
+          set -euo pipefail
+          cmd=(
+            ghdp release build-binaries
+            --source-ref "${{ inputs.source_ref }}"
+            --install-flavor "${{ inputs.install_flavor }}"
+            --release-visibility "${{ inputs.release_visibility }}"
+            --release-channel "${{ inputs.release_channel }}"
+            --python-version "${{ inputs.python_version }}"
+            --skip-ensure-release
+          )
+          if [[ "${{ needs.prepare-release.outputs.is_stable }}" == "true" ]]; then
+            cmd+=(--version-override "${{ needs.prepare-release.outputs.tag }}")
+          fi
+          "${cmd[@]}"

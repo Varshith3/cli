@@ -1,0 +1,61 @@
+{
+  "schema_version": "1.0",
+  "default_channel": "stable",
+  "channels": {
+    "stable": {
+      "blocked_commands": {
+        "access inspect": {
+          "message": "This command is not available in stable GHDP releases."
+        },
+        "access reset": {
+          "message": "This command is not available in stable GHDP releases."
+        },
+        "admin assume": {
+          "message": "Assume mode is not available in stable GHDP releases."
+        },
+        "ci setup": {
+          "message": "This contributor command is not available in stable GHDP releases."
+        },
+        "ci setup-git": {
+          "message": "This contributor command is not available in stable GHDP releases."
+        },
+        "ci is-jenkins": {
+          "message": "This contributor command is not available in stable GHDP releases."
+        },
+        "config branch-ai-provider": {
+          "message": "This contributor config command is not available in stable GHDP releases."
+        },
+        "config branch-intent": {
+          "message": "This contributor config command is not available in stable GHDP releases."
+        },
+        "config branch-intent-prompt": {
+          "message": "This contributor config command is not available in stable GHDP releases."
+        },
+        "config branch-jira-check": {
+          "message": "This contributor config command is not available in stable GHDP releases."
+        },
+        "config git-strict-clean": {
+          "message": "This contributor config command is not available in stable GHDP releases."
+        },
+        "repo ready": {
+          "message": "This contributor command is not available in stable GHDP releases."
+        },
+        "repo report": {
+          "message": "This contributor command is not available in stable GHDP releases."
+        },
+        "repo verify": {
+          "message": "This contributor command is not available in stable GHDP releases."
+        },
+        "repo-info": {
+          "message": "This contributor command is not available in stable GHDP releases."
+        },
+        "scaffold": {
+          "message": "This contributor command is not available in stable GHDP releases."
+        }
+      }
+    },
+    "prerelease": {
+      "blocked_commands": {}
+    }
+  }
+}

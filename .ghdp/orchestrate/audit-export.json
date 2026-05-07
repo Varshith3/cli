@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0",
+  "id": "phase1_audit_export",
+  "destination_mode": "local",
+  "local": {
+    "output_dir": "tmp/orchestrate-audit-exports"
+  },
+  "aws_s3": {
+    "enabled": false,
+    "bucket": "",
+    "prefix": "",
+    "region": "",
+    "profile": ""
+  }
+}

@@ -1,0 +1,58 @@
+{
+  "agent_id": "release-prerelease",
+  "allowed_plugins": [
+    {
+      "id": "github-release-gh",
+      "path": ".ghdp/plugins/github-release-gh/plugin.json"
+    },
+    {
+      "id": "github-pr-gh",
+      "path": ".ghdp/plugins/github-pr-gh/plugin.json"
+    },
+    {
+      "id": "jenkins-mcp",
+      "path": ".ghdp/plugins/jenkins-mcp/plugin.json"
+    }
+  ],
+  "allowed_skills": [
+    {
+      "id": "release-and-pr",
+      "path": ".ghdp/skills/release-and-pr/SKILL.md"
+    },
+    {
+      "id": "stable-release-notes-assembly",
+      "path": ".ghdp/skills/stable-release-notes-assembly/SKILL.md"
+    }
+  ],
+  "blocked_reason": "",
+  "release_plan": {
+    "build_channel": "beta",
+    "build_meta_path": "C:\\Users\\Hi\\Downloads\\git-repos\\dp-tools-local-setup\\platform-cli\\src\\platform_cli\\_build_meta.py",
+    "build_target": {
+      "asset": "ghdp-windows-amd64.exe",
+      "built_path": "dist/ghdp.exe",
+      "machine": "x86_64",
+      "system": "windows"
+    },
+    "build_version": "1.0.6-AgenticFrameworkFoundationSkillsPluginsSubagentsNativeMemory",
+    "draft": false,
+    "feature_slug": "AgenticFrameworkFoundationSkillsPluginsSubagentsNativeMemory",
+    "install_flavor": "standard",
+    "is_stable_branch": false,
+    "latest_stable_tag": "v1.0.5",
+    "next_stable_tag": "v1.0.6",
+    "prerelease": true,
+    "python_version": "3.10",
+    "repo_name_with_owner": "gh-org-data-platform/dp-tools-local-setup",
+    "repo_root": "C:\\Users\\Hi\\Downloads\\git-repos\\dp-tools-local-setup",
+    "runtime_defaults_path": "C:\\Users\\Hi\\Downloads\\git-repos\\dp-tools-local-setup\\platform-cli\\src\\platform_cli\\_runtime_defaults.py",
+    "source_ref": "feature/EPPE-7391-TECHNICAL-agentic-framework-foundation-skills-plugins-subagents-native-memory",
+    "summary_file": "C:\\Users\\Hi\\Downloads\\git-repos\\dp-tools-local-setup\\.github\\release-notes\\notes.md",
+    "tag": "v1.0.6-AgenticFrameworkFoundationSkillsPluginsSubagentsNativeMemory",
+    "template_file": "C:\\Users\\Hi\\Downloads\\git-repos\\dp-tools-local-setup\\.github\\release-notes\\template.md",
+    "ticket": "EPPE-7391",
+    "version_override": "",
+    "workdir": "C:\\Users\\Hi\\Downloads\\git-repos\\dp-tools-local-setup\\platform-cli"
+  },
+  "schema_version": "1.0"
+}

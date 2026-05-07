@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Infrastructure Configuration",
+  "type": "object",
+  "required": ["infra_templates_version", "stacks"],
+  "properties": {
+    "infra_templates_version": {
+      "type": "string",
+      "description": "Git ref (branch/tag) for the infra-templates dependency"
+    },
+    "stacks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "path", "description", "deployment_order"],
+        "properties": {
+          "id": {"type": "string", "description": "Unique stack identifier. 'default' uses legacy terraform state file."},
+          "path": {"type": "string", "description": "Directory name under infra/"},
+          "description": {"type": "string"},
+          "deployment_order": {"type": "integer", "description": "Deploy sequence (lower = first)"}
+        }
+      }
+    }
+  }
+}

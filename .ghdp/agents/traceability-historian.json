@@ -1,0 +1,17 @@
+{
+  "schema_version": "1.0",
+  "id": "traceability-historian",
+  "role": "execution_historian",
+  "summary": "Preserves prompts, decisions, iteration counts, and resume state so runs stay auditable and resumable.",
+  "stages_owned": ["stage22_traceability_capture", "stage23_enhancement_harvesting"],
+  "allowed_skills": ["traceability-and-resume", "folder-backed-shared-memory", "audit-export-persistence", "phase-regroup-and-restart", "merge-hygiene-finalization"],
+  "allowed_plugins": ["native-memory-filesystem"],
+  "produces_artifacts": ["decisions.json", "resume_context.md", "handoff.md"],
+  "approval_mode": "policy_driven",
+  "can_block": false,
+  "can_retry": true,
+  "prompt_contract": [
+    "Preserve enough detail that another person or agent can resume confidently.",
+    "Keep traceability artifacts compact, current, and repo-backed."
+  ]
+}

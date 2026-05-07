@@ -1,0 +1,58 @@
+{
+  "agent_id": "developer-test-execution",
+  "allowed_plugins": [
+    {
+      "id": "native-memory-filesystem",
+      "path": ".ghdp/plugins/native-memory-filesystem/plugin.json"
+    }
+  ],
+  "allowed_skills": [
+    {
+      "id": "developer-test-execution",
+      "path": ".ghdp/skills/developer-test-execution/SKILL.md"
+    }
+  ],
+  "authored_tests": [
+    "platform-cli/tests/test_orchestrate_execution.py",
+    "platform-cli/tests/test_orchestrate_coverage.py",
+    "platform-cli/tests/test_orchestrate_regression.py",
+    "platform-cli/tests/test_orchestrate_contract.py",
+    "platform-cli/tests/test_orchestrate_manifests.py"
+  ],
+  "execution_mode": "sequential",
+  "execution_targets": [
+    "platform-cli/tests/test_orchestrate_contract.py",
+    "platform-cli/tests/test_orchestrate_runtime.py",
+    "platform-cli/tests/test_orchestrate_front_door.py",
+    "platform-cli/tests/test_orchestrate_review.py",
+    "platform-cli/tests/test_orchestrate_manifests.py",
+    "platform-cli/tests/test_orchestrate_qa.py",
+    "platform-cli/tests/test_orchestrate_execution.py",
+    "platform-cli/tests/test_orchestrate_coverage.py",
+    "platform-cli/tests/test_orchestrate_regression.py"
+  ],
+  "pytest_cmd": [
+    "C:\\Users\\Hi\\AppData\\Local\\Programs\\Python\\Python310\\python.exe",
+    "-m",
+    "pytest",
+    "platform-cli/tests/test_orchestrate_contract.py",
+    "platform-cli/tests/test_orchestrate_runtime.py",
+    "platform-cli/tests/test_orchestrate_front_door.py",
+    "platform-cli/tests/test_orchestrate_review.py",
+    "platform-cli/tests/test_orchestrate_manifests.py",
+    "platform-cli/tests/test_orchestrate_qa.py",
+    "platform-cli/tests/test_orchestrate_execution.py",
+    "platform-cli/tests/test_orchestrate_coverage.py",
+    "platform-cli/tests/test_orchestrate_regression.py",
+    "-q"
+  ],
+  "schema_version": "1.0",
+  "selected_tests": [
+    "platform-cli/tests/test_orchestrate_contract.py",
+    "platform-cli/tests/test_orchestrate_runtime.py",
+    "platform-cli/tests/test_orchestrate_front_door.py",
+    "platform-cli/tests/test_orchestrate_review.py",
+    "platform-cli/tests/test_orchestrate_manifests.py",
+    "platform-cli/tests/test_orchestrate_qa.py"
+  ]
+}

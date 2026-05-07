@@ -1,0 +1,75 @@
+{
+  "plugins_bound": [
+    {
+      "id": "provider-codex",
+      "path": ".ghdp/plugins/provider-codex/plugin.json"
+    },
+    {
+      "id": "provider-claude",
+      "path": ".ghdp/plugins/provider-claude/plugin.json"
+    },
+    {
+      "id": "native-memory-filesystem",
+      "path": ".ghdp/plugins/native-memory-filesystem/plugin.json"
+    },
+    {
+      "id": "github-release-gh",
+      "path": ".ghdp/plugins/github-release-gh/plugin.json"
+    },
+    {
+      "id": "jenkins-mcp",
+      "path": ".ghdp/plugins/jenkins-mcp/plugin.json"
+    },
+    {
+      "id": "jira-acli",
+      "path": ".ghdp/plugins/jira-acli/plugin.json"
+    }
+  ],
+  "schema_version": "1.0",
+  "skills_bound": [
+    {
+      "id": "traceability-and-resume",
+      "path": ".ghdp/skills/traceability-and-resume/SKILL.md"
+    },
+    {
+      "id": "qa-scenario-generation",
+      "path": ".ghdp/skills/qa-scenario-generation/SKILL.md"
+    },
+    {
+      "id": "touched-scope-regression",
+      "path": ".ghdp/skills/touched-scope-regression/SKILL.md"
+    },
+    {
+      "id": "test-coverage-authoring",
+      "path": ".ghdp/skills/test-coverage-authoring/SKILL.md"
+    },
+    {
+      "id": "developer-test-execution",
+      "path": ".ghdp/skills/developer-test-execution/SKILL.md"
+    },
+    {
+      "id": "isolated-binary-validation",
+      "path": ".ghdp/skills/isolated-binary-validation/SKILL.md"
+    },
+    {
+      "id": "architecture-compliance",
+      "path": ".ghdp/skills/architecture-compliance/SKILL.md"
+    },
+    {
+      "id": "release-and-pr",
+      "path": ".ghdp/skills/release-and-pr/SKILL.md"
+    },
+    {
+      "id": "stable-release-notes-assembly",
+      "path": ".ghdp/skills/stable-release-notes-assembly/SKILL.md"
+    },
+    {
+      "id": "jira-acli-integration",
+      "path": ".ghdp/skills/jira-acli-integration/SKILL.md"
+    },
+    {
+      "id": "folder-backed-shared-memory",
+      "path": ".ghdp/skills/folder-backed-shared-memory/SKILL.md"
+    }
+  ]
+}

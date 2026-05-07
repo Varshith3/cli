@@ -1,0 +1,13 @@
+{
+  "schema_version": "1.0",
+  "id": "github-release-gh",
+  "login_required": true,
+  "executor": "gh_cli",
+  "login_contract": [
+    "Expect `gh auth status` or GH_TOKEN-backed auth before prerelease and artifact validation steps."
+  ],
+  "prompt_contract": [
+    "Operate on the branch-resolved release tag and keep release-note lineage explicit."
+  ]
+}
+

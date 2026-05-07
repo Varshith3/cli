@@ -1,0 +1,253 @@
+name: Reusable-Create-Branch
+
+on:
+  workflow_call:
+    inputs:
+      request_id:
+        description: "Unique request id for tracking (optional)"
+        required: false
+        default: ""
+        type: string
+      jira_key:
+        description: "Jira key (for example: EPPE-1234)"
+        required: true
+        type: string
+      branch_type:
+        description: "Branch type"
+        required: true
+        type: string
+      slug:
+        description: "Short description slug"
+        required: true
+        type: string
+      base_branch:
+        description: "Base branch (blank = repo default branch)"
+        required: false
+        default: ""
+        type: string
+      repo:
+        description: "Optional OWNER/REPO override"
+        required: false
+        default: ""
+        type: string
+      validate_jira:
+        description: "Validate Jira ticket exists?"
+        required: false
+        default: false
+        type: boolean
+      comment_on_jira:
+        description: "Add a comment on Jira?"
+        required: false
+        default: false
+        type: boolean
+      intent_mode:
+        description: "Intent mode"
+        required: false
+        default: "generate"
+        type: string
+      intent_provider:
+        description: "Intent provider when generation is requested"
+        required: false
+        default: "claude"
+        type: string
+      intent_text:
+        description: "Intent text when intent_mode=provided"
+        required: false
+        default: ""
+        type: string
+      commit_intent:
+        description: "Commit and push .ghdp/frbr/intent.json after branch creation"
+        required: false
+        default: true
+        type: boolean
+      python_version:
+        description: "Python version used to install GHDP"
+        required: false
+        default: "3.11"
+        type: string
+
+    secrets:
+      JIRA_URL:
+        required: false
+      JIRA_USER:
+        required: false
+      JIRA_TOKEN:
+        required: false
+      ANTHROPIC_API_KEY:
+        required: false
+
+permissions:
+  contents: write
+
+jobs:
+  create-branch:
+    runs-on: ubuntu-latest
+    outputs:
+      request_id: ${{ steps.create.outputs.request_id }}
+      repo: ${{ steps.create.outputs.repo }}
+      ticket_key: ${{ steps.create.outputs.ticket_key }}
+      branch_type: ${{ steps.create.outputs.branch_type }}
+      slug: ${{ steps.create.outputs.slug }}
+      base_branch: ${{ steps.create.outputs.base_branch }}
+      branch_name: ${{ steps.create.outputs.branch_name }}
+      jira_validated: ${{ steps.create.outputs.jira_validated }}
+      jira_comment_posted: ${{ steps.create.outputs.jira_comment_posted }}
+      intent_provider: ${{ steps.create.outputs.intent_provider }}
+      intent_generated: ${{ steps.create.outputs.intent_generated }}
+      intent_saved: ${{ steps.create.outputs.intent_saved }}
+      intent_committed: ${{ steps.create.outputs.intent_committed }}
+      intent_path: ${{ steps.create.outputs.intent_path }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ inputs.python_version }}
+
+      - name: Install GHDP from isolated source snapshot
+        shell: bash
+        run: |
+          set -euo pipefail
+          install_root="$(mktemp -d)"
+          python -m pip install -U pip
+          git archive --format=tar --prefix=src/ HEAD platform-cli | tar -xf - -C "$install_root"
+          python -m pip install "$install_root/src/platform-cli"
+
+      - name: Guard Claude intent generation configuration
+        if: ${{ inputs.intent_mode == 'generate' && inputs.intent_provider == 'claude' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -z "${{ secrets.ANTHROPIC_API_KEY }}" ]]; then
+            echo "ANTHROPIC_API_KEY is required when intent_mode=generate and intent_provider=claude." >&2
+            exit 1
+          fi
+
+      - name: Configure git identity for intent commits
+        if: ${{ inputs.commit_intent }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Render CLI-owned intent prompt
+        if: ${{ inputs.intent_mode == 'generate' && inputs.intent_provider == 'claude' }}
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          JIRA_URL: ${{ secrets.JIRA_URL }}
+          JIRA_USER: ${{ secrets.JIRA_USER }}
+          JIRA_TOKEN: ${{ secrets.JIRA_TOKEN }}
+        run: |
+          set -euo pipefail
+          args=(
+            --non-interactive
+            create-branch
+            --ticket "${{ inputs.jira_key }}"
+            --type "${{ inputs.branch_type }}"
+            --slug "${{ inputs.slug }}"
+            --intent-mode generate
+            --provider claude
+            --dry-run
+            --no-local-checkout
+            --no-persist-intent
+            --intent-prompt-file "$RUNNER_TEMP/frbr_intent_prompt.txt"
+          )
+
+          if [[ -n "${{ inputs.base_branch }}" ]]; then
+            args+=(--base "${{ inputs.base_branch }}")
+          fi
+          if [[ -n "${{ inputs.repo }}" ]]; then
+            args+=(--repo "${{ inputs.repo }}")
+          fi
+          if [[ "${{ inputs.validate_jira }}" == "true" ]]; then
+            args+=(--validate-jira)
+          else
+            args+=(--no-validate-jira)
+          fi
+
+          ghdp "${args[@]}"
+
+      - name: Generate intent text with Claude Code
+        if: ${{ inputs.intent_mode == 'generate' && inputs.intent_provider == 'claude' }}
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          prompt: |
+            Read the file at $RUNNER_TEMP/frbr_intent_prompt.txt.
+            Follow its instructions exactly.
+            Write only the final intent text to $RUNNER_TEMP/frbr_intent.txt.
+            Do not modify any repository files.
+          claude_args: |
+            --max-turns 3
+
+      - name: Create branch via GHDP CLI
+        id: create
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          JIRA_URL: ${{ secrets.JIRA_URL }}
+          JIRA_USER: ${{ secrets.JIRA_USER }}
+          JIRA_TOKEN: ${{ secrets.JIRA_TOKEN }}
+        run: |
+          set -euo pipefail
+          args=(
+            --non-interactive
+            create-branch
+            --ticket "${{ inputs.jira_key }}"
+            --type "${{ inputs.branch_type }}"
+            --slug "${{ inputs.slug }}"
+            --github-output "$GITHUB_OUTPUT"
+          )
+
+          if [[ -n "${{ inputs.request_id }}" ]]; then
+            args+=(--request-id "${{ inputs.request_id }}")
+          fi
+          if [[ -n "${{ inputs.base_branch }}" ]]; then
+            args+=(--base "${{ inputs.base_branch }}")
+          fi
+          if [[ -n "${{ inputs.repo }}" ]]; then
+            args+=(--repo "${{ inputs.repo }}")
+          fi
+          if [[ "${{ inputs.validate_jira }}" == "true" ]]; then
+            args+=(--validate-jira)
+          else
+            args+=(--no-validate-jira)
+          fi
+          if [[ "${{ inputs.comment_on_jira }}" == "true" ]]; then
+            args+=(--comment-on-jira)
+          else
+            args+=(--no-comment-on-jira)
+          fi
+          if [[ "${{ inputs.commit_intent }}" == "true" ]]; then
+            args+=(--commit-intent)
+          else
+            args+=(--no-commit-intent)
+          fi
+
+          case "${{ inputs.intent_mode }}" in
+            skip)
+              args+=(--intent-mode skip)
+              ;;
+            provided)
+              args+=(--intent-mode provided --intent-text "${{ inputs.intent_text }}")
+              ;;
+            generate)
+              if [[ "${{ inputs.intent_provider }}" == "claude" ]]; then
+                args+=(--intent-mode provided --intent-file "$RUNNER_TEMP/frbr_intent.txt")
+              else
+                args+=(--intent-mode generate --provider "${{ inputs.intent_provider }}")
+              fi
+              ;;
+            *)
+              echo "Unsupported intent_mode '${{ inputs.intent_mode }}'." >&2
+              exit 1
+              ;;
+          esac
+
+          ghdp "${args[@]}"

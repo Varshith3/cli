@@ -1,0 +1,45 @@
+{
+  "schema_version": "1.0",
+  "id": "asset-lifecycle-sync",
+  "login_required": false,
+  "executor": "ghdp_sync_kernel",
+  "prompt_source": ".ghdp/agents + .ghdp/skills + .ghdp/plugins + sync inventory",
+  "supported_operations": [
+    "inventory",
+    "create",
+    "revise",
+    "update_versioned_asset",
+    "remove"
+  ],
+  "asset_provider_families": [
+    "github_release",
+    "marketplace_repo"
+  ],
+  "source_files": {
+    "github_release": "platform-cli/release-assets/content_index/content-index.json",
+    "marketplace_repo": ".ghdp/capability-allowlist.json"
+  },
+  "release_catalog_root": "platform-cli/release-assets/catalog",
+  "known_asset_targets": [
+    {
+      "id": "toolset_codex_version",
+      "description": "Codex minimum version requirement across the packaged and release-backed team toolset assets.",
+      "files": [
+        "platform-cli/src/platform_cli/resources/manifests/toolset.json",
+        "platform-cli/release-assets/team_toolset/toolset.json"
+      ],
+      "provider_family": "github_release",
+      "managed_by": "ghdp-team-toolset"
+    }
+  ],
+  "setup_contract": [
+    "Inventory the target capability before mutating any asset files.",
+    "Use platform-cli/release-assets/content_index/content-index.json as the repo-owned source of truth for release-backed capability entries.",
+    "Use platform-cli/release-assets/catalog/*.json as the repo-owned bundle contract catalog for release-backed capability packaging and publication.",
+    "Use .ghdp/capability-allowlist.json as the repo-owned source of truth for marketplace capability entries.",
+    "Treat release-backed assets as manifest/index/tag aware, even when the current repo edit only changes local source files.",
+    "For release-backed operations, build a real content-manifest.json bundle from repo source files and optionally publish it with gh before refreshing content-index-latest.",
+    "Treat marketplace-backed assets as allowlist and repo-snapshot aware.",
+    "Prefer the lightweight asset lifecycle path when the user is revising existing asset content without broader code behavior changes."
+  ]
+}

@@ -1,0 +1,177 @@
+{
+  "asset_target": "toolset_codex_version",
+  "inventory": [
+    {
+      "allow_install_if_missing": false,
+      "allow_new_files_on_update": false,
+      "allow_update_existing_files": true,
+      "capability": "codex-skills-aws",
+      "category": "ghdp_managed_misc",
+      "latest_tag": "codex-skills-aws-v1.0.0",
+      "provider": "github_release",
+      "target_type": "filesystem"
+    },
+    {
+      "allow_install_if_missing": false,
+      "allow_new_files_on_update": false,
+      "allow_update_existing_files": true,
+      "capability": "claude-skills-aws",
+      "category": "ghdp_managed_misc",
+      "latest_tag": "claude-skills-aws-v1.0.0",
+      "provider": "github_release",
+      "target_type": "filesystem"
+    },
+    {
+      "allow_install_if_missing": false,
+      "allow_new_files_on_update": false,
+      "allow_update_existing_files": true,
+      "capability": "tableau-athena-jars",
+      "category": "ghdp_managed_misc",
+      "latest_tag": "v0.1.0-tableau-athena-jars",
+      "provider": "github_release",
+      "target_type": "filesystem"
+    },
+    {
+      "allow_install_if_missing": true,
+      "allow_new_files_on_update": false,
+      "allow_update_existing_files": true,
+      "capability": "marketplace-skill-allowlist",
+      "category": "ghdp_policy",
+      "latest_tag": "marketplace-skill-allowlist-v1.2.3",
+      "provider": "github_release",
+      "target_type": "filesystem"
+    },
+    {
+      "allow_install_if_missing": true,
+      "allow_new_files_on_update": false,
+      "allow_update_existing_files": true,
+      "capability": "repo-ready-assets",
+      "category": "ghdp_managed_misc",
+      "latest_tag": "repo-ready-assets-v1.0.0",
+      "provider": "github_release",
+      "target_type": "filesystem"
+    },
+    {
+      "allow_install_if_missing": true,
+      "allow_new_files_on_update": false,
+      "allow_update_existing_files": true,
+      "capability": "ghdp-team-toolset",
+      "category": "ghdp_managed_misc",
+      "latest_tag": "ghdp-team-toolset-v1.0.5",
+      "provider": "github_release",
+      "target_type": "filesystem"
+    },
+    {
+      "allow_install_if_missing": true,
+      "allow_new_files_on_update": false,
+      "allow_update_existing_files": true,
+      "capability": "claude-athena-workgroup-map",
+      "category": "ghdp_managed_misc",
+      "latest_tag": "claude-athena-workgroup-map-v1.0.3",
+      "provider": "github_release",
+      "target_type": "filesystem"
+    },
+    {
+      "allow_install_if_missing": true,
+      "allow_new_files_on_update": false,
+      "allow_update_existing_files": true,
+      "capability": "background-scheduler",
+      "category": "ghdp_managed_misc",
+      "latest_tag": "background-scheduler-v1.0.6",
+      "provider": "github_release",
+      "target_type": "filesystem"
+    },
+    {
+      "allow_install_if_missing": true,
+      "allow_new_files_on_update": true,
+      "allow_update_existing_files": true,
+      "capability": "ghdp-admin-policy",
+      "category": "ghdp_managed_misc",
+      "latest_tag": "ghdp-admin-policy-v1.1.8",
+      "provider": "github_release",
+      "target_type": "filesystem"
+    },
+    {
+      "allow_install_if_missing": true,
+      "allow_new_files_on_update": false,
+      "allow_update_existing_files": true,
+      "capability": "marketplace-claude-skill-skill-workbench",
+      "category": "claude_skills",
+      "latest_tag": "afcca00e539892dcd19093df490d1f8a4785694c",
+      "provider": "marketplace_repo",
+      "target_type": "claude_skills"
+    },
+    {
+      "allow_install_if_missing": true,
+      "allow_new_files_on_update": false,
+      "allow_update_existing_files": true,
+      "capability": "marketplace-claude-skill-git-branch-review",
+      "category": "claude_skills",
+      "latest_tag": "afcca00e539892dcd19093df490d1f8a4785694c",
+      "provider": "marketplace_repo",
+      "target_type": "claude_skills"
+    },
+    {
+      "allow_install_if_missing": true,
+      "allow_new_files_on_update": false,
+      "allow_update_existing_files": true,
+      "capability": "marketplace-claude-plugin-query-athena",
+      "category": "claude_plugins",
+      "latest_tag": "afcca00e539892dcd19093df490d1f8a4785694c",
+      "provider": "marketplace_repo",
+      "target_type": "claude_plugins"
+    },
+    {
+      "allow_install_if_missing": true,
+      "allow_new_files_on_update": false,
+      "allow_update_existing_files": true,
+      "capability": "marketplace-claude-plugin-data-governance",
+      "category": "claude_plugins",
+      "latest_tag": "afcca00e539892dcd19093df490d1f8a4785694c",
+      "provider": "marketplace_repo",
+      "target_type": "claude_plugins"
+    },
+    {
+      "allow_install_if_missing": true,
+      "allow_new_files_on_update": false,
+      "allow_update_existing_files": true,
+      "capability": "marketplace-codex-skill-skill-workbench",
+      "category": "codex_skills",
+      "latest_tag": "afcca00e539892dcd19093df490d1f8a4785694c",
+      "provider": "marketplace_repo",
+      "target_type": "codex_skills"
+    },
+    {
+      "allow_install_if_missing": true,
+      "allow_new_files_on_update": false,
+      "allow_update_existing_files": true,
+      "capability": "marketplace-codex-skill-git-branch-review",
+      "category": "codex_skills",
+      "latest_tag": "afcca00e539892dcd19093df490d1f8a4785694c",
+      "provider": "marketplace_repo",
+      "target_type": "codex_skills"
+    },
+    {
+      "allow_install_if_missing": true,
+      "allow_new_files_on_update": false,
+      "allow_update_existing_files": true,
+      "capability": "marketplace-codex-plugin-query-athena",
+      "category": "codex_plugins",
+      "latest_tag": "afcca00e539892dcd19093df490d1f8a4785694c",
+      "provider": "marketplace_repo",
+      "target_type": "codex_plugins"
+    },
+    {
+      "allow_install_if_missing": true,
+      "allow_new_files_on_update": false,
+      "allow_update_existing_files": true,
+      "capability": "marketplace-codex-plugin-data-governance",
+      "category": "codex_plugins",
+      "latest_tag": "afcca00e539892dcd19093df490d1f8a4785694c",
+      "provider": "marketplace_repo",
+      "target_type": "codex_plugins"
+    }
+  ],
+  "operation": "update_versioned_asset",
+  "schema_version": "1.0"
+}

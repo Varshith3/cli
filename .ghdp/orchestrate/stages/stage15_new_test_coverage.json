@@ -1,0 +1,34 @@
+{
+  "schema_version": "1.0",
+  "id": "stage15_new_test_coverage",
+  "title": "Stage 15 New Test Coverage",
+  "owner_agent": "test-coverage-authoring",
+  "messages": {
+    "completed": "Stage 15 new test coverage authoring completed with a repo-backed coverage backlog."
+  },
+  "next_actions": {
+    "completed": "Proceed into Stage 16 developer test execution using coverage_backlog.md, regression_selection.md, and qa_scenario_plan.md."
+  },
+  "handoff_summaries": {
+    "completed": "Stage 15 new test coverage authoring completed with a focused backlog for the next execution stage."
+  },
+  "coverage_posture": [
+    "Add only the smallest new or expanded tests needed to protect the current changed behavior.",
+    "Prefer repo-owned orchestrator tests over broad churn outside the touched surface.",
+    "Keep the backlog explicit enough that developer test execution can run it without rediscovering intent."
+  ],
+  "summary_ready_inputs": [
+    "coverage_prompt.md",
+    "coverage_bindings.json",
+    "coverage_backlog.md",
+    "coverage_summary.md"
+  ],
+  "summary_expected_next_step": "Execute the authored coverage backlog alongside the selected regression set during Stage 16 developer test execution.",
+  "resume_note_templates": [
+    "Coverage agent: {coverage_agent}.",
+    "Allowed skills: {allowed_skill_count}.",
+    "Allowed plugins: {allowed_plugin_count}.",
+    "Authored tests: {authored_test_count}.",
+    "Coverage goals anchored: {coverage_goal_count}."
+  ]
+}

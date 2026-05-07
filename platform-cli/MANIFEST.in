@@ -1,0 +1,2 @@
+# Include all JSON files in resources/policy and resources/manifests
+recursive-include src/platform_cli/resources *.json

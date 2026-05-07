@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0",
+  "id": "stage_d_review_layer",
+  "title": "Stage D Review Layer",
+  "owner_agent": "orchestrator",
+  "messages": {
+    "completed": "Review layer completed and the branch is ready for execution prep.",
+    "blocked": "Review layer found blocking issues that must be resolved before execution prep."
+  },
+  "next_actions": {
+    "completed": "Proceed into Stage E implementation, regression planning, and test coverage authoring.",
+    "blocked": "Resolve the blocking review findings and rerun the review layer."
+  },
+  "handoff_summaries": {
+    "completed": "Stage D review completed with the current architecture and UX/DX findings recorded in repo artifacts.",
+    "blocked": "Stage D review is blocked on outstanding architecture or UX/DX findings."
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "schema_version": "1.0",
+  "generated_by": "ghdp",
+  "phase": "phase1",
+  "partitions": [
+    {
+      "id": "shared",
+      "path": ".ghdp/memory/shared",
+      "purpose": "Repo-shared memory for durable branch/run context that another human or agent may need later."
+    },
+    {
+      "id": "context",
+      "path": ".ghdp/memory/context",
+      "purpose": "Repo-local code and architecture summaries used as the Graphify substitute in Phase 1."
+    }
+  ]
+}

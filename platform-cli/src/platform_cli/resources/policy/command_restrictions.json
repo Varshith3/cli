@@ -1,0 +1,146 @@
+{
+  "schema_version": "1.0",
+  "phase": "release1",
+  "defaults": {
+    "access_tier": "end-user",
+    "team_scope": "any",
+    "release_tier": "stable"
+  },
+  "rules": [
+    {
+      "id": "admin-surface",
+      "match": {
+        "category": "admin"
+      },
+      "annotations": {
+        "access_tier": "admin",
+        "team_scope": "any",
+        "release_tier": "stable"
+      }
+    },
+    {
+      "id": "admin-only-command-surface",
+      "match": {
+        "commands": [
+          "release plan-binaries",
+          "release prepare-binaries-release",
+          "release build-binaries",
+          "release feature-to-dev",
+          "release make-release",
+          "create-branch",
+          "crbr",
+          "publish",
+          "repo fix",
+          "repo accept"
+        ]
+      },
+      "annotations": {
+        "access_tier": "admin",
+        "team_scope": "any",
+        "release_tier": "stable"
+      }
+    },
+    {
+      "id": "admin-prerelease-surface",
+      "match": {
+        "commands": [
+          "access inspect",
+          "access reset",
+          "ci setup",
+          "ci setup-git",
+          "ci is-jenkins",
+          "config branch-ai-provider",
+          "config branch-intent",
+          "config branch-intent-prompt",
+          "config branch-jira-check",
+          "config git-strict-clean",
+          "repo ready",
+          "repo report",
+          "repo verify",
+          "repo-info",
+          "scaffold"
+        ]
+      },
+      "annotations": {
+        "access_tier": "admin-prerelease",
+        "team_scope": "any",
+        "release_tier": "prerelease-only",
+        "notes": "Contributor and internal surfaces are reserved for admin users on prerelease builds."
+      }
+    },
+    {
+      "id": "tableau-data-analyst-only",
+      "match": {
+        "commands": [
+          "tableau init",
+          "tableau login"
+        ]
+      },
+      "annotations": {
+        "access_tier": "team-only",
+        "team_scope": "data_analyst",
+        "release_tier": "stable"
+      }
+    },
+    {
+      "id": "local-lifecycle-surface",
+      "match": {
+        "commands": [
+          "init",
+          "build",
+          "deploy",
+          "tf-init",
+          "tf-set-workspace",
+          "tf-validate",
+          "tf-plan",
+          "tf-apply",
+          "tf-fmt",
+          "tf-deploy"
+        ]
+      },
+      "annotations": {
+        "access_tier": "end-user",
+        "team_scope": "policy-managed",
+        "release_tier": "stable",
+        "notes": "Local lifecycle commands stay end-user available, but team policy can deny local.lifecycle for restricted teams such as data_analyst."
+      }
+    },
+    {
+      "id": "sync-end-user",
+      "match": {
+        "category": "sync"
+      },
+      "annotations": {
+        "access_tier": "end-user",
+        "team_scope": "policy-managed",
+        "release_tier": "stable"
+      }
+    },
+    {
+      "id": "schedule-end-user",
+      "match": {
+        "category": "schedule"
+      },
+      "annotations": {
+        "access_tier": "end-user",
+        "team_scope": "any",
+        "release_tier": "stable",
+        "install_tier": "post-install"
+      }
+    },
+    {
+      "id": "installer-runtime-hidden",
+      "match": {
+        "commands": [
+          "schedule run-job"
+        ]
+      },
+      "annotations": {
+        "access_tier": "runtime-hidden",
+        "team_scope": "any",
+        "release_tier": "stable",
+        "install_tier": "scheduler-runtime"
+      }
+    }
+  ]
+}

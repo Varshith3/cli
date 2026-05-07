@@ -1,0 +1,14 @@
+{
+  "schema_version": "1.0",
+  "id": "provider-codex",
+  "login_required": false,
+  "executor": "codex_cli",
+  "model": "gpt-5.4",
+  "prompt_source": ".ghdp/agents + .ghdp/skills + .ghdp/plugins + .ghdp/orchestrate/topology.json",
+  "setup_contract": [
+    "Resolve repo-level skills and agents before provider-specific prompting.",
+    "Preserve sequential and parallel scheduling decisions from .ghdp/orchestrate/topology.json.",
+    "Use Codex as the default provider mode when policy selects codex.",
+    "Honor the repo-selected compatibility model when the local Codex CLI cannot safely use its own default model."
+  ]
+}

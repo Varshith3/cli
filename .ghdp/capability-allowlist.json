@@ -1,0 +1,92 @@
+{
+  "schema_version": "1.0",
+  "managed_by": "ghdp",
+  "sources": {
+    "skill_marketplace": {
+      "repo": "gh-org-data-platform/gh-dp-data-platform-skill-marketplace",
+      "branch": "develop",
+      "targets": {
+        "claude": {
+          "entries": [
+            {
+              "capability": "marketplace-claude-skill-skill-workbench",
+              "install_unit_type": "skill",
+              "source_path": "skills/skill-workbench",
+              "target_type": "claude_skills",
+              "target_root_key": "claude_skills_root",
+              "target_subdir": "skill-workbench",
+              "category": "claude_skills"
+            },
+            {
+              "capability": "marketplace-claude-skill-git-branch-review",
+              "install_unit_type": "skill",
+              "source_path": "skills/git-branch-review",
+              "target_type": "claude_skills",
+              "target_root_key": "claude_skills_root",
+              "target_subdir": "git-branch-review",
+              "category": "claude_skills"
+            },
+            {
+              "capability": "marketplace-claude-plugin-query-athena",
+              "install_unit_type": "plugin",
+              "source_path": "plugins/query-athena",
+              "target_type": "claude_plugins",
+              "target_root_key": "claude_plugins_root",
+              "target_subdir": "query-athena",
+              "category": "claude_plugins"
+            },
+            {
+              "capability": "marketplace-claude-plugin-data-governance",
+              "install_unit_type": "plugin",
+              "source_path": "plugins/data-governance",
+              "target_type": "claude_plugins",
+              "target_root_key": "claude_plugins_root",
+              "target_subdir": "data-governance",
+              "category": "claude_plugins"
+            }
+          ]
+        },
+        "codex": {
+          "entries": [
+            {
+              "capability": "marketplace-codex-skill-skill-workbench",
+              "install_unit_type": "skill",
+              "source_path": "skills/skill-workbench",
+              "target_type": "codex_skills",
+              "target_root_key": "codex_skills_root",
+              "target_subdir": "skill-workbench",
+              "category": "codex_skills"
+            },
+            {
+              "capability": "marketplace-codex-skill-git-branch-review",
+              "install_unit_type": "skill",
+              "source_path": "skills/git-branch-review",
+              "target_type": "codex_skills",
+              "target_root_key": "codex_skills_root",
+              "target_subdir": "git-branch-review",
+              "category": "codex_skills"
+            },
+            {
+              "capability": "marketplace-codex-plugin-query-athena",
+              "install_unit_type": "plugin",
+              "source_path": "plugins/query-athena",
+              "target_type": "codex_plugins",
+              "target_root_key": "codex_plugins_root",
+              "target_subdir": "query-athena",
+              "category": "codex_plugins"
+            },
+            {
+              "capability": "marketplace-codex-plugin-data-governance",
+              "install_unit_type": "plugin",
+              "source_path": "plugins/data-governance",
+              "target_type": "codex_plugins",
+              "target_root_key": "codex_plugins_root",
+              "target_subdir": "data-governance",
+              "category": "codex_plugins"
+            }
+          ]
+        }
+      }
+    }
+  }
+}

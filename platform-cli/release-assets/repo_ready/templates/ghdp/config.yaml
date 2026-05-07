@@ -1,0 +1,19 @@
+schema_version: "1.0"
+repo:
+  name: "__GHDP_REPO_NAME__"
+  type: unknown
+  traits: []
+classification:
+  source: explicit
+  evidence: []
+risk:
+  tier: medium
+execution:
+  mode: sandbox-only
+enabled:
+  tools: []
+  teams: []
+  subagents: false
+metadata:
+  managed_by: ghdp
+  template_version: "__GHDP_TEMPLATE_VERSION__"

@@ -1,0 +1,73 @@
+{
+  "schema_version": "1.0",
+  "generated_by": "ghdp",
+  "phase": "phase1",
+  "plugins": [
+    {
+      "id": "provider-codex",
+      "purpose": "Codex-specific provider bridge for planning, implementation, and review personas.",
+      "integrations": ["codex_cli", "repo_level_skill_lookup"],
+      "used_by_skills": ["ticket-intake-sufficiency", "blueprint-poa-authoring", "architecture-compliance"]
+    },
+    {
+      "id": "provider-claude",
+      "purpose": "Claude-specific provider bridge for planning, implementation, and review personas.",
+      "integrations": ["claude_cli", "repo_level_skill_lookup"],
+      "used_by_skills": ["ticket-intake-sufficiency", "blueprint-poa-authoring", "ux-dx-review"]
+    },
+    {
+      "id": "provider-vscode-codex",
+      "purpose": "VS Code Codex host adapter that consumes the same repo-defined agents, skills, and topology through a Codex-compatible execution contract.",
+      "integrations": ["vscode_codex_host", "codex_cli_compatible", "repo_level_skill_lookup"],
+      "used_by_skills": ["qa-scenario-generation", "touched-scope-regression", "test-coverage-authoring"]
+    },
+    {
+      "id": "provider-vscode-claude",
+      "purpose": "VS Code Claude host adapter that consumes the same repo-defined agents, skills, and topology through a Claude-compatible execution contract.",
+      "integrations": ["vscode_claude_host", "claude_cli_compatible", "repo_level_skill_lookup"],
+      "used_by_skills": ["qa-scenario-generation", "touched-scope-regression", "test-coverage-authoring"]
+    },
+    {
+      "id": "jira-acli",
+      "purpose": "Explicit Jira communication adapter through ACLI.",
+      "integrations": ["acli", "jira"],
+      "used_by_skills": ["jira-acli-integration"]
+    },
+    {
+      "id": "jenkins-mcp",
+      "purpose": "Jenkins-backed PR and release adapter for CLI-owned flows.",
+      "integrations": ["jenkins_mcp"],
+      "used_by_skills": ["release-and-pr"]
+    },
+    {
+      "id": "github-release-gh",
+      "purpose": "GitHub release adapter used for prerelease and packaged artifact flows.",
+      "integrations": ["gh_cli", "github_releases"],
+      "used_by_skills": ["release-and-pr", "isolated-binary-validation"]
+    },
+    {
+      "id": "github-pr-gh",
+      "purpose": "GitHub pull-request adapter used for portable PR creation and comment progression.",
+      "integrations": ["gh_cli", "github_pull_requests"],
+      "used_by_skills": ["release-and-pr"]
+    },
+    {
+      "id": "sync-minimal",
+      "purpose": "Minimal GHDP sync-awareness adapter for repo-native versus sync-managed decisions.",
+      "integrations": ["sync_index", "repo_sync_conventions"],
+      "used_by_skills": ["minimal-sync-decision"]
+    },
+    {
+      "id": "asset-lifecycle-sync",
+      "purpose": "Asset lifecycle adapter for capability inventory, manifest/index revision, and lightweight asset-only operations.",
+      "integrations": ["sync_index", "content_manifest", "release_asset_conventions", "marketplace_repo_conventions"],
+      "used_by_skills": ["asset-capability-discovery", "asset-lifecycle-operations"]
+    },
+    {
+      "id": "native-memory-filesystem",
+      "purpose": "Filesystem-backed memory adapter for shared repo and user-global orchestration state.",
+      "integrations": ["repo_dot_ghdp", "user_global_ghdp"],
+      "used_by_skills": ["folder-backed-shared-memory", "traceability-and-resume", "repo-local-code-context"]
+    }
+  ]
+}
