@@ -1,0 +1,59 @@
+name: Claude Code Subagent Test
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  claude-subagent:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Run Claude Code
+        uses: anthropics/claude-code-action@v1
+        with:
+          use_bedrock: "true"
+          github_token: ${{ github.token }}
+          show_full_output: true
+
+          claude_args: >-
+            --max-turns 30
+            --model global.anthropic.claude-sonnet-4-6
+
+          prompt: |
+            You are running inside GitHub Actions.
+
+            CRITICAL INSTRUCTION:
+            You MUST use the Task tool for review delegation.
+
+            Do NOT perform review in the main agent context.
+
+            The delegated Task worker must:
+            - inspect the diff
+            - validate correctness
+            - identify any unsafe edits
+            - return concise review findings
+
+            After Task review:
+            - apply tiny safe feedback if needed
+            - summarize:
+              - skill used
+              - delegated review result
+              - changed files
+
+      - name: Show git diff
+        run: |
+          git status --short
+          git diff --stat
