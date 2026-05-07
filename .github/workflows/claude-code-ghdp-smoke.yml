@@ -1,48 +1,20 @@
-name: Claude Code - GHDP Smoke Test
+name: Claude Code - Real Skill Smoke Test
 
 on:
   workflow_dispatch:
-    inputs:
-      mode:
-        description: "Run mode"
-        required: true
-        type: choice
-        options:
-          - basic
-          - full-smoke
-        default: basic
-      max_turns:
-        description: "Claude max turns"
-        required: false
-        default: "20"
-        type: string
 
-run-name: >-
-  claude-smoke-${{ inputs.mode }}-run-${{ github.run_id }}
+run-name: claude-real-skill-${{ github.run_id }}
 
 permissions:
   contents: write
   pull-requests: write
-  issues: write
-  id-token: write
 
 jobs:
-  guard:
+  claude-real-smoke:
     runs-on: ubuntu-latest
-    steps:
-      - name: Guardrail - workflow disabled?
-        shell: bash
-        run: |
-          if [[ "${{ vars.GHDP_WORKFLOWS_ENABLED }}" == "false" ]]; then
-            echo "GHDP workflows are disabled for this repo (GHDP_WORKFLOWS_ENABLED=false)."
-            exit 1
-          fi
 
-  claude-ghdp-smoke:
-    needs: guard
-    runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
@@ -54,71 +26,38 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
-      - name: Run Claude Code smoke task
+      - name: Run Claude Code
         uses: anthropics/claude-code-action@v1
         with:
           use_bedrock: "true"
           github_token: ${{ github.token }}
           show_full_output: true
-          claude_args: "--max-turns ${{ inputs.max_turns }} --model global.anthropic.claude-sonnet-4-6"
+
+          claude_args: >-
+            --max-turns 20
+            --model global.anthropic.claude-sonnet-4-6
+
           prompt: |
-            You are running a CI smoke test in this repository.
+            You are running inside a GitHub Actions CI environment.
 
-            Objective:
-            1) Do a tiny safe development change.
-            2) Exercise repo-defined GHDP sub-agent and skill contracts.
-
-            Required read order:
-            - .ghdp/frbr/intent.json
-            - .ghdp/agents/manifest.json
-            - .ghdp/skills/manifest.json
-            - .ghdp/plugins/manifest.json
-            - .ghdp/orchestrate/kernel.json
-            - .ghdp/orchestrate/topology.json
-            - .ghdp/orchestrate/stages/manifest.json
-            - .ghdp/orchestrate/scenarios/manifest.json
-            - .ghdp/memory/README.md
-
-            Work mode input is: ${{ inputs.mode }}
-
-            Required outputs:
-            - Create/update tmp/claude-smoke/basic-dev-note.md with:
-              - run id: ${{ github.run_id }}
-              - timestamp
-              - one-paragraph summary of what was done.
-            - Create .ghdp/orchestrate/claude-smoke/run-${{ github.run_id }}/subagent_execution_plan.json
-            - Create .ghdp/orchestrate/claude-smoke/run-${{ github.run_id }}/subagent_execution_result.json
-            - Create .ghdp/orchestrate/claude-smoke/run-${{ github.run_id }}/subagent_prompt_packets.md
-            - Create .ghdp/orchestrate/claude-smoke/run-${{ github.run_id }}/skill_usage_summary.md
-
-            Sub-agent + skill smoke requirements:
-            - Use repo-defined agents from .ghdp/agents/manifest.json.
-            - Use repo-defined skills from .ghdp/skills/manifest.json.
-            - Reflect topology from .ghdp/orchestrate/topology.json:
-              - one front-door parallel wave
-              - one review dual-pass wave
-            - Include at least these agent ids in artifacts:
-              ticket-intake, work-type-classifier, autonomy-assessor,
-              context-capability-discovery, architecture-review, ux-dx-review.
-            - Include at least these skill ids in artifacts:
-              ticket-intake-sufficiency, work-type-classification,
-              complexity-autonomy-assessment, capability-discovery,
-              architecture-compliance, ux-dx-review.
-
-            Constraints:
+            IMPORTANT:
+            - Use the repo skill: tiny-readme-update
+            - You MUST delegate review to a subagent.
+            - Make one tiny deterministic repository change.
+            - Keep the diff extremely small.
             - Do not delete files.
-            - Keep changes minimal and deterministic.
-            - Do not create PRs or releases.
+            - Do not create a PR.
+            - Do not create releases.
 
-      - name: Validate smoke artifacts exist
-        shell: bash
-        run: |
-          set -euo pipefail
-          test -f tmp/claude-smoke/basic-dev-note.md
-          test -f .ghdp/orchestrate/claude-smoke/run-${{ github.run_id }}/subagent_execution_plan.json
-          test -f .ghdp/orchestrate/claude-smoke/run-${{ github.run_id }}/subagent_execution_result.json
-          test -f .ghdp/orchestrate/claude-smoke/run-${{ github.run_id }}/subagent_prompt_packets.md
-          test -f .ghdp/orchestrate/claude-smoke/run-${{ github.run_id }}/skill_usage_summary.md
+            Expected flow:
+            1. Use the tiny-readme-update skill.
+            2. Make a tiny repository improvement.
+            3. Launch a subagent to review the change.
+            4. Apply any tiny safe review fix if needed.
+            5. Summarize:
+               - what skill was used
+               - what subagent reviewed
+               - what files changed
 
       - name: Show changed files
         shell: bash
@@ -126,13 +65,8 @@ jobs:
           set -euo pipefail
           git status --short
 
-      - name: Upload smoke artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: claude-ghdp-smoke-${{ github.run_id }}
-          path: |
-            tmp/claude-smoke/basic-dev-note.md
-            .ghdp/orchestrate/claude-smoke/run-${{ github.run_id }}/subagent_execution_plan.json
-            .ghdp/orchestrate/claude-smoke/run-${{ github.run_id }}/subagent_execution_result.json
-            .ghdp/orchestrate/claude-smoke/run-${{ github.run_id }}/subagent_prompt_packets.md
-            .ghdp/orchestrate/claude-smoke/run-${{ github.run_id }}/skill_usage_summary.md
+      - name: Show git diff
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --stat
