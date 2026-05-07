@@ -1,4 +1,4 @@
-name: Claude Code Subagent Test
+name: Claude Subagent README Test
 
 on:
   workflow_dispatch:
@@ -7,11 +7,11 @@ permissions:
   contents: write
 
 jobs:
-  claude-subagent:
+  claude-edit:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Configure AWS Credentials
@@ -29,31 +29,16 @@ jobs:
           show_full_output: true
 
           claude_args: >-
-            --max-turns 30
             --model global.anthropic.claude-sonnet-4-6
 
           prompt: |
-            You are running inside GitHub Actions.
+            Make tiny improvement to README.md.
 
-            CRITICAL INSTRUCTION:
-            You MUST use the Task tool for review delegation.
+            Keep the change minimal and safe.
 
-            Do NOT perform review in the main agent context.
+            After editing README.md, use the Agent tool to delegate verification to a subagent.
 
-            The delegated Task worker must:
-            - inspect the diff
-            - validate correctness
-            - identify any unsafe edits
-            - return concise review findings
-
-            After Task review:
-            - apply tiny safe feedback if needed
-            - summarize:
-              - skill used
-              - delegated review result
-              - changed files
-
-      - name: Show git diff
-        run: |
-          git status --short
-          git diff --stat
+            The delegated subagent should:
+            - inspect the README change
+            - verify formatting
+            - verify no unrelated files changed
