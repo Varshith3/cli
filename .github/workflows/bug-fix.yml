@@ -73,6 +73,7 @@ jobs:
 
           claude_args: >-
             --model global.anthropic.claude-sonnet-4-6
+            --dangerously-skip-permissions
 
           prompt: |
             You are working inside a production repository.
