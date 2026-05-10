@@ -37,21 +37,28 @@ jobs:
       - name: Create branch name
         id: branch
         shell: bash
+        env:
+          EPPE_TICKET: ${{ github.event.inputs.eppe_ticket }}
+          BUG_DESCRIPTION: ${{ github.event.inputs.bug_description }}
         run: |
-          TICKET="${{ github.event.inputs.eppe_ticket }}"
-          BUG="${{ github.event.inputs.bug_description }}"
+          set -euo pipefail
 
-          SLUG=$(echo "$BUG" \
+          TICKET="$(echo "$EPPE_TICKET" | xargs)"
+
+          SLUG="$(echo "$BUG_DESCRIPTION" \
             | tr '[:upper:]' '[:lower:]' \
-            | sed 's/[^a-z0-9]/-/g' \
+            | sed 's/[^a-zA-Z0-9]/-/g' \
             | sed 's/-\+/-/g' \
             | sed 's/^-//' \
             | sed 's/-$//' \
-            | cut -c1-50)
+            | cut -c1-50)"
 
           BRANCH_NAME="${TICKET}-${SLUG}"
 
           echo "branch_name=$BRANCH_NAME" >> "$GITHUB_OUTPUT"
+
+          echo "Generated branch:"
+          echo "$BRANCH_NAME"
 
       - name: Create git branch
         run: |
