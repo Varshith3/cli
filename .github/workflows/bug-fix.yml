@@ -1,0 +1,122 @@
+name: Claude Code EPPE Bug Fix
+
+on:
+  workflow_dispatch:
+    inputs:
+      eppe_ticket:
+        description: "EPPE Ticket Number"
+        required: true
+        type: string
+
+      bug_description:
+        description: "Bug description"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  claude-bugfix:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Create branch name
+        id: branch
+        shell: bash
+        run: |
+          TICKET="${{ github.event.inputs.eppe_ticket }}"
+          BUG="${{ github.event.inputs.bug_description }}"
+
+          SLUG=$(echo "$BUG" \
+            | tr '[:upper:]' '[:lower:]' \
+            | sed 's/[^a-z0-9]/-/g' \
+            | sed 's/-\+/-/g' \
+            | sed 's/^-//' \
+            | sed 's/-$//' \
+            | cut -c1-50)
+
+          BRANCH_NAME="${TICKET}-${SLUG}"
+
+          echo "branch_name=$BRANCH_NAME" >> "$GITHUB_OUTPUT"
+
+      - name: Create git branch
+        run: |
+          git checkout -b "${{ steps.branch.outputs.branch_name }}"
+
+      - name: Run Claude Code
+        uses: anthropics/claude-code-action@v1
+        with:
+          use_bedrock: "true"
+          github_token: ${{ github.token }}
+          show_full_output: true
+
+          claude_args: >-
+            --model global.anthropic.claude-sonnet-4-6
+
+          prompt: |
+            You are working inside a production repository.
+
+            EPPE Ticket:
+            ${{ github.event.inputs.eppe_ticket }}
+
+            Bug Description:
+            ${{ github.event.inputs.bug_description }}
+
+            Tasks:
+            - analyze the repository
+            - identify the root cause
+            - implement the fix
+            - update tests if necessary
+            - avoid unrelated modifications
+
+            After implementing the fix, use the Agent tool to delegate verification to a subagent.
+
+            The delegated subagent should:
+            - inspect the code changes
+            - verify formatting
+            - verify no unrelated files changed
+            - verify the bug fix matches the ticket
+            - verify tests if modified
+
+      - name: Check for changes
+        id: changes
+        shell: bash
+        run: |
+          if [[ -n $(git status --porcelain) ]]; then
+            echo "has_changes=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_changes=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Commit changes
+        if: steps.changes.outputs.has_changes == 'true'
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+
+          git add .
+
+          git commit -m "fix: ${{ github.event.inputs.eppe_ticket }} automated bug fix"
+
+      - name: Push branch
+        if: steps.changes.outputs.has_changes == 'true'
+        run: |
+          git push origin "${{ steps.branch.outputs.branch_name }}"
+
+      - name: Workflow summary
+        run: |
+          echo "Created branch: ${{ steps.branch.outputs.branch_name }}"
