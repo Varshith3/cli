@@ -142,6 +142,13 @@ If this internal distribution should also behave like the company-managed instal
 GHDP_MANAGED_INSTALL=1 GHDP_BINARY_PATH="$HOME/Downloads/ghdp-darwin-arm64" bash install_ghdp.sh
 ```
 
+Managed-install auth governance defaults:
+- Managed installs default to auth mode `managed_locked`.
+- `managed_locked` allows only the managed local auth state for GHDP-owned GitHub operations.
+- Admins can switch mode (with audit event) using:
+  - `ghdp access auth-mode` (view)
+  - `ghdp admin auth-mode --mode personal_allowed --reason "<why>"`
+
 #### Windows (PowerShell)
 
 ```powershell
@@ -157,6 +164,13 @@ $env:GHDP_MANAGED_INSTALL="1"
 $env:GHDP_BINARY_PATH="$env:USERPROFILE\Downloads\ghdp-windows-amd64.exe"
 powershell -ExecutionPolicy Bypass -File .\install_ghdp.ps1
 ```
+
+Managed-install auth governance defaults:
+- Managed installs default to auth mode `managed_locked`.
+- `managed_locked` allows only the managed local auth state for GHDP-owned GitHub operations.
+- Admins can switch mode (with audit event) using:
+  - `ghdp access auth-mode` (view)
+  - `ghdp admin auth-mode --mode personal_allowed --reason "<why>"`
 
 ### 1.3 Dev / contributor install via pipx (from source)
 
@@ -2150,6 +2164,7 @@ Before running `.github/workflows/manual-build-binaries.yml`:
 - Replace all `TODO` placeholders with release-specific content.
 - Keep markdown headings and bullets (this file preserves native formatting).
 - Do not add an outer `## Summary` heading in `notes.md`; workflow injects this content under `## Summary` automatically.
+- For feature-branch builds, ensure `notes.md` is updated on the branch and included in one of the latest 4 commits.
 
 ## Local Terraform Deploy (Phase 1)
 
