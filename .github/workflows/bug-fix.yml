@@ -84,22 +84,51 @@ jobs:
             Bug Description:
             ${{ github.event.inputs.bug_description }}
 
-            Tasks:
-            - analyze the repository
-            - identify the root cause
-            - implement the fix
-            - update tests if necessary
-            - avoid unrelated modifications
+            Repository-specific orchestration assets exist under:
+            - .ghdp/skills
+            - .ghdp/agents
 
-            After implementing the fix, use the Agent tool to delegate verification to a subagent.
+            IMPORTANT:
+            You MUST explicitly inspect and use the following custom skill and subagent during this workflow.
 
-            The delegated subagent should:
-            - inspect the code changes
-            - verify formatting
-            - verify no unrelated files changed
-            - verify the bug fix matches the ticket
-            - verify tests if modified
+            Skill:
+            .ghdp/skills/architecture-compliance/SKILL.md
 
+            Subagent:
+            .ghdp/agents/architecture-review.json
+
+            Workflow Requirements:
+
+            1. Analyze the repository and identify the root cause.
+            2. Implement the bug fix.
+            3. Keep changes minimal and production safe.
+            4. Update or add tests if necessary.
+            5. Avoid unrelated modifications.
+
+            AFTER implementing the fix:
+
+            - Read and apply the architecture-compliance skill.
+            - Invoke the architecture-review subagent for validation and review.
+            - The architecture-review subagent must:
+              - inspect all changed files
+              - verify architectural compliance
+              - verify repository conventions
+              - verify no unrelated changes exist
+              - verify tests align with implementation
+              - verify the fix matches the EPPE ticket intent
+
+            Also use an additional exploration/review subagent if needed for:
+            - repository exploration
+            - dependency tracing
+            - test verification
+            - code review
+
+            Final requirements:
+            - commit only validated changes
+            - do not modify unrelated files
+            - ensure the repository remains build-safe
+            - provide concise implementation reasoning in commit message context
+            
       - name: Check for changes
         id: changes
         shell: bash
