@@ -782,7 +782,7 @@ def tools_install(
                         ToolOnboardingStatus(
                             tool_name=s.name,
                             display_name=s.display_name,
-                            status="ready",
+                            status="action_required",
                             short_status="Installed (out of policy)",
                             next_action=f"Rerun `ghdp tools install --tool {s.name} --upgrade`.",
                             detail_hint=f"Detected {getattr(vc, 'parsed', None) or best_ver}; requires {policy}",

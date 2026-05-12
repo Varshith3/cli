@@ -141,6 +141,7 @@ def _render_compact_install_summary(
 ) -> None:
     sections = [
         ("ready", "ready"),
+        ("action_required", "next"),
         ("failed", "failed"),
     ]
 
@@ -154,7 +155,7 @@ def _render_compact_install_summary(
             if item.next_action:
                 echo(f"    next: {item.next_action}")
         echo("  rerun with `ghdp tools install --debug-install` for full diagnostics.")
-    else:
+    elif not grouped["action_required"] and not grouped["failed"]:
         echo("no issues.")
 
     for key, label in sections:

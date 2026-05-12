@@ -257,7 +257,8 @@ def test_tools_install_groups_summary_and_clears_live_status_before_durable_outp
     assert ("echo", "tools install summary:") in events
     assert ("echo", "ready:") in events
     assert ("echo", "  - awscli: Installed and authenticated") in events
-    assert ("echo", "  - codex: Installed, but Codex login still needs interactive setup") not in events
+    assert ("echo", "next:") in events
+    assert ("echo", "  - codex: Installed, but Codex login still needs interactive setup") in events
     assert ("echo", "failed:") in events
     assert ("echo", "  - acli: install: Global agent config post-install step failed") in events
     assert ("echo", "skipped:") not in events
@@ -1101,6 +1102,85 @@ def test_tools_install_out_of_policy_skip_advances_once(monkeypatch) -> None:
 
     assert install_order == ["gh", "awscli"]
     assert detect_calls.count("git") == 1
+
+
+def test_tools_install_compact_summary_shows_out_of_policy_under_next_section(monkeypatch) -> None:
+    events: list[str] = []
+    git_spec = ToolRuntimeSpec(
+        name="git",
+        display_name="GIT",
+        detect_cmd=["detect"],
+        version_cmd=["version"],
+        install_cmd=["install"],
+        upgrade_cmd=["upgrade"],
+        uninstall_cmd=["uninstall"],
+        version_req={"op": ">=", "version": "2.53.0"},
+    )
+    uv_spec = ToolRuntimeSpec(
+        name="uv",
+        display_name="UV",
+        detect_cmd=["detect"],
+        version_cmd=["version"],
+        install_cmd=["install"],
+        upgrade_cmd=["upgrade"],
+        uninstall_cmd=["uninstall"],
+        version_req={"op": ">=", "version": "0.6.0"},
+    )
+    gh_spec = _spec("gh")
+    specs = [gh_spec, git_spec, uv_spec]
+
+    monkeypatch.setattr("platform_cli.core.access.ensure_capability", lambda *args, **kwargs: None)
+    monkeypatch.setattr(
+        tools_cmd,
+        "command_status",
+        lambda _command: SimpleNamespace(start=lambda _m: None, update=lambda _m: None, finish=lambda _m=None: None),
+    )
+    monkeypatch.setattr(
+        tools_cmd,
+        "_load_manifests_with_team_toolset_resolution",
+        lambda refresh_toolset=False: (
+            {"schema_version": "0.0.1", "teams": {"data_platform": {"tools": {}}}},
+            {"schema_version": "1.0", "tools": {}},
+            {"toolset": "pkg:platform_cli/resources/manifests/toolset.json", "registry": "pkg"},
+            {"local_status": "fallback"},
+        ),
+    )
+    monkeypatch.setattr(tools_cmd, "_resolve_effective_team", lambda *_args, **_kwargs: "data_platform")
+    monkeypatch.setattr(tools_cmd, "resolve_team_tools", lambda *_args, **_kwargs: specs)
+
+    def _fake_detect(spec):
+        if spec.name in ("git", "uv"):
+            return True, "0.1.0"
+        return False, ""
+
+    monkeypatch.setattr(tools_cmd, "detect_tool", _fake_detect)
+    monkeypatch.setattr(
+        tools_cmd,
+        "install_tool",
+        lambda spec, **_kwargs: ToolOnboardingStatus(spec.name, spec.display_name, "already_ready", "Already ready"),
+    )
+    monkeypatch.setattr(
+        tools_cmd,
+        "_refresh_toolset_after_gh_install",
+        lambda **_kwargs: (_kwargs["selected_specs"], _kwargs["active_toolset_source"], []),
+    )
+    monkeypatch.setattr(
+        tools_cmd.scheduler_tools,
+        "scheduler_initialization_status",
+        lambda **_kwargs: {"supported": True, "initialized": True},
+    )
+    monkeypatch.setattr(tools_cmd.typer, "echo", lambda message="": events.append(str(message)))
+
+    tools_cmd.tools_install(team=None, tool=None, all=True, upgrade=False, dry_run=False, refresh_toolset=False)
+
+    assert "no issues." not in events
+    assert "next:" in events
+    next_idx = events.index("next:")
+    assert "  - git: Installed (out of policy)" in events[next_idx:]
+    assert "  - uv: Installed (out of policy)" in events[next_idx:]
+    assert any("ghdp tools install --tool git --upgrade" in e for e in events)
+    assert any("ghdp tools install --tool uv --upgrade" in e for e in events)
+    assert events[-1] == "install finished"
 
 
 def test_tools_install_scheduler_setup_falls_back_to_manual_recovery(monkeypatch) -> None:
